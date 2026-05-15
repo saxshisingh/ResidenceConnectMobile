@@ -1,0 +1,120 @@
+{
+    "form": {
+        "fields": {
+            "fullName": {
+                "label": "Nom complet",
+                "placeholder": "Nom complet",
+                "required": "Le nom complet est requis"
+            },
+            "phoneNumber": {
+                "label": "Numéro de mobile",
+                "placeholder": "Numéro de mobile",
+                "required": "Le numéro de mobile est requis",
+                "pattern": "Entrez un numéro de mobile valide"
+            },
+            "emergencyContact": {
+                "label": "Contact d'urgence",
+                "placeholder": "Contact d'urgence",
+                "required": "Le contact d'urgence est requis"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "L'email est requis"
+            },
+            "age": {
+                "label": "Âge",
+                "placeholder": "Âge",
+                "required": "L'âge est requis",
+                "pattern": "Entrez un âge valide"
+            },
+            "shiftTimings": {
+                "label": "Horaires de travail",
+                "placeholder": "Sélectionnez les horaires",
+                "required": "Les horaires de travail sont requis"
+            },
+            "profilePhoto": {
+                "label": "Photo de profil",
+                "placeholder": "Photo de profil",
+                "required": "La photo de profil est requise"
+            },
+            "residence": {
+                "label": "Résidence",
+                "placeholder": "Sélectionnez la résidence",
+                "required": "La résidence est requise"
+            },
+            "assignBlocks": {
+                "label": "🏢 Assigner des blocs",
+                "placeholder": "Sélectionnez les blocs assignés",
+                "required": "Les blocs assignés sont requis"
+            }
+        }
+    },
+    "add": {
+        "title": "Ajouter un agent de sécurité",
+        "successMessage": "Agent de sécurité ajouté avec succès",
+        "errorMessage": "Échec de l'ajout de l'agent de sécurité",
+        "submit": "Enregistrer l'agent",
+        "sectionTitle": "🛡 Détails de l'agent de sécurité"
+    },
+    "edit": {
+        "title": "Modifier un agent de sécurité",
+        "errorLoadMessage": "Échec du chargement des détails de l'agent",
+        "successMessage": "Agent de sécurité mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de l'agent",
+        "submit": "Mettre à jour l'agent",
+        "sectionTitle": "🛡 Détails de l'agent de sécurité"
+    },
+    "delete": {
+        "title": "Supprimer un agent de sécurité",
+        "message": "Êtes-vous sûr de vouloir supprimer cet agent de sécurité ?",
+        "successMessage": "Agent de sécurité supprimé avec succès",
+        "errorMessage": "Échec de la suppression de l'agent de sécurité"
+    },
+    "view": {
+        "title": "Détails de l'agent de sécurité",
+        "sectionTitle": "🛡 Informations sur l'agent de sécurité",
+        "loading": "Chargement des détails de l'agent de sécurité...",
+        "errorMessage": "Échec du chargement des détails de l'agent de sécurité.",
+        "fields": {
+            "fullName": "Nom complet",
+            "mobile": "Mobile",
+            "emergencyContact": "Contact d'urgence",
+            "email": "Email",
+            "age": "Âge",
+            "shiftTimings": "Horaires de travail",
+            "residenceName": "Résidence",
+            "assignedBlocks": "Blocs assignés",
+            "status": "Statut"
+        }
+    },
+    "list": {
+        "title": "Agents de sécurité",
+        "add": "Ajouter un agent",
+        "columns": {
+            "name": "Nom",
+            "mobile": "Mobile",
+            "email": "Email",
+            "age": "Âge",
+            "shift": "Shift",
+            "blocks": "Blocs",
+            "status": "Statut"
+        },
+        "loading": "Chargement des agents de sécurité...",
+        "loadError": "Échec du chargement des agents de sécurité.",
+        "filter": {
+            "name": {
+                "label": "Nom",
+                "placeholder": "Rechercher par nom"
+            },
+            "mobile": {
+                "label": "Mobile",
+                "placeholder": "Rechercher par mobile"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Sélectionner le statut"
+            }
+        }
+    }
+}

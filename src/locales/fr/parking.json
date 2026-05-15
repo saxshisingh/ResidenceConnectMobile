@@ -1,0 +1,49 @@
+{
+  "form": {
+    "fields": {
+      "slotNumber": {
+        "label": "Numero de place",
+        "placeholder": "Numero de place",
+        "required": "Le numero de place est requis"
+      },
+      "residence": {
+        "label": "Residence",
+        "placeholder": "Selectionner la residence",
+        "required": "La residence est requise"
+      },
+      "block": {
+        "label": "Bloc",
+        "placeholder": "Selectionner le bloc",
+        "required": "Le bloc est requis"
+      },
+      "level": {
+        "label": "Niveau",
+        "placeholder": "Niveau",
+        "required": "Le niveau est requis"
+      },
+      "status": {
+        "label": "Statut",
+        "placeholder": "Selectionner le statut",
+        "required": "Le statut est requis"
+      }
+    }
+  },
+  "view": {
+    "title": "Details du stationnement",
+    "loading": "Chargement des details du stationnement...",
+    "errorMessage": "Echec du chargement des details du stationnement.",
+    "fields": {
+      "slotNumber": "Numero de place",
+      "residence": "Residence",
+      "block": "Nom du bloc",
+      "level": "Niveau",
+      "status": "Statut"
+    }
+  },
+  "list": {
+    "title": "Stationnement",
+    "add": "Ajouter un stationnement",
+    "loading": "Chargement du stationnement...",
+    "loadError": "Echec du chargement du stationnement."
+  }
+}

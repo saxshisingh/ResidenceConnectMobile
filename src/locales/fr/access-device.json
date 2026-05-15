@@ -1,0 +1,132 @@
+{
+    "form": {
+        "fields": {
+            "deviceName": {
+                "label": "Nom de l'appareil",
+                "placeholder": "Nom de l'appareil",
+                "required": "Le nom de l'appareil est requis"
+            },
+            "deviceType": {
+                "label": "Type d'appareil",
+                "placeholder": "Sélectionner le type d'appareil",
+                "required": "Le type d'appareil est requis",
+                "options": {
+                    "door": "Porte",
+                    "elevator": "Ascenseur"
+                }
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Sélectionner le bloc",
+                "required": "Le bloc est requis"
+            },
+            "floor": {
+                "label": "Étage",
+                "placeholder": "Sélectionner l'étage",
+                "required": "L'étage est requis"
+            },
+            "notes": {
+                "label": "Notes sur l’emplacement d’installation",
+                "placeholder": "Notes sur l’emplacement d’installation",
+                "required": "Les notes d’installation sont requises"
+            }
+        }
+    },
+    "doorPermission": {
+        "title": "Matrice des autorisations d'accès des résidents",
+        "export": "Exporter CSV",
+        "modal": {
+            "title": "Autorisations d'accès aux portes",
+            "selectDoors": "Sélectionner les portes",
+            "loading": "Chargement des portes…",
+            "noDevices": "Aucun dispositif de porte configuré pour ce bloc",
+            "grantAccess": "Accorder l'accès",
+            "saving": "Enregistrement...",
+            "cancel": "Annuler",
+            "warnings": {
+                "selectAtLeastOne": "Veuillez sélectionner au moins une porte"
+            },
+            "success": {
+                "granted": "Accès aux portes accordé avec succès"
+            }
+        },
+        "errors": {
+        "loadResidents": "Échec du chargement des résidents",
+        "loadData": "Échec du chargement des données"
+        }
+    },
+    "add": {
+        "title": "Ajouter un dispositif d’accès",
+        "successMessage": "Dispositif d’accès ajouté avec succès",
+        "errorMessage": "Échec de l’ajout du dispositif d’accès",
+        "submit": "Enregistrer le dispositif"
+    },
+    "edit": {
+        "title": "Modifier le dispositif d’accès",
+        "errorLoadMessage": "Échec du chargement des détails du dispositif",
+        "successMessage": "Dispositif d’accès mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du dispositif",
+        "submit": "Mettre à jour le dispositif"
+    },
+    "delete": {
+        "title": "Supprimer le dispositif d’accès",
+        "message": "Êtes-vous sûr de vouloir supprimer ce dispositif d’accès ?",
+        "successMessage": "Dispositif supprimé avec succès",
+        "errorMessage": "Échec de la suppression du dispositif"
+    },
+    "view": {
+        "title": "Détails du dispositif d’accès",
+        "loading": "Chargement des détails du dispositif...",
+        "errorMessage": "Échec du chargement des détails du dispositif.",
+        "fields": {
+            "deviceName": "Nom de l'appareil",
+            "deviceType": "Type d'appareil",
+            "lockId": "ID de la serrure",
+            "block": "Bloc",
+            "floor": "Étage",
+            "status": "Statut"
+        }
+    },
+    "list": {
+        "title": "Tous les dispositifs d’accès",
+        "add": "Ajouter un dispositif",
+        "columns": {
+            "deviceName": "Nom de l'appareil",
+            "deviceType": "Type",
+            "lockId": "ID de la serrure",
+            "block": "Bloc",
+            "floor": "Étage",
+            "status": "Statut"
+        },
+        "loading": "Chargement des dispositifs d’accès...",
+        "loadError": "Échec du chargement des dispositifs d’accès.",
+        "filter": {
+            "deviceName": {
+                "label": "Nom de l'appareil",
+                "placeholder": "Rechercher par nom"
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Rechercher par bloc"
+            },
+            "floor": {
+                "label": "Étage",
+                "placeholder": "Rechercher par étage"
+            },
+            "deviceType": {
+                "label": "Type d'appareil",
+                "placeholder": "Rechercher par type",
+                "options": {
+                    "door": "Porte",
+                    "elevator": "Ascenseur"
+                }
+            }
+        }
+    },
+    "status": {
+        "Processing": "En cours",
+        "Approved": "Approuvé",
+        "Rejected": "Rejeté",
+        "Unknown": "Inconnu"
+    }
+}

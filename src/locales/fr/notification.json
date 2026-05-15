@@ -1,0 +1,107 @@
+{
+    "form": {
+        "fields": {
+            "notificationType": {
+                "label": "Type de notification",
+                "placeholder": "Sélectionner le type de notification",
+                "required": "Le type de notification est requis"
+            },
+            "target": {
+                "label": "Cible",
+                "placeholder": "Sélectionner la cible",
+                "required": "La cible est requise"
+            },
+            "specificUnits": {
+                "label": "Unités spécifiques (optionnel)",
+                "placeholder": "Sélectionner les unités"
+            },
+            "title": {
+                "label": "Titre",
+                "placeholder": "Titre",
+                "required": "Le titre est requis"
+            },
+            "content": {
+                "label": "Contenu de la notification",
+                "placeholder": "Contenu de la notification",
+                "required": "Le contenu est requis"
+            },
+            "language": {
+                "label": "Langue",
+                "placeholder": "Sélectionner la langue",
+                "required": "La langue est requise"
+            },
+            "media": {
+                "label": "Téléverser un média (PNG, JPEG)",
+                "placeholder": ""
+            },
+            "scheduledTime": {
+                "label": "Heure programmée",
+                "placeholder": "Sélectionner l'heure programmée"
+            }
+        }
+    },
+    "add": {
+        "title": "Composer une notification",
+        "successMessage": "Notification ajoutée avec succès",
+        "errorMessage": "Échec de l'ajout de la notification",
+        "submit": "Envoyer la notification",
+        "sending": "Envoi en cours..."
+    },
+    "edit": {
+        "title": "Modifier la notification",
+        "errorLoadMessage": "Échec du chargement des détails de la notification",
+        "successMessage": "Notification mise à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de la notification",
+        "submit": "Mettre à jour la notification",
+        "updating": "Mise à jour en cours..."
+    },
+    "delete": {
+        "title": "Supprimer la notification",
+        "message": "Êtes-vous sûr de vouloir supprimer cette notification ?",
+        "successMessage": "Notification supprimée avec succès",
+        "errorMessage": "Échec de la suppression de la notification"
+    },
+    "view": {
+        "notFound": "Notification introuvable",
+        "goBack": "Retour",
+        "messageLabel": "Message",
+        "title": "Détails de la notification",
+        "loading": "Chargement des détails de la notification...",
+        "errorMessage": "Échec du chargement des détails de la notification.",
+        "fields": {
+            "title": "Titre de la notification",
+            "content": "Contenu de la notification",
+            "delivered": "Livré",
+            "seen": "Vu",
+            "clicked": "Cliqué"
+        }
+    },
+    "list": {
+        "title": "Toutes les notifications",
+        "add": "Composer une notification",
+        "emptyTitle": "Aucune notification disponible",
+        "emptyTitleSuffix": "pour le moment",
+        "emptyDescription": "Nous vous informerons quand quelque chose d'important arrive.",
+        "columns": {
+            "serialNumber": "N°",
+            "title": "Titre",
+            "floorNumber": "Numéro d'étage",
+            "notificationType": "Type",
+            "targetType": "Cible",
+            "sentOn": "Envoyé le",
+            "delivered": "Livré"
+        },
+        "loading": "Chargement des notifications...",
+        "loadError": "Échec du chargement des notifications",
+        "filter": {
+            "buildingName": {
+                "label": "Nom du bâtiment",
+                "placeholder": "Rechercher par nom du bâtiment"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Rechercher par statut"
+            }
+        }
+    }
+}

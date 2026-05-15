@@ -1,0 +1,112 @@
+{
+  "message": {
+    "title": "صندوق الوارد",
+    "broadCast": "رسالة جماعية",
+    "filter": {
+      "conversationType": {
+        "label": "نوع المحادثة",
+        "placeholder": "البحث حسب نوع المحادثة"
+      },
+      "status": {
+        "label": "الحالة",
+        "placeholder": "البحث حسب الحالة"
+      },
+      "block": {
+        "label": "المبنى",
+        "placeholder": "البحث حسب المبنى"
+      }
+    },
+    "emptyChatState": "اختر محادثة لبدء الدردشة."
+  },
+  "broadcastMessage": {
+    "title": "رسالة جماعية",
+    "successMessage": "تم إرسال الرسالة الجماعية بنجاح!",
+    "errorMessage": "فشل في إرسال الرسالة الجماعية.",
+    "submit": "إرسال الرسالة",
+    "fields": {
+      "messageTitle": {
+        "label": "عنوان الرسالة",
+        "placeholder": "عنوان الرسالة",
+        "required": "العنوان مطلوب"
+      },
+      "messageBody": {
+        "label": "محتوى الرسالة",
+        "placeholder": "محتوى الرسالة",
+        "required": "الرسالة مطلوبة"
+      },
+      "language": {
+        "label": "اللغة",
+        "placeholder": "اختر اللغة",
+        "required": "اللغة مطلوبة"
+      },
+      "blocks": {
+        "label": "المباني",
+        "placeholder": "اختر المباني",
+        "required": "المبنى مطلوب"
+      },
+      "allBlocks": {
+        "label": "جميع المباني",
+        "placeholder": "اختر",
+        "required": "حقل جميع المباني مطلوب"
+      },
+      "specificUnits": {
+        "label": "وحدات محددة (اختياري)",
+        "placeholder": "اختر الوحدات",
+        "required": "الوحدات المحددة مطلوبة"
+      },
+      "media": {
+        "label": "رفع وسائط",
+        "placeholder": "رفع وسائط",
+        "required": "الوسائط مطلوبة"
+      }
+    }
+  },
+  "communicationLog": {
+    "delete": {
+      "title": "حذف الرسالة",
+      "message": "هل أنت متأكد أنك تريد حذف هذه الرسالة؟",
+      "successMessage": "تم حذف الرسالة بنجاح",
+      "errorMessage": "فشل في حذف الرسالة"
+    }
+  },
+  "mobile": {
+    "title": "المراسلة",
+    "yesterday": "أمس",
+    "conversationSingle": "محادثة",
+    "conversationPlural": "محادثات",
+    "unreadCount": "{{count}} غير مقروءة",
+    "noConversationsTitle": "لا توجد محادثات بعد",
+    "noConversationsDescription": "ستظهر رسائلك هنا عندما تبدأ الدردشة",
+    "noMessagesYet": "لا توجد رسائل بعد",
+    "loadingMessages": "جارٍ تحميل الرسائل...",
+    "messagePlaceholder": "رسالة..",
+    "unableToSendNow": "لا يمكن إرسال الرسالة الآن.",
+    "sendFailed": "فشل إرسال هذا المرفق الآن. يرجى المحاولة مرة أخرى.",
+    "invalidMessageLength": "يجب أن يكون طول الرسالة بين 1 و500 حرف",
+    "addAttachmentTitle": "إضافة مرفق",
+    "addAttachmentMessage": "اختر كيفية إرفاق الوسائط.",
+    "photo": "صورة",
+    "camera": "الكاميرا",
+    "document": "مستند",
+    "video": "فيديو",
+    "audio": "صوتي",
+    "openDocument": "فتح المستند",
+    "openVideo": "فتح الفيديو",
+    "playAudio": "تشغيل الصوت",
+    "galleryFailed": "تعذر فتح المعرض.",
+    "documentFailed": "تعذر فتح محدد المستندات.",
+    "documentUnavailable": "رفع المستندات غير متاح في هذه النسخة المثبتة من التطبيق حتى الآن.",
+    "cameraPermissionTitle": "إذن الكاميرا",
+    "cameraPermissionMessage": "يحتاج التطبيق إلى إذن الكاميرا لالتقاط صورة.",
+    "cameraPermissionRequired": "إذن الكاميرا مطلوب لالتقاط صورة.",
+    "cameraFailed": "تعذر فتح الكاميرا.",
+    "attachmentTooLarge": "هذا الملف كبير جدًا. يرجى اختيار صورة أو فيديو أصغر.",
+    "unableToOpenAttachment": "تعذر فتح هذا المرفق.",
+    "uploadErrorTitle": "خطأ في الرفع",
+    "failedLabel": "فشل",
+    "errorSending": "حدث خطأ أثناء إرسال الرسالة",
+    "reactToMessage": "تفاعل مع الرسالة",
+    "reactFailed": "فشل إضافة التفاعل.",
+    "startConversation": "ابدأ المحادثة!"
+  }
+}

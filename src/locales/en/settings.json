@@ -1,0 +1,85 @@
+{
+    "title": "Settings",
+    "theme" : {
+        "label": "Appearance",
+        "light": "Light Mode",
+        "dark": "Dark Mode",
+        "system": "Auto Mode",
+        "followSystem": "Follow system",
+        "successMessage": "Theme updated successfully",
+        "errorMessage": "Failed to update theme"
+    },
+    "language": {
+        "label": "Language",
+        "successMessage": "Language updated successfully",
+        "errorMessage": "Failed to update language"
+    },
+    "bluetooth": {
+        "label": "Bluetooth",
+        "disconnected": "Bluetooth is OFF",
+        "connected": "Bluetooth is ON",
+        "successMessage": "Bluetooth status updated successfully",
+        "errorMessage": "Failed to update Bluetooth status",
+        "enable": "Enable",
+        "disable": "Disable"
+    },
+    "security" : {
+        "label": "Security",
+        "login": "Log In",
+        "logout": "Log Out",
+        "successMessage": "Security settings updated successfully",
+        "errorMessage": "Failed to update security settings",
+        "forgotPassword": "Forgot Password"
+    },
+    "info": {
+        "label": "App Info",
+        "version": "Version"
+    },
+    "mobile": {
+      "title": "Settings",
+      "changeLanguage": "Change Language",
+      "changePassword": "Change Password",
+      "darkMode": "Dark Mode",
+      "policies": "Privacy Policies",
+      "policiesDescription": "Read our privacy, legal, and terms documents. Tap any item to open it in your browser.",
+      "policyPrivacy": "Privacy Policy",
+      "policyLegal": "Legal Notice",
+      "policyCgu": "Terms of Use",
+      "policyOpenError": "Unable to open this policy right now.",
+      "subtitle": "Manage your app preferences",
+      "preferences": "PREFERENCES",
+      "accountActions": "ACCOUNT ACTIONS",
+      "about": "ABOUT",
+      "appVersion": "App Version",
+      "deleteAccountTitle": "Delete My Account",
+      "deleteAccountAction": "Delete my account",
+      "deleteAccountDescription": "Request permanent deletion of your account directly from the app.",
+      "deleteAccountConfirmMessage": "Are you sure you want to delete your account? This action cannot be undone.",
+      "deleteAccountSuccess": "Account deletion request processed successfully.",
+      "deleteAccountError": "Unable to process your account deletion request right now.",
+      "deleteAccountEmailMissing": "We could not find your email for this account. Please update your profile or contact support.",
+      "deleteAccountOpenError": "Unable to open the account deletion page right now."
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Create a strong new password",
+      "fields": {
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password"
+      },
+      "validation": {
+        "minLength": "Password must be at least 6 characters",
+        "passwordMismatch": "Passwords do not match"
+      },
+      "tips": {
+        "minLength": "Must contain at least 6 characters"
+      },
+      "buttons": {
+        "update": "Update Password",
+        "updating": "Updating...",
+        "cancel": "Cancel"
+      },
+      "success": "Password updated successfully",
+      "error": "Failed to update password"
+    }
+}

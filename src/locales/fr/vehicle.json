@@ -1,0 +1,100 @@
+{
+  "form": {
+    "fields": {
+      "owner": {
+        "label": "Proprietaire",
+        "placeholder": "Selectionnez le proprietaire",
+        "required": "Le proprietaire est requis"
+      },
+      "vehicleNumber": {
+        "label": "Plaque d'immatriculation",
+        "placeholder": "Plaque d'immatriculation",
+        "required": "La plaque d'immatriculation est requise"
+      },
+      "model": {
+        "label": "Modele",
+        "placeholder": "Modele",
+        "required": "Le modele est requis"
+      },
+      "color": {
+        "label": "Couleur",
+        "placeholder": "Couleur",
+        "required": "La couleur est requise"
+      },
+      "rcDocs": {
+        "label": "Documents RC",
+        "placeholder": "Documents RC",
+        "required": "Les documents RC sont requis"
+      },
+      "vehicleType": {
+        "label": "Type de vehicule",
+        "placeholder": "Selectionnez le type de vehicule",
+        "required": "Le type de vehicule est requis"
+      }
+    }
+  },
+  "add": {
+    "title": "Ajouter un vehicule",
+    "successMessage": "Vehicule ajoute avec succes",
+    "errorMessage": "Echec de l'ajout du vehicule",
+    "submit": "Enregistrer le vehicule"
+  },
+  "edit": {
+    "title": "Modifier le vehicule",
+    "errorLoadMessage": "Echec du chargement des details du vehicule",
+    "successMessage": "Vehicule mis a jour avec succes",
+    "errorMessage": "Echec de la mise a jour du vehicule",
+    "submit": "Mettre a jour le vehicule"
+  },
+  "delete": {
+    "title": "Supprimer le vehicule",
+    "message": "Etes-vous sur de vouloir supprimer ce vehicule ?",
+    "successMessage": "Vehicule supprime avec succes",
+    "errorMessage": "Echec de la suppression du vehicule"
+  },
+  "view": {
+    "title": "Details du vehicule",
+    "loading": "Chargement des details du vehicule...",
+    "errorMessage": "Echec du chargement des details du vehicule.",
+    "fields": {
+      "owner": "Proprietaire",
+      "vehicleNumber": "Plaque d'immatriculation",
+      "model": "Modele",
+      "color": "Couleur",
+      "vehicleType": "Type de vehicule",
+      "occupancyStatus": "Statut d'occupation",
+      "ownershipType": "Type de propriete"
+    }
+  },
+  "list": {
+    "title": "Vehicules",
+    "add": "Ajouter un vehicule",
+    "deleteTitle": "Supprimer le vehicule",
+    "deleteConfirm": "Etes-vous sur de vouloir supprimer ce vehicule ?",
+    "deleteSuccess": "Vehicule supprime avec succes",
+    "deleteError": "Echec de la suppression du vehicule",
+    "loadError": "Echec du chargement des vehicules"
+  },
+  "mobile": {
+    "title": "Vehicules",
+    "vehicleBrand": "Marque du vehicule",
+    "vehicleColor": "Couleur du vehicule",
+    "vehicleNumberPlate": "Plaque d'immatriculation",
+    "uploadRcDocument": "Televerser le document RC",
+    "rcDocument": "Document RC",
+    "residentNotFound": "Resident introuvable",
+    "requiredFields": "Veuillez remplir tous les details obligatoires du vehicule",
+    "invalidFieldLength": "Un ou plusieurs champs sont invalides",
+    "invalidPlate": "Veuillez saisir une plaque d'immatriculation valide",
+    "invalidRcDoc": "La valeur du document RC est invalide",
+    "emptyTitle": "Aucun vehicule trouve",
+    "emptyDescription": "Ajoutez les details de votre vehicule pour commencer.",
+    "manageVehicles": "Vos vehicules enregistres",
+    "vehiclesCountLabel": "VEHICULES",
+    "viewVehicleInformation": "Voir les informations du vehicule",
+    "updateVehicleDetails": "Mettre a jour les details du vehicule",
+    "registerVehicle": "Enregistrer un nouveau vehicule",
+    "vehicleInfoSection": "INFORMATIONS DU VEHICULE",
+    "numberPlateSection": "PLAQUE D'IMMATRICULATION"
+  }
+}

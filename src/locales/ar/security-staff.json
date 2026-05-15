@@ -1,0 +1,120 @@
+{
+    "form": {
+        "fields": {
+            "fullName": {
+                "label": "الاسم الكامل",
+                "placeholder": "الاسم الكامل",
+                "required": "الاسم الكامل مطلوب"
+            },
+            "phoneNumber": {
+                "label": "رقم الجوال",
+                "placeholder": "رقم الجوال",
+                "required": "رقم الجوال مطلوب",
+                "pattern": "أدخل رقم جوال صحيح"
+            },
+            "emergencyContact": {
+                "label": "جهة اتصال للطوارئ",
+                "placeholder": "جهة اتصال للطوارئ",
+                "required": "جهة اتصال الطوارئ مطلوبة"
+            },
+            "email": {
+                "label": "البريد الإلكتروني",
+                "placeholder": "البريد الإلكتروني",
+                "required": "البريد الإلكتروني مطلوب"
+            },
+            "age": {
+                "label": "العمر",
+                "placeholder": "العمر",
+                "required": "العمر مطلوب",
+                "pattern": "أدخل عمرًا صحيحًا"
+            },
+            "shiftTimings": {
+                "label": "مواعيد المناوبة",
+                "placeholder": "اختر مواعيد المناوبة",
+                "required": "مواعيد المناوبة مطلوبة"
+            },
+            "profilePhoto": {
+                "label": "الصورة الشخصية",
+                "placeholder": "الصورة الشخصية",
+                "required": "الصورة الشخصية مطلوبة"
+            },
+            "residence": {
+                "label": "الإقامة",
+                "placeholder": "اختر الإقامة",
+                "required": "الإقامة مطلوبة"
+            },
+            "assignBlocks": {
+                "label": "🏢 تعيين البلوكات",
+                "placeholder": "اختر البلوكات المعيّنة",
+                "required": "البلوكات المعيّنة مطلوبة"
+            }
+        }
+    },
+    "add": {
+        "title": "إضافة موظف أمن",
+        "successMessage": "تمت إضافة موظف الأمن بنجاح",
+        "errorMessage": "فشل في إضافة موظف الأمن",
+        "submit": "حفظ الموظف",
+        "sectionTitle": "🛡 تفاصيل موظف الأمن"
+    },
+    "edit": {
+        "title": "تعديل موظف الأمن",
+        "errorLoadMessage": "فشل في تحميل بيانات موظف الأمن",
+        "successMessage": "تم تحديث موظف الأمن بنجاح",
+        "errorMessage": "فشل في تحديث موظف الأمن",
+        "submit": "تحديث الموظف",
+        "sectionTitle": "🛡 تفاصيل موظف الأمن"
+    },
+    "delete": {
+        "title": "حذف موظف الأمن",
+        "message": "هل أنت متأكد أنك تريد حذف موظف الأمن هذا؟",
+        "successMessage": "تم حذف موظف الأمن بنجاح",
+        "errorMessage": "فشل في حذف موظف الأمن"
+    },
+    "view": {
+        "title": "تفاصيل موظف الأمن",
+        "sectionTitle": "🛡 معلومات موظف الأمن",
+        "loading": "جارٍ تحميل بيانات موظف الأمن...",
+        "errorMessage": "فشل في تحميل بيانات موظف الأمن.",
+        "fields": {
+            "fullName": "الاسم الكامل",
+            "mobile": "رقم الجوال",
+            "emergencyContact": "جهة اتصال للطوارئ",
+            "email": "البريد الإلكتروني",
+            "age": "العمر",
+            "shiftTimings": "مواعيد المناوبة",
+            "residenceName": "الإقامة",
+            "assignedBlocks": "البلوكات المعيّنة",
+            "status": "الحالة"
+        }
+    },
+    "list": {
+        "title": "موظفو الأمن",
+        "add": "إضافة موظف",
+        "columns": {
+            "name": "الاسم",
+            "mobile": "رقم الجوال",
+            "email": "البريد الإلكتروني",
+            "age": "العمر",
+            "shift": "المناوبة",
+            "blocks": "البلوكات",
+            "status": "الحالة"
+        },
+        "loading": "جارٍ تحميل موظفي الأمن...",
+        "loadError": "فشل في تحميل موظفي الأمن.",
+        "filter": {
+            "name": {
+                "label": "الاسم",
+                "placeholder": "بحث حسب الاسم"
+            },
+            "mobile": {
+                "label": "رقم الجوال",
+                "placeholder": "بحث حسب رقم الجوال"
+            },
+            "status": {
+                "label": "الحالة",
+                "placeholder": "اختر الحالة"
+            }
+        }
+    }
+}

@@ -1,0 +1,213 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "الاسم الأول",
+                "placeholder": "الاسم الأول",
+                "required": "الاسم الأول مطلوب"
+            },
+            "lastName": {
+                "label": "اسم العائلة",
+                "placeholder": "اسم العائلة",
+                "required": "اسم العائلة مطلوب"
+            },
+            "gender": {
+                "label": "الجنس",
+                "placeholder": "اختر الجنس",
+                "required": "الجنس مطلوب",
+                "options": {
+                    "male": "ذكر",
+                    "female": "أنثى",
+                    "other": "آخر"
+                }
+            },
+            "dateOfBirth": {
+                "label": "تاريخ الميلاد",
+                "placeholder": "تاريخ الميلاد",
+                "required": "تاريخ الميلاد مطلوب"
+            },
+            "petOwnership": {
+                "label": "امتلاك حيوان أليف",
+                "placeholder": "اختر حالة امتلاك حيوان أليف",
+                "required": "حالة امتلاك حيوان أليف مطلوبة",
+                "options": {
+                    "true": "نعم",
+                    "false": "لا"
+                }
+            },
+            "maximumAllowedResidents": {
+                "label": "الحد الأقصى للمقيمين المسموح بهم",
+                "placeholder": "الحد الأقصى للمقيمين",
+                "required": "الحد الأقصى للمقيمين مطلوب",
+                "pattern": "يسمح بالأرقام الموجبة فقط",
+                "validate": "يجب أن يكون أكبر من 0"
+            },
+            "mobileNumber": {
+                "label": "رقم الجوال",
+                "placeholder": "رقم الجوال",
+                "required": "رقم الجوال مطلوب",
+                "pattern": "يرجى إدخال رقم جوال جزائري صحيح",
+                "validate": "يجب أن يكون رقم الجوال رقمًا جزائريًا صحيحًا"
+            },
+            "email": {
+                "label": "البريد الإلكتروني",
+                "placeholder": "البريد الإلكتروني",
+                "required": "البريد الإلكتروني مطلوب"
+            },
+            "block": {
+                "label": "البلوك / البرج",
+                "placeholder": "اختر البلوك",
+                "required": "البلوك مطلوب"
+            },
+            "floor": {
+                "label": "الطابق",
+                "placeholder": "اختر الطابق",
+                "required": "الطابق مطلوب"
+            },
+            "unit": {
+                "label": "رقم الوحدة / الشقة",
+                "placeholder": "اختر رقم الوحدة / الشقة",
+                "required": "رقم الوحدة / الشقة مطلوب"
+            },
+            "occupancyStatus": {
+                "label": "حالة الإشغال",
+                "placeholder": "اختر حالة الإشغال",
+                "required": "حالة الإشغال مطلوبة",
+                "options": {
+                    "occupied": "مشغول",
+                    "available": "متاح",
+                    "reserved": "محجوز",
+                    "maintenance": "قيد الصيانة"
+                }
+            },
+            "waterMeterNumber": {
+                "label": "رقم عداد المياه",
+                "placeholder": "رقم عداد المياه",
+                "required": "رقم عداد المياه مطلوب"
+            },
+            "gasMeterNumber": {
+                "label": "رقم عداد الغاز",
+                "placeholder": "رقم عداد الغاز",
+                "required": "رقم عداد الغاز مطلوب"
+            },
+            "electricityMeterNumber": {
+                "label": "رقم عداد الكهرباء",
+                "placeholder": "رقم عداد الكهرباء",
+                "required": "رقم عداد الكهرباء مطلوب"
+            },
+            "govtIdProofFile": {
+                "label": "إثبات هوية حكومي (هوية/جواز سفر)",
+                "placeholder": "رفع إثبات الهوية",
+                "required": "إثبات الهوية مطلوب"
+            },
+            "ownershipProofFile": {
+                "label": "عقد الإيجار / إثبات الملكية",
+                "placeholder": "رفع عقد الإيجار / إثبات الملكية",
+                "required": "إثبات الملكية مطلوب"
+            },
+            "profilePhotoFile": {
+                "label": "الصورة الشخصية",
+                "placeholder": "رفع صورة شخصية",
+                "required": "الصورة الشخصية مطلوبة"
+            }
+        },
+        "sections": {
+            "basicInfo": "🧍 المعلومات الأساسية",
+            "contactInfo": "📞 معلومات الاتصال",
+            "apartmentInfo": "🏠 تخصيص الوحدة / الشقة",
+            "documentUpload": "📝 رفع المستندات"
+        }
+    },
+    "add": {
+        "title": "إضافة مقيم جديد",
+        "successMessage": "تمت إضافة المقيم بنجاح",
+        "errorMessage": "فشل في إضافة المقيم",
+        "submit": "حفظ المقيم"
+    },
+    "edit": {
+        "title": "تعديل المقيم",
+        "errorLoadMessage": "فشل في تحميل بيانات المقيم",
+        "successMessage": "تم تحديث المقيم بنجاح",
+        "errorMessage": "فشل في تحديث المقيم",
+        "submit": "تحديث المقيم"
+    },
+    "delete": {
+        "title": "حذف المقيم",
+        "message": "هل أنت متأكد أنك تريد حذف هذا المقيم؟",
+        "successMessage": "تم حذف المقيم بنجاح",
+        "errorMessage": "فشل في حذف المقيم"
+    },
+    "view": {
+        "title": "تفاصيل المقيم",
+        "loading": "جارٍ تحميل بيانات المقيم...",
+        "errorMessage": "فشل في تحميل بيانات المقيم.",
+        "apartmentDetails": {
+            "title": "🏠 تخصيص الوحدة / الشقة",
+            "block": "البلوك / البرج",
+            "unit": "رقم الوحدة / الشقة",
+            "floor": "الطابق",
+            "occupancyStatus": "حالة الإشغال"
+        },
+        "documentUpload": {
+            "title": "📝 رفع المستندات",
+            "govtIdProof": "إثبات هوية حكومي (هوية/جواز سفر)",
+            "rentalAgreement": "عقد الإيجار / إثبات الملكية",
+            "profilePhoto": "الصورة الشخصية",
+            "fileTypes": "أنواع الملفات المقبولة: PDF، JPG، PNG",
+            "maxSize": "الحد الأقصى لحجم الملف: 5 ميجابايت"
+        },
+        "parkingDetails": {
+            "title": "🅿️ مواقف السيارات والمركبات",
+            "parkingSlot": "موقف السيارة",
+            "registeredVehicles": "المركبات المسجلة",
+            "view": "عرض"
+        },
+        "accessPermissions": {
+            "title": "🔐 صلاحيات الدخول (TTLock)",
+            "manage": "إدارة الصلاحيات",
+            "doorAccess": "دخول الأبواب",
+            "visitorAccess": "دخول الزوار",
+            "amenitiesAccess": "دخول المرافق"
+        },
+        "familyMembers": {
+            "title": "👨‍👩‍👧 أفراد العائلة",
+            "manage": "إدارة الأفراد",
+            "noMembers": "لا يوجد أفراد عائلة."
+        },
+        "utilityDetails": {
+            "title": "تفاصيل المرافق والخدمات",
+            "water": "رقم عداد المياه",
+            "gas": "رقم عداد الغاز",
+            "electricity": "رقم عداد الكهرباء",
+            "petOwnership": "امتلاك حيوان أليف"
+        }
+    },
+    "list": {
+        "title": "قائمة المقيمين",
+        "add": "إضافة مقيم جديد",
+        "columns": {
+            "profile": "الملف الشخصي",
+            "owner": "المالك",
+            "phone": "رقم الجوال",
+            "block": "البلوك",
+            "unit": "الوحدة",
+            "status": "الحالة"
+        },
+        "loading": "جارٍ تحميل المقيمين...",
+        "loadError": "فشل في تحميل المقيمين",
+        "filter": {
+            "name": {
+                "label": "الاسم",
+                "placeholder": "بحث حسب الاسم"
+            },
+            "blockName": {
+                "label": "البلوك",
+                "placeholder": "بحث حسب البلوك"
+            },
+            "floor": {
+                "label": "الطابق",
+                "placeholder": "بحث حسب الطابق"
+            }
+        }
+    }
+}

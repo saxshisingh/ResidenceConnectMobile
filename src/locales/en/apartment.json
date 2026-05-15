@@ -1,0 +1,107 @@
+{
+    "form": {
+        "fields": {
+            "unit": {
+                "label": "Apartment Number",
+                "placeholder": "Enter apartment number",
+                "required": "Apartment number is required"
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Select block",
+                "required": "Block is required"
+            },
+            "floorNumber": {
+                "label": "Floor Number",
+                "placeholder": "Select floor",
+                "required": "Floor is required"
+            },
+            "apartmentType": {
+                "label": "Apartment Type",
+                "placeholder": "Select apartment type",
+                "required": "Apartment type is required"
+            },
+            "occupancyStatus": {
+                "label": "Occupancy Status",
+                "placeholder": "Select occupancy status",
+                "required": "Occupancy status is required"
+            },
+            "ownershipType": {
+                "label": "Ownership Type",
+                "placeholder": "Select ownership type",
+                "required": "Ownership type is required"
+            }
+        }
+    },
+    "occupancyModal": {
+      "unit": "Unit",
+      "floor": "Floor",
+      "status": {
+        "occupied": "Occupied",
+        "vacant": "Vacant"
+      },
+      "fields": {
+        "resident": "Resident",
+        "vehicles": "Vehicles",
+        "parkingSlot": "Parking Slot",
+        "location": "Location"
+      }
+    },
+    "add": {
+        "title": "Add Apartment",
+        "successMessage": "Apartment added successfully",
+        "errorMessage": "Failed to add apartment",
+        "submit": "Save Apartment"
+    },
+    "edit": {
+        "title": "Edit Apartment",
+        "errorLoadMessage": "Failed to load apartment details",
+        "successMessage": "Apartment updated successfully",
+        "errorMessage": "Failed to update apartment",
+        "submit": "Update Apartment"
+    },
+    "delete": {
+        "title": "Delete Apartment",
+        "message": "Are you sure you want to delete this apartment?",
+        "successMessage": "Apartment deleted successfully",
+        "errorMessage": "Failed to delete apartment"
+    },
+    "view": {
+        "title": "Apartment Details",
+        "loading": "Loading apartment details...",
+        "errorMessage": "Failed to load apartment details.",
+        "fields": {
+            "residence": "Residence",
+            "unit": "Apartment Number",
+            "apartmentType": "Apartment Type",
+            "floorNumber": "Floor Number",
+            "block": "Block",
+            "occupancyStatus": "Occupancy Status",
+            "ownershipType": "Ownership Type"
+        }
+    },
+    "list": {
+        "title": "All Apartments",
+        "add": "Add Apartment",
+        "columns": {
+            "unit": "Apartment Number",
+            "floorNumber": "Floor Number",
+            "block": "Block",
+            "apartmentType": "Apartment Type",
+            "occupancyStatus": "Occupancy Status",
+            "ownershipType": "Ownership Type"
+        },
+        "loading": "Loading apartments...",
+        "loadError": "Failed to load apartments",
+        "filter": {
+            "floorNumber": {
+                "label": "Floor Number",
+                "placeholder": "Search by floor number"
+            },
+            "blockName": {
+                "label": "Block",
+                "placeholder": "Search by block"
+            }
+        }
+    }
+}

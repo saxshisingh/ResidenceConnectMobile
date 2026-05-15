@@ -1,0 +1,81 @@
+{
+    "form": {
+        "fields": {
+            "residence": {
+                "label": "Résidence",
+                "placeholder": "Sélectionnez la résidence",
+                "required": "La résidence est requise"
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Sélectionnez le bloc",
+                "required": "Le bloc est requis"
+            },
+            "floor": {
+                "label": "Numéro d'étage",
+                "placeholder": "Numéro d'étage",
+                "required": "Le numéro d'étage est requis",
+                "pattern": "Entrez un numéro d'étage valide",
+                "validate": "Doit être supérieur à 0"
+            },
+            "apartments": {
+                "label": "Nombre d'appartements",
+                "placeholder": "Nombre d'appartements",
+                "required": "Le nombre d'appartements est requis",
+                "pattern": "Entrez un nombre d'appartements valide",
+                "validate": "Doit être supérieur à 0"
+            }
+        }
+    },
+    "add": {
+        "title": "Ajouter un étage",
+        "successMessage": "Étage ajouté avec succès",
+        "errorMessage": "Échec de l'ajout de l'étage",
+        "submit": "Enregistrer l'étage"
+    },
+    "edit": {
+        "title": "Modifier l'étage",
+        "errorLoadMessage": "Échec du chargement des détails de l'étage",
+        "successMessage": "Étage mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de l'étage",
+        "submit": "Mettre à jour l'étage"
+    },
+    "delete": {
+        "title": "Supprimer l'étage",
+        "message": "Êtes-vous sûr de vouloir supprimer cet étage ?",
+        "successMessage": "Étage supprimé avec succès",
+        "errorMessage": "Échec de la suppression de l'étage"
+    },
+    "view": {
+        "title": "Détails de l'étage",
+        "loading": "Chargement des détails de l'étage...",
+        "errorMessage": "Échec du chargement des détails de l'étage.",
+        "fields": {
+            "residence": "Nom de la résidence",
+            "block": "Bloc",
+            "floor": "Numéro d'étage"
+        }
+    },
+    "list": {
+        "title": "Tous les étages",
+        "add": "Ajouter un étage",
+        "columns": {
+            "residence": "Nom de la résidence",
+            "block": "Bloc",
+            "floor": "Numéro d'étage",
+            "apartments": "Nombre d'appartements"
+        },
+        "loading": "Chargement des étages...",
+        "loadError": "Échec du chargement des étages.",
+        "filter": {
+            "floor": {
+                "label": "Numéro d'étage",
+                "placeholder": "Rechercher par numéro d'étage"
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Rechercher par bloc"
+            }
+        }
+    }
+}

@@ -1,0 +1,114 @@
+{
+  "form": {
+    "fields": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Name",
+        "required": "Name is required"
+      },
+      "gender": {
+        "label": "Gender",
+        "placeholder": "Select Gender",
+        "required": "Gender is required",
+        "options": {
+          "male": "Male",
+          "female": "Female",
+          "other": "Other"
+        }
+      },
+      "relation": {
+        "label": "Relation",
+        "placeholder": "Select Relation",
+        "required": "Relation is required",
+        "values": {
+          "Father": "Father",
+          "Mother": "Mother",
+          "Son": "Son",
+          "Daughter": "Daughter",
+          "Spouse": "Spouse",
+          "Sibling": "Sibling",
+          "Other": "Other"
+        }
+      },
+      "mobile": {
+        "label": "Mobile",
+        "placeholder": "Mobile Number",
+        "required": "Mobile number is required",
+        "pattern": "Enter a valid Algerian phone number (local or international)",
+        "validate": "Mobile number must be a valid Algerian number"
+      },
+      "accessPermission": {
+        "label": "Access Permission",
+        "placeholder": "Select Access Permission",
+        "required": "Access Permission is required",
+        "values": {
+          "Complete": "Complete",
+          "Partial": "Partial",
+          "None": "None"
+        }
+      }
+    }
+  },
+  "add": {
+    "title": "Add New Family Member",
+    "successMessage": "Family member added successfully",
+    "errorMessage": "Failed to add family member",
+    "submit": "Save Member",
+    "subtitle": "Add a new household member"
+  },
+  "edit": {
+    "title": "Edit Family Member",
+    "errorLoadMessage": "Failed to load family member details",
+    "successMessage": "Family member updated successfully",
+    "errorMessage": "Failed to update family member",
+    "submit": "Update Member",
+    "subtitle": "Update member information"
+  },
+  "delete": {
+    "title": "Delete Family Member",
+    "message": "Are you sure you want to delete this family member?",
+    "successMessage": "Family member deleted successfully",
+    "errorMessage": "Failed to delete family member"
+  },
+  "view": {
+    "title": "Family Member Details",
+    "loading": "Loading family member details...",
+    "errorMessage": "Failed to load family member details.",
+    "subtitle": "View member details",
+    "badge": "VIEW",
+    "fields": {
+      "name": "Name",
+      "gender": "Gender",
+      "relation": "Relation",
+      "mobile": "Mobile",
+      "accessPermission": "Access Permission"
+    }
+  },
+  "list": {
+    "title": "Family Members",
+    "add": "Add Family Member",
+    "columns": {
+      "profile": "Profile",
+      "name": "Member Name",
+      "relation": "Relation",
+      "accessPermission": "Access Permission"
+    },
+    "loading": "Loading family members...",
+    "loadError": "Failed to load family members",
+    "filter": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Search by Name"
+      },
+      "relation": {
+        "label": "Relation",
+        "placeholder": "Search by Relation"
+      }
+    }
+  },
+  "sections": {
+    "personalInfo": "PERSONAL INFO",
+    "contact": "CONTACT",
+    "statusAccess": "STATUS & ACCESS"
+  }
+}

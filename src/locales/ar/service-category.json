@@ -1,0 +1,68 @@
+{
+    "form": {
+        "fields": {
+            "category": {
+                "label": "اسم الفئة",
+                "placeholder": "اسم الفئة",
+                "required": "اسم الفئة مطلوب"
+            },
+            "description": {
+                "label": "الوصف",
+                "placeholder": "الوصف (اختياري)",
+                "required": "الوصف مطلوب"
+            }
+        },
+        "sectionTitle": "🗂 تفاصيل فئة الخدمة"
+    },
+    "add": {
+        "title": "إضافة فئة خدمة",
+        "successMessage": "تمت إضافة فئة الخدمة بنجاح",
+        "errorMessage": "فشل في إضافة فئة الخدمة",
+        "submit": "حفظ الفئة"
+    },
+    "edit": {
+        "title": "تعديل فئة الخدمة",
+        "errorLoadMessage": "فشل في تحميل تفاصيل فئة الخدمة",
+        "successMessage": "تم تحديث فئة الخدمة بنجاح",
+        "errorMessage": "فشل في تحديث فئة الخدمة",
+        "submit": "تحديث الفئة"
+    },
+    "delete": {
+        "title": "حذف فئة الخدمة",
+        "message": "هل أنت متأكد أنك تريد حذف فئة الخدمة هذه؟",
+        "successMessage": "تم حذف فئة الخدمة بنجاح",
+        "errorMessage": "فشل في حذف فئة الخدمة",
+        "invalidRecord": "سجل فئة الخدمة غير صالح"
+    },
+    "view": {
+        "title": "تفاصيل فئة الخدمة",
+        "loading": "جارٍ تحميل تفاصيل فئة الخدمة...",
+        "errorMessage": "فشل في تحميل تفاصيل فئة الخدمة.",
+        "fields": {
+            "residence": "الإقامة",
+            "description": "الوصف",
+            "status": "الحالة"
+        }
+    },
+    "list": {
+        "title": "فئات الخدمات",
+        "add": "إضافة فئة",
+        "columns": {
+            "category": "اسم الفئة",
+            "description": "الوصف",
+            "status": "الحالة"
+        },
+        "loading": "جارٍ تحميل فئات الخدمات...",
+        "loadError": "فشل في تحميل فئات الخدمات",
+        "filter": {
+            "category": {
+                "label": "اسم الفئة",
+                "placeholder": "بحث حسب اسم الفئة"
+            },
+            "status": {
+                "label": "الحالة",
+                "placeholder": "بحث حسب الحالة"
+            }
+        }
+    }
+}

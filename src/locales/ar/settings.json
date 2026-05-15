@@ -1,0 +1,85 @@
+{
+    "title": "الإعدادات",
+    "theme": {
+        "label": "المظهر",
+        "light": "الوضع الفاتح",
+        "dark": "الوضع الداكن",
+        "system": "الوضع التلقائي",
+        "followSystem": "اتباع إعدادات النظام",
+        "successMessage": "تم تحديث المظهر بنجاح",
+        "errorMessage": "فشل في تحديث المظهر"
+    },
+    "language": {
+        "label": "اللغة",
+        "successMessage": "تم تحديث اللغة بنجاح",
+        "errorMessage": "فشل في تحديث اللغة"
+    },
+    "bluetooth": {
+        "label": "البلوتوث",
+        "disconnected": "البلوتوث غير مفعّل",
+        "connected": "البلوتوث مفعّل",
+        "successMessage": "تم تحديث حالة البلوتوث بنجاح",
+        "errorMessage": "فشل في تحديث حالة البلوتوث",
+        "enable": "تفعيل",
+        "disable": "تعطيل"
+    },
+    "security": {
+        "label": "الأمان",
+        "login": "تسجيل الدخول",
+        "logout": "تسجيل الخروج",
+        "successMessage": "تم تحديث إعدادات الأمان بنجاح",
+        "errorMessage": "فشل في تحديث إعدادات الأمان",
+        "forgotPassword": "نسيت كلمة المرور"
+    },
+    "info": {
+        "label": "معلومات التطبيق",
+        "version": "الإصدار"
+    },
+    "mobile": {
+      "title": "الإعدادات",
+      "changeLanguage": "تغيير اللغة",
+      "changePassword": "تغيير كلمة المرور",
+      "darkMode": "الوضع الداكن",
+      "policies": "سياسات الخصوصية",
+      "policiesDescription": "اطلع على سياسة الخصوصية والإشعار القانوني وشروط الاستخدام. اضغط على أي عنصر لفتحه في المتصفح.",
+      "policyPrivacy": "سياسة الخصوصية",
+      "policyLegal": "الإشعار القانوني",
+      "policyCgu": "شروط الاستخدام",
+      "policyOpenError": "تعذر فتح هذه السياسة الآن.",
+      "subtitle": "أدر تفضيلات تطبيقك",
+      "preferences": "التفضيلات",
+      "accountActions": "إجراءات الحساب",
+      "about": "حول",
+      "appVersion": "إصدار التطبيق",
+      "deleteAccountTitle": "حذف حسابي",
+      "deleteAccountAction": "حذف حسابي",
+      "deleteAccountDescription": "اطلب حذف حسابك نهائيًا مباشرة من التطبيق.",
+      "deleteAccountConfirmMessage": "هل أنت متأكد من رغبتك في حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.",
+      "deleteAccountSuccess": "تمت معالجة طلب حذف الحساب بنجاح.",
+      "deleteAccountError": "تعذر معالجة طلب حذف الحساب في الوقت الحالي.",
+      "deleteAccountEmailMissing": "تعذر العثور على البريد الإلكتروني لهذا الحساب. يرجى تحديث ملفك الشخصي أو التواصل مع الدعم.",
+      "deleteAccountOpenError": "تعذر فتح صفحة حذف الحساب في الوقت الحالي."
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أنشئ كلمة مرور جديدة قوية",
+      "fields": {
+        "newPassword": "كلمة المرور الجديدة",
+        "confirmPassword": "تأكيد كلمة المرور"
+      },
+      "validation": {
+        "minLength": "يجب أن تكون كلمة المرور مكونة من 6 أحرف على الأقل",
+        "passwordMismatch": "كلمتا المرور غير متطابقتين"
+      },
+      "tips": {
+        "minLength": "يجب أن تحتوي على 6 أحرف على الأقل"
+      },
+      "buttons": {
+        "update": "تحديث كلمة المرور",
+        "updating": "جارٍ التحديث...",
+        "cancel": "إلغاء"
+      },
+      "success": "تم تحديث كلمة المرور بنجاح",
+      "error": "فشل في تحديث كلمة المرور"
+    }
+}

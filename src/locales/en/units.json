@@ -1,0 +1,17 @@
+{
+    "loading": "Loading units...",
+    "loadError": "Failed to load units.",
+    "noUnits": "No units found.",
+    "status": {
+        "Occupied": "Occupied",
+        "Vacant": "Available",
+        "Reserved": "Reserved",
+        "UnderMaintenance": "Maintenance"
+        },
+    "filter": {
+        "block": {
+            "label": "Block",
+            "placeholder": "Select a block"
+        }
+    }
+}

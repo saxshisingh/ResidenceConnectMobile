@@ -1,0 +1,105 @@
+{
+  "form": {
+    "fields": {
+      "owner": {
+        "label": "Owner",
+        "placeholder": "Select Owner",
+        "required": "Owner is required"
+      },
+      "vehicleNumber": {
+        "label": "Number Plate",
+        "placeholder": "Number Plate",
+        "required": "Number Plate is required"
+      },
+      "model": {
+        "label": "Model",
+        "placeholder": "Model",
+        "required": "Model is required"
+      },
+      "color": {
+        "label": "Color",
+        "placeholder": "Color",
+        "required": "Color is required"
+      },
+      "rcDocs": {
+        "label": "RC Docs (Aadhar/Passport)",
+        "placeholder": "RC Docs (Aadhar/Passport)",
+        "required": "RC Docs is required"
+      },
+      "vehicleType": {
+        "label": "Vehicle Type",
+        "placeholder": "Select Vehicle Type",
+        "required": "Type is required"
+      }
+    }
+  },
+  "add": {
+    "title": "Add Maintenance Request",
+    "successMessage": "Maintenance request added successfully",
+    "errorMessage": "Failed to add maintenance request",
+    "submit": "Save Maintenance Request"
+  },
+  "edit": {
+    "title": "Edit Maintenance Request",
+    "errorLoadMessage": "Failed to load maintenance request details",
+    "successMessage": "Maintenance request updated successfully",
+    "errorMessage": "Failed to update maintenance request",
+    "submit": "Update Maintenance Request"
+  },
+  "delete": {
+    "title": "Delete Maintenance Request",
+    "message": "Are you sure you want to delete this maintenance request?",
+    "successMessage": "Maintenance request deleted successfully",
+    "errorMessage": "Failed to delete maintenance request"
+  },
+  "view": {
+    "title": "Maintenance Request Details",
+    "loading": "Loading maintenance request details...",
+    "errorMessage": "Failed to load maintenance request details.",
+    "fields": {
+      "owner": "Owner",
+      "vehicleNumber": "Number Plate",
+      "numberPlate": "Number Plate",
+      "model": "Model",
+      "color": "Color",
+      "vehicleType": "Vehicle Type",
+      "occupancyStatus": "Occupancy Status",
+      "ownershipType": "Ownership Type"
+    }
+  },
+  "list": {
+    "title": "All Maintenance Requests",
+    "add": "Add Technician",
+    "columns": {
+      "requestId": "Request ID",
+      "category": "Category",
+      "resident": "Resident",
+      "unit": "Unit",
+      "issueSummary": "Issue Summary",
+      "createdAt": "Created On",
+      "status": "Status"
+    },
+    "loading": "Loading maintenance requests...",
+    "loadError": "Failed to load maintenance requests",
+    "filter": {
+      "serviceCategory": {
+        "label": "Service Category",
+        "placeholder": "Search by Service Category"
+      },
+      "status": {
+        "label": "Status",
+        "placeholder": "Search by Status"
+      },
+      "block": {
+        "label": "Block",
+        "placeholder": "Search by Block"
+      }
+    }
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "rejected": "Rejected"
+  }
+}

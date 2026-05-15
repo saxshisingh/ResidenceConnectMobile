@@ -1,0 +1,62 @@
+{
+    "accessLogs": {
+        "title": "Access Logs",
+        "add": "Add Device",
+        "elevator": "Elevator Logs",
+        "columns": {
+            "residentName": "Resident Name",
+            "unit": "Unit",
+            "device": "Device",
+            "actionResult": "Action Result",
+            "time": "Time",
+            "accessType": "Access Type"
+        },
+        "loading": "Loading access logs...",
+        "loadError": "Failed to load access logs.",
+        "filter": {
+            "resident": {
+                "label": "Resident",
+                "placeholder": "Search by Resident"
+            },
+            "device": {
+                "label": "Device",
+                "placeholder": "Search by Device"
+            },
+            "result": {
+                "label": "Access Result",
+                "placeholder": "Search by Access Result",
+                "options": {
+                    "success": "Success",
+                    "failed": "Failed",
+                    "timeout": "Timeout"
+                }
+            }
+        },
+        "accessResults": {
+            "success": "Success",
+            "failed": "Failed",
+            "timeout": "Timeout"
+        }
+    },
+    "elevatorLogs": {
+        "title": "Elevator Usage Logs",
+        "add": "Add Device",
+        "export": "Export CSV",
+        "elevator": "Elevator Logs",
+        "columns": {
+            "resident": "Resident",
+            "fromFloor": "From Floor",
+            "toFloor": "To Floor",
+            "time": "Time",
+            "accessType": "Access Type"
+        },
+        "loading": "Loading elevator logs...",
+        "loadError": "Failed to load elevator logs.",
+        "filter": {
+            "resident": {
+                "label": "Resident",
+                "placeholder": "Search by Resident"
+            }
+        }
+    }
+}

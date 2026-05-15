@@ -1,0 +1,107 @@
+{
+    "form": {
+        "fields": {
+            "unit": {
+                "label": "Numéro d’appartement",
+                "placeholder": "Entrez le numéro d’appartement",
+                "required": "Le numéro d’appartement est requis"
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Sélectionnez le bloc",
+                "required": "Le bloc est requis"
+            },
+            "floorNumber": {
+                "label": "Numéro d’étage",
+                "placeholder": "Sélectionnez l’étage",
+                "required": "L’étage est requis"
+            },
+            "apartmentType": {
+                "label": "Type d’appartement",
+                "placeholder": "Sélectionnez le type d’appartement",
+                "required": "Le type d’appartement est requis"
+            },
+            "occupancyStatus": {
+                "label": "Statut d’occupation",
+                "placeholder": "Sélectionnez le statut d’occupation",
+                "required": "Le statut d’occupation est requis"
+            },
+            "ownershipType": {
+                "label": "Type de propriété",
+                "placeholder": "Sélectionnez le type de propriété",
+                "required": "Le type de propriété est requis"
+            }
+        }
+    },
+    "occupancyModal": {
+      "unit": "Unité",
+      "floor": "Étage",
+      "status": {
+        "occupied": "Occupée",
+        "vacant": "Vacante"
+      },
+      "fields": {
+        "resident": "Résident",
+        "vehicles": "Véhicules",
+        "parkingSlot": "Place de parking",
+        "location": "Emplacement"
+      }
+    },
+    "add": {
+        "title": "Ajouter un appartement",
+        "successMessage": "Appartement ajouté avec succès",
+        "errorMessage": "Échec de l’ajout de l’appartement",
+        "submit": "Enregistrer l’appartement"
+    },
+    "edit": {
+        "title": "Modifier l’appartement",
+        "errorLoadMessage": "Échec du chargement des détails de l’appartement",
+        "successMessage": "Appartement mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de l’appartement",
+        "submit": "Mettre à jour l’appartement"
+    },
+    "delete": {
+        "title": "Supprimer l’appartement",
+        "message": "Êtes-vous sûr de vouloir supprimer cet appartement ?",
+        "successMessage": "Appartement supprimé avec succès",
+        "errorMessage": "Échec de la suppression de l’appartement"
+    },
+    "view": {
+        "title": "Détails de l’appartement",
+        "loading": "Chargement des détails de l’appartement...",
+        "errorMessage": "Échec du chargement des détails de l’appartement.",
+        "fields": {
+            "residence": "Résidence",
+            "unit": "Numéro d’appartement",
+            "apartmentType": "Type d’appartement",
+            "floorNumber": "Numéro d’étage",
+            "block": "Bloc",
+            "occupancyStatus": "Statut d’occupation",
+            "ownershipType": "Type de propriété"
+        }
+    },
+    "list": {
+        "title": "Tous les appartements",
+        "add": "Ajouter un appartement",
+        "columns": {
+            "unit": "Numéro d’appartement",
+            "floorNumber": "Numéro d’étage",
+            "block": "Bloc",
+            "apartmentType": "Type d’appartement",
+            "occupancyStatus": "Statut d’occupation",
+            "ownershipType": "Type de propriété"
+        },
+        "loading": "Chargement des appartements...",
+        "loadError": "Échec du chargement des appartements",
+        "filter": {
+            "floorNumber": {
+                "label": "Numéro d’étage",
+                "placeholder": "Rechercher par numéro d’étage"
+            },
+            "blockName": {
+                "label": "Bloc",
+                "placeholder": "Rechercher par bloc"
+            }
+        }
+    }
+}

@@ -1,0 +1,72 @@
+{
+    "form": {
+        "fields": {
+            "residence": {
+                "label": "Résidence",
+                "placeholder": "Sélectionnez la résidence",
+                "required": "La résidence est requise"
+            },
+            "block": {
+                "label": "Nom du Bloc",
+                "placeholder": "Nom du Bloc",
+                "required": "Le nom du bloc est requis"
+            },
+            "floors": {
+                "label": "Nombre d'étages",
+                "placeholder": "Nombre d'étages",
+                "required": "Le nombre d'étages est requis"
+            }
+        }
+    },
+    "add": {
+        "title": "Ajouter un Bloc",
+        "successMessage": "Bloc ajouté avec succès",
+        "errorMessage": "Échec de l'ajout du bloc",
+        "submit": "Enregistrer le Bloc"
+    },
+    "edit": {
+        "title": "Modifier le Bloc",
+        "errorLoadMessage": "Échec du chargement des détails du bloc",
+        "successMessage": "Bloc mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du bloc",
+        "submit": "Mettre à jour le Bloc"
+    },
+    "delete": {
+        "title": "Supprimer le Bloc",
+        "message": "Êtes-vous sûr de vouloir supprimer ce bloc ?",
+        "successMessage": "Bloc supprimé avec succès",
+        "errorMessage": "Échec de la suppression du bloc"
+    },
+    "view": {
+        "title": "Détails du Bloc",
+        "loading": "Chargement des détails du bloc...",
+        "errorMessage": "Échec du chargement des détails du bloc.",
+        "fields": {
+            "blockName": "Nom du Bloc",
+            "residence": "Résidence",
+            "floors": "Nombre d'étages",
+            "status": "Statut"
+        }
+    },
+    "list": {
+        "title": "Tous les Blocs",
+        "add": "Ajouter un Bloc",
+        "columns": {
+            "blockName": "Nom du Bloc",
+            "floors": "Nombre d'étages",
+            "residenceName": "Nom de la Résidence"
+        },
+        "loading": "Chargement des blocs...",
+        "loadError": "Échec du chargement des blocs.",
+        "filter": {
+            "buildingName": {
+                "label": "Nom du Bâtiment",
+                "placeholder": "Rechercher par nom du bâtiment"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Rechercher par statut"
+            }
+        }
+    }
+}

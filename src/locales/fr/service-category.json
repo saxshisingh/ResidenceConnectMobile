@@ -1,0 +1,68 @@
+{
+    "form": {
+        "fields": {
+            "category": {
+                "label": "Nom de la catégorie",
+                "placeholder": "Nom de la catégorie",
+                "required": "La catégorie est requise"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Description (optionnelle)",
+                "required": "La description est requise"
+            }
+        },
+        "sectionTitle": "🗂 Détails de la catégorie de service"
+    },
+    "add": {
+        "title": "Ajouter une catégorie de service",
+        "successMessage": "Catégorie de service ajoutée avec succès",
+        "errorMessage": "Échec de l'ajout de la catégorie de service",
+        "submit": "Enregistrer la catégorie"
+    },
+    "edit": {
+        "title": "Modifier la catégorie de service",
+        "errorLoadMessage": "Échec du chargement des détails de la catégorie de service",
+        "successMessage": "Catégorie de service mise à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de la catégorie de service",
+        "submit": "Mettre à jour la catégorie"
+    },
+    "delete": {
+        "title": "Supprimer la catégorie de service",
+        "message": "Êtes-vous sûr de vouloir supprimer cette catégorie de service ?",
+        "successMessage": "Catégorie de service supprimée avec succès",
+        "errorMessage": "Échec de la suppression de la catégorie de service",
+        "invalidRecord": "Enregistrement de catégorie de service invalide"
+    },
+    "view": {
+        "title": "Détails de la catégorie de service",
+        "loading": "Chargement des détails de la catégorie de service...",
+        "errorMessage": "Échec du chargement des détails de la catégorie de service.",
+        "fields": {
+            "residence": "Résidence",
+            "description": "Description",
+            "status": "Statut"
+        }
+    },
+    "list": {
+        "title": "Catégories de service",
+        "add": "Ajouter une catégorie",
+        "columns": {
+            "category": "Nom de la catégorie",
+            "description": "Description",
+            "status": "Statut"
+        },
+        "loading": "Chargement des catégories de service...",
+        "loadError": "Échec du chargement des catégories de service",
+        "filter": {
+            "category": {
+                "label": "Nom de la catégorie",
+                "placeholder": "Rechercher par nom de catégorie"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Rechercher par statut"
+            }
+        }
+    }
+}

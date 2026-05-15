@@ -1,0 +1,89 @@
+{
+    "common": {
+        "export": "Exporter",
+        "loading": "Chargement…",
+        "loadError": "Échec du chargement des données"
+    },
+    "residents": {
+        "title": "Rapports des résidents",
+        "loadError": "Échec du chargement du rapport des résidents.",
+        "metrics": {
+            "totalResidents": "Nombre total de résidents",
+            "activeResidents": "Résidents actifs",
+            "inactiveResidents": "Résidents inactifs",
+            "sosAllowed": "SOS autorisé"
+        },
+        "charts": {
+            "monthlyTrend": "Tendance mensuelle des résidents",
+            "genderDistribution": "Répartition par genre",
+            "occupancyStatus": "Statut d'occupation"
+        },
+        "filter": {
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Sélectionner le bloc"
+            },
+            "timePeriod": {
+                "label": "Période",
+                "placeholder": "Sélectionner la période"
+            },
+            "status": {
+                "label": "Statut du résident",
+                "placeholder": "Sélectionner le statut"
+            }
+        }
+    },
+    "maintenance": {
+        "title": "Tableau de bord analytique de maintenance",
+        "metrics": {
+            "totalRequests": "Nombre total de demandes",
+            "avgResolution": "Résolution moyenne (heures)",
+            "pendingRequests": "Demandes en attente",
+            "closedRequests": "Demandes clôturées"
+        },
+        "charts": {
+            "byCategory": "Demandes par catégorie",
+            "status": "Statut des demandes",
+            "monthlyTrend": "Tendance mensuelle"
+        }
+    },
+    "accessLog": {
+        "title": "Rapports du journal d'accès",
+        "filters": {
+            "searchPlaceholder": "Rechercher..."
+        },
+        "metrics": {
+            "totalAccesses": "Accès totaux",
+            "doorAccesses": "Accès aux portes",
+            "elevatorAccesses": "Accès aux ascenseurs",
+            "visitorAccesses": "Accès visiteurs"
+        },
+        "charts": {
+            "monthlyTrend": "Tendance mensuelle",
+            "deviceSplit": "Répartition par appareil"
+        },
+        "columns": {
+            "device": "Appareil",
+            "type": "Type",
+            "resident": "Résident",
+            "floor": "Étage",
+            "mode": "Mode",
+            "action": "Action",
+            "time": "Heure"
+        },
+        "filter": {
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Sélectionner le bloc"
+            },
+            "paymentType": {
+                "label": "Type de paiement",
+                "placeholder": "Sélectionner le type de paiement"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Sélectionner le statut"
+            }
+        }
+    }
+}

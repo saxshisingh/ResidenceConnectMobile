@@ -1,0 +1,62 @@
+{
+    "accessLogs": {
+        "title": "سجلات الدخول",
+        "add": "إضافة جهاز",
+        "elevator": "سجلات المصعد",
+        "columns": {
+            "residentName": "اسم المقيم",
+            "unit": "الوحدة",
+            "device": "الجهاز",
+            "actionResult": "نتيجة العملية",
+            "time": "الوقت",
+            "accessType": "نوع الدخول"
+        },
+        "loading": "جارٍ تحميل سجلات الدخول...",
+        "loadError": "فشل في تحميل سجلات الدخول.",
+        "filter": {
+            "resident": {
+                "label": "المقيم",
+                "placeholder": "البحث باسم المقيم"
+            },
+            "device": {
+                "label": "الجهاز",
+                "placeholder": "البحث بالجهاز"
+            },
+            "result": {
+                "label": "نتيجة الدخول",
+                "placeholder": "البحث بنتيجة الدخول",
+                "options": {
+                    "success": "نجاح",
+                    "failed": "فشل",
+                    "timeout": "انتهاء المهلة"
+                }
+            }
+        },
+        "accessResults": {
+            "success": "نجاح",
+            "failed": "فشل",
+            "timeout": "انتهاء المهلة"
+        }
+    },
+    "elevatorLogs": {
+        "title": "سجلات استخدام المصعد",
+        "add": "إضافة جهاز",
+        "export": "تصدير CSV",
+        "elevator": "سجلات المصعد",
+        "columns": {
+            "resident": "المقيم",
+            "fromFloor": "من الطابق",
+            "toFloor": "إلى الطابق",
+            "time": "الوقت",
+            "accessType": "نوع الدخول"
+        },
+        "loading": "جارٍ تحميل سجلات المصعد...",
+        "loadError": "فشل في تحميل سجلات المصعد.",
+        "filter": {
+            "resident": {
+                "label": "المقيم",
+                "placeholder": "البحث باسم المقيم"
+            }
+        }
+    }
+}

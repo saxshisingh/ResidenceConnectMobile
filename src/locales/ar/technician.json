@@ -1,0 +1,153 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "الاسم الأول",
+                "placeholder": "الاسم الأول",
+                "required": "الاسم الأول مطلوب"
+            },
+            "lastName": {
+                "label": "اسم العائلة",
+                "placeholder": "اسم العائلة",
+                "required": "اسم العائلة مطلوب"
+            },
+            "gender": {
+                "label": "الجنس",
+                "placeholder": "اختر الجنس",
+                "required": "الجنس مطلوب",
+                "options": {
+                    "male": "ذكر",
+                    "female": "أنثى",
+                    "other": "أخرى"
+                }
+            },
+            "mobile": {
+                "label": "رقم الجوال",
+                "placeholder": "رقم الجوال",
+                "required": "رقم الجوال مطلوب"
+            },
+            "email": {
+                "label": "البريد الإلكتروني",
+                "placeholder": "البريد الإلكتروني",
+                "required": "البريد الإلكتروني مطلوب"
+            },
+            "alternateContact": {
+                "label": "جهة اتصال بديلة",
+                "placeholder": "جهة اتصال بديلة",
+                "required": "جهة الاتصال البديلة مطلوبة"
+            },
+            "serviceCategory": {
+                "label": "فئة الخدمة",
+                "placeholder": "اختر فئة الخدمة",
+                "required": "فئة الخدمة مطلوبة"
+            },
+            "experience": {
+                "label": "سنوات الخبرة",
+                "placeholder": "سنوات الخبرة",
+                "required": "الخبرة مطلوبة"
+            },
+            "skillLevel": {
+                "label": "مستوى المهارة",
+                "placeholder": "مستوى المهارة",
+                "required": "مستوى المهارة مطلوب"
+            },
+            "availability": {
+                "label": "حالة التوفر",
+                "placeholder": "حالة التوفر",
+                "required": "حالة التوفر مطلوبة"
+            },
+            "workingHours": {
+                "label": "ساعات العمل",
+                "placeholder": "مثال: 9 صباحًا - 5 مساءً",
+                "required": "ساعات العمل مطلوبة"
+            },
+            "govtIdProof": {
+                "label": "إثبات الهوية الحكومية",
+                "placeholder": "إثبات الهوية الحكومية",
+                "required": "إثبات الهوية الحكومية مطلوب"
+            },
+            "profilePhoto": {
+                "label": "الصورة الشخصية",
+                "placeholder": "الصورة الشخصية",
+                "required": "الصورة الشخصية مطلوبة"
+            }
+        },
+        "sections": {
+            "technicianDetails": "🧑‍🔧 تفاصيل الفني",
+            "professionalInfo": "🛠 المعلومات المهنية",
+            "documents": "📝 المستندات"
+        }
+    },
+    "add": {
+        "title": "إضافة فني",
+        "successMessage": "تمت إضافة الفني بنجاح",
+        "errorMessage": "فشل في إضافة الفني",
+        "submit": "حفظ الفني"
+    },
+    "edit": {
+        "title": "تعديل فني",
+        "errorLoadMessage": "فشل في تحميل تفاصيل الفني",
+        "successMessage": "تم تحديث الفني بنجاح",
+        "errorMessage": "فشل في تحديث الفني",
+        "submit": "تحديث الفني"
+    },
+    "delete": {
+        "title": "حذف فني",
+        "message": "هل أنت متأكد أنك تريد حذف هذا الفني؟",
+        "successMessage": "تم حذف الفني بنجاح",
+        "errorMessage": "فشل في حذف الفني",
+        "invalidRecord": "سجل فني غير صالح"
+    },
+    "view": {
+        "title": "تفاصيل الفني",
+        "loading": "جارٍ تحميل تفاصيل الفني...",
+        "errorMessage": "فشل في تحميل تفاصيل الفني.",
+        "technicianDetails": {
+            "title": "🧑‍🔧 معلومات الفني",
+            "firstName": "الاسم الأول",
+            "lastName": "اسم العائلة",
+            "gender": "الجنس",
+            "experience": "سنوات الخبرة",
+            "skill": "مستوى المهارة",
+            "availability": "حالة التوفر"
+        },
+        "serviceDetails": {
+            "title": "🛠 تفاصيل الخدمة",
+            "serviceCategory": "فئة الخدمة",
+            "workingHours": "ساعات العمل"
+        },
+        "documentDetails": {
+            "title": "📝 المستندات",
+            "govtId": "إثبات الهوية الحكومية",
+            "profilePhoto": "الصورة الشخصية"
+        }
+    },
+    "list": {
+        "title": "قائمة الفنيين",
+        "add": "إضافة فني",
+        "columns": {
+            "name": "اسم الفني",
+            "serviceCategory": "فئة الخدمة",
+            "mobileNumber": "رقم الجوال",
+            "skillLevel": "مستوى المهارة",
+            "availability": "التوفر",
+            "experience": "سنوات الخبرة"
+        },
+        "loading": "جارٍ تحميل الفنيين...",
+        "loadError": "فشل في تحميل الفنيين.",
+        "filter": {
+            "name": {
+                "label": "اسم الفني",
+                "placeholder": "البحث باسم الفني"
+            },
+            "availability": {
+                "label": "التوفر",
+                "placeholder": "البحث حسب التوفر"
+            },
+            "serviceCategory": {
+                "label": "فئة الخدمة",
+                "placeholder": "البحث حسب فئة الخدمة"
+            }
+        }
+    }
+}

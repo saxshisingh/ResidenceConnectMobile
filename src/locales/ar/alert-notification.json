@@ -1,0 +1,158 @@
+{
+  "form": {
+    "fields": {
+      "block": {
+        "label": "اسم المبنى",
+        "placeholder": "اسم المبنى",
+        "required": "اسم المبنى مطلوب"
+      },
+      "allBlocks": {
+        "label": "جميع المباني",
+        "placeholder": "جميع المباني",
+        "required": "حقل جميع المباني مطلوب",
+        "values": {
+          "true": "نعم",
+          "false": "لا"
+        }
+      },
+      "urgency": {
+        "label": "مستوى أهمية التنبيه",
+        "placeholder": "مستوى أهمية التنبيه",
+        "required": "مستوى أهمية التنبيه مطلوب"
+      },
+      "title": {
+        "label": "عنوان التنبيه",
+        "placeholder": "العنوان",
+        "required": "عنوان التنبيه مطلوب"
+      },
+      "message": {
+        "label": "رسالة التنبيه",
+        "placeholder": "محتوى الإشعار",
+        "required": "الرسالة مطلوبة"
+      },
+      "language": {
+        "label": "اللغة",
+        "placeholder": "اختر اللغة",
+        "required": "اللغة مطلوبة"
+      },
+      "media": {
+        "label": "رفع وسائط (PNG, JPEG)",
+        "placeholder": "رفع وسائط",
+        "required": "الوسائط مطلوبة"
+      },
+      "location": {
+        "label": "الموقع",
+        "placeholder": "الموقع",
+        "required": "الموقع مطلوب"
+      }
+    }
+  },
+  "add": {
+    "title": "إرسال إشعار تنبيه",
+    "successMessage": "تم إرسال إشعار التنبيه بنجاح.",
+    "errorMessage": "فشل في إرسال إشعار التنبيه.",
+    "submit": "إرسال التنبيه"
+  },
+  "edit": {
+    "title": "تعديل إشعار تنبيه",
+    "errorLoadMessage": "فشل في تحميل تفاصيل إشعار التنبيه.",
+    "successMessage": "تم تحديث إشعار التنبيه بنجاح.",
+    "errorMessage": "فشل في تحديث إشعار التنبيه.",
+    "submit": "تحديث التنبيه"
+  },
+  "delete": {
+    "title": "حذف إشعار تنبيه",
+    "message": "هل أنت متأكد أنك تريد حذف إشعار التنبيه هذا؟",
+    "successMessage": "تم حذف إشعار التنبيه بنجاح.",
+    "errorMessage": "فشل في حذف إشعار التنبيه."
+  },
+  "view": {
+    "title": "تفاصيل التنبيه",
+    "download": "تنزيل",
+    "preview": "معاينة",
+    "loading": "جارٍ تحميل تفاصيل إشعار التنبيه...",
+    "errorMessage": "فشل في تحميل تفاصيل إشعار التنبيه.",
+    "fields": {
+      "alertId": "معرّف التنبيه",
+      "title": "عنوان التنبيه",
+      "sentOn": "تاريخ الإرسال",
+      "sentBy": "تم الإرسال بواسطة",
+      "urgency": "مستوى الأهمية",
+      "targetBlocks": "المباني المستهدفة",
+      "totalRecipients": "إجمالي المستلمين",
+      "acknowledgement": "الإقرار بالاستلام",
+      "messageBody": "محتوى الرسالة",
+      "attachment": {
+        "label": "المرفق",
+        "noAttachment": "لا توجد مرفقات"
+      }
+    }
+  },
+  "list": {
+    "title": "سجلات التنبيهات",
+    "add": "إنشاء تنبيه",
+    "columns": {
+      "title": "العنوان",
+      "urgencyLevel": "مستوى الأهمية",
+      "blockName": "المبنى",
+      "unit": "الوحدة",
+      "sentOn": "تاريخ الإرسال",
+      "delivered": "تم التسليم"
+    },
+    "loading": "جارٍ تحميل الإشعارات...",
+    "loadError": "فشل في تحميل الإشعارات.",
+    "filter": {
+      "title": {
+        "label": "العنوان",
+        "placeholder": "البحث بالعنوان"
+      },
+      "urgency": {
+        "label": "مستوى الأهمية",
+        "placeholder": "البحث بمستوى الأهمية"
+      },
+      "status": {
+        "label": "الحالة",
+        "placeholder": "اختر الحالة"
+      }
+    }
+  },
+  "mobile": {
+    "system": {
+      "title": "نظام التنبيهات",
+      "emergencyTitle": "للاستخدام في حالات الطوارئ فقط",
+      "emergencyText": "إطلاق التنبيه سيقوم بإخطار جميع السكان المعنيين وفريق الإدارة فورًا.",
+      "alertMyBlock": "تنبيه البلوك الخاص بي",
+      "alertEntireBuilding": "تنبيه المبنى بالكامل",
+      "infoIntro": "يرجى تشغيل التنبيهات فقط للحالات الطارئة الحقيقية مثل:",
+      "bulletFire": "حريق",
+      "bulletMedical": "حالة طبية طارئة",
+      "bulletSuspicious": "نشاط مريب",
+      "bulletSecurity": "تهديد أمني",
+      "misuseWarning": "إساءة استخدام هذه الميزة قد تؤدي إلى عقوبات.",
+      "pastAlerts": "التنبيهات السابقة",
+      "viewAll": "عرض الكل",
+      "noAlertsYet": "لا توجد تنبيهات بعد",
+      "noAlertsYetDesc": "ستظهر التنبيهات الطارئة الأخيرة هنا.",
+      "allAlertsTitle": "كل التنبيهات",
+      "loadingAlerts": "جارٍ تحميل التنبيهات...",
+      "noAlertsFound": "لم يتم العثور على تنبيهات",
+      "noAlertsFoundDesc": "ستظهر جميع التنبيهات الطارئة هنا."
+    },
+    "block": {
+      "alertType": "نوع التنبيه",
+      "alertTypePlaceholder": "مثل: حريق طارئ، طوارئ طبية",
+      "description": "الوصف",
+      "descriptionPlaceholder": "صف حالة الطوارئ...",
+      "yourLocation": "موقعك",
+      "addPhoto": "إضافة صورة (اختياري)",
+      "tapToUpload": "اضغط لرفع صورة",
+      "userNotFound": "لم يتم العثور على معلومات المستخدم",
+      "successTitle": "نجاح",
+      "successBuilding": "تم إرسال التنبيه بنجاح إلى المبنى بالكامل",
+      "successBlock": "تم إرسال التنبيه بنجاح إلى البلوك الخاص بك",
+      "floor": "الطابق",
+      "apartmentShort": "شقة",
+      "defaultAlertTitle": "حريق طارئ"
+    }
+  }
+}

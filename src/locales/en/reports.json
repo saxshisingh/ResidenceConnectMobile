@@ -1,0 +1,89 @@
+{
+    "common": {
+        "export": "Export",
+        "loading": "Loading…",
+        "loadError": "Failed to load data"
+    },
+    "residents": {
+        "title": "Resident Reports",
+        "loadError": "Failed to load resident report.",
+        "metrics": {
+            "totalResidents": "Total Residents",
+            "activeResidents": "Active Residents",
+            "inactiveResidents": "Inactive Residents",
+            "sosAllowed": "SOS Allowed"
+        },
+        "charts": {
+            "monthlyTrend": "Monthly Resident Trend",
+            "genderDistribution": "Gender Distribution",
+            "occupancyStatus": "Occupancy Status"
+        },
+        "filter": {
+            "block": {
+                "label": "Block",
+                "placeholder": "Select Block"
+            },
+            "timePeriod": {
+                "label": "Time Period",
+                "placeholder": "Select Time Period"
+            },
+            "status": {
+                "label": "Resident Status",
+                "placeholder": "Select Status"
+            }
+        }
+    },
+    "maintenance": {
+        "title": "Maintenance Analytics Dashboard",
+        "metrics": {
+            "totalRequests": "Total Requests",
+            "avgResolution": "Avg Resolution (hrs)",
+            "pendingRequests": "Pending Requests",
+            "closedRequests": "Closed Requests"
+        },
+        "charts": {
+            "byCategory": "Requests by Category",
+            "status": "Request Status",
+            "monthlyTrend": "Monthly Trend"
+        }
+    },
+    "accessLog": {
+        "title": "Access Log Reports",
+        "filters": {
+            "searchPlaceholder": "Search..."
+        },
+        "metrics": {
+            "totalAccesses": "Total Accesses",
+            "doorAccesses": "Door Accesses",
+            "elevatorAccesses": "Elevator Accesses",
+            "visitorAccesses": "Visitor Accesses"
+        },
+        "charts": {
+            "monthlyTrend": "Monthly Trend",
+            "deviceSplit": "Device Split"
+        },
+        "columns": {
+            "device": "Device",
+            "type": "Type",
+            "resident": "Resident",
+            "floor": "Floor",
+            "mode": "Mode",
+            "action": "Action",
+            "time": "Time"
+        },
+        "filter": {
+            "block": {
+                "label": "Block",
+                "placeholder": "Select Block"
+            },
+            "paymentType": {
+                "label": "Payment Type",
+                "placeholder": "Select Payment Type"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Select Status"
+            }
+        }
+    }
+}

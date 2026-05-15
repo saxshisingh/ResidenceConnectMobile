@@ -1,0 +1,213 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "Prénom",
+                "placeholder": "Prénom",
+                "required": "Le prénom est requis"
+            },
+            "lastName": {
+                "label": "Nom de famille",
+                "placeholder": "Nom de famille",
+                "required": "Le nom de famille est requis"
+            },
+            "gender": {
+                "label": "Genre",
+                "placeholder": "Sélectionner le genre",
+                "required": "Le genre est requis",
+                "options": {
+                    "male": "Homme",
+                    "female": "Femme",
+                    "other": "Autre"
+                }
+            },
+            "dateOfBirth": {
+                "label": "Date de naissance",
+                "placeholder": "Date de naissance",
+                "required": "La date de naissance est requise"
+            },
+            "petOwnership": {
+                "label": "Possession d’animal",
+                "placeholder": "Sélectionner",
+                "required": "La possession d’animal est requise",
+                "options": {
+                    "true": "Oui",
+                    "false": "Non"
+                }
+            },
+            "maximumAllowedResidents": {
+                "label": "Nombre maximum de résidents autorisés",
+                "placeholder": "Nombre maximum de résidents autorisés",
+                "required": "Le nombre maximum de résidents est requis",
+                "pattern": "Seuls les nombres positifs sont autorisés",
+                "validate": "Doit être supérieur à 0"
+            },
+            "mobileNumber": {
+                "label": "Numéro de mobile",
+                "placeholder": "Numéro de mobile",
+                "required": "Le numéro de mobile est requis",
+                "pattern": "Veuillez saisir un numéro de mobile algérien valide",
+                "validate": "Le numéro de mobile doit être un numéro algérien valide"
+            },
+            "email": {
+                "label": "Adresse e-mail",
+                "placeholder": "E-mail",
+                "required": "L'adresse e-mail est requise"
+            },
+            "block": {
+                "label": "Bloc / Tour",
+                "placeholder": "Sélectionner le bloc",
+                "required": "Le bloc est requis"
+            },
+            "floor": {
+                "label": "Étage",
+                "placeholder": "Sélectionner l’étage",
+                "required": "L’étage est requis"
+            },
+            "unit": {
+                "label": "Unité / N° d’appartement",
+                "placeholder": "Sélectionner l’unité / N° d’appartement",
+                "required": "L’unité / N° d’appartement est requise"
+            },
+            "occupancyStatus": {
+                "label": "Statut d’occupation",
+                "placeholder": "Sélectionner le statut d’occupation",
+                "required": "Le statut d’occupation est requis",
+                "options": {
+                    "occupied": "Occupé",
+                    "available": "Disponible",
+                    "reserved": "Réservé",
+                    "maintenance": "En maintenance"
+                }
+            },
+            "waterMeterNumber": {
+                "label": "N° compteur d’eau",
+                "placeholder": "N° compteur d’eau",
+                "required": "Le numéro de compteur d’eau est requis"
+            },
+            "gasMeterNumber": {
+                "label": "N° compteur de gaz",
+                "placeholder": "N° compteur de gaz",
+                "required": "Le numéro de compteur de gaz est requis"
+            },
+            "electricityMeterNumber": {
+                "label": "N° compteur d’électricité",
+                "placeholder": "N° compteur d’électricité",
+                "required": "Le numéro de compteur d’électricité est requis"
+            },
+            "govtIdProofFile": {
+                "label": "Pièce d'identité officielle (Aadhar/Passeport)",
+                "placeholder": "Téléverser la pièce d'identité",
+                "required": "La pièce d'identité est requise"
+            },
+            "ownershipProofFile": {
+                "label": "Contrat de location / Preuve de propriété",
+                "placeholder": "Téléverser le contrat / preuve",
+                "required": "La preuve de propriété est requise"
+            },
+            "profilePhotoFile": {
+                "label": "Photo de profil",
+                "placeholder": "Téléverser la photo de profil",
+                "required": "La photo de profil est requise"
+            }
+        },
+        "sections": {
+            "basicInfo": "🧍 Informations de base",
+            "contactInfo": "📞 Informations de contact",
+            "apartmentInfo": "🏠 Affectation de l’appartement / unité",
+            "documentUpload": "📝 Téléversement des documents"
+        }
+    },
+    "add": {
+        "title": "Ajouter un nouveau résident",
+        "successMessage": "Résident ajouté avec succès",
+        "errorMessage": "Échec de l'ajout du résident",
+        "submit": "Enregistrer le résident"
+    },
+    "edit": {
+        "title": "Modifier le résident",
+        "errorLoadMessage": "Échec du chargement des détails du résident",
+        "successMessage": "Résident mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du résident",
+        "submit": "Mettre à jour le résident"
+    },
+    "delete": {
+        "title": "Supprimer le résident",
+        "message": "Êtes-vous sûr de vouloir supprimer ce résident ?",
+        "successMessage": "Résident supprimé avec succès",
+        "errorMessage": "Échec de la suppression du résident"
+    },
+    "view": {
+        "title": "Détails du résident",
+        "loading": "Chargement des détails du résident...",
+        "errorMessage": "Échec du chargement des détails du résident.",
+        "apartmentDetails": {
+            "title": "🏠 Affectation de l’appartement / unité",
+            "block": "Bloc/Tour",
+            "unit": "Unité/N° d’appartement",
+            "floor": "Étage",
+            "occupancyStatus": "Statut d’occupation"
+        },
+        "documentUpload": {
+            "title": "📝 Téléversement des documents",
+            "govtIdProof": "Pièce d'identité officielle (Aadhar/Passeport)",
+            "rentalAgreement": "Contrat de location / Preuve de propriété",
+            "profilePhoto": "Photo de profil",
+            "fileTypes": "Types de fichiers acceptés : PDF, JPG, PNG",
+            "maxSize": "Taille maximale : 5 Mo"
+        },
+        "parkingDetails": {
+            "title": "🅿️ Détails du parking et des véhicules",
+            "parkingSlot": "Place de parking",
+            "registeredVehicles": "Véhicules enregistrés",
+            "view": "Voir"
+        },
+        "accessPermissions": {
+            "title": "🔐 Permissions d’accès (TTLock)",
+            "manage": "Gérer les permissions",
+            "doorAccess": "Accès aux portes",
+            "visitorAccess": "Accès visiteurs",
+            "amenitiesAccess": "Accès aux commodités"
+        },
+        "familyMembers": {
+            "title": "👨‍👩‍👧 Membres de la famille",
+            "manage": "Gérer les membres",
+            "noMembers": "Aucun membre de la famille trouvé."
+        },
+        "utilityDetails": {
+            "title": "Détails des services publics et du foyer",
+            "water": "N° compteur d’eau",
+            "gas": "N° compteur de gaz",
+            "electricity": "N° compteur d’électricité",
+            "petOwnership": "Possession d’animal"
+        }
+    },
+    "list": {
+        "title": "Liste des résidents",
+        "add": "Ajouter un nouveau résident",
+        "columns": {
+            "profile": "Profil",
+            "owner": "Propriétaire",
+            "phone": "Téléphone",
+            "block": "Bloc",
+            "unit": "Unité",
+            "status": "Statut"
+        },
+        "loading": "Chargement des résidents...",
+        "loadError": "Échec du chargement des résidents",
+        "filter": {
+            "name": {
+                "label": "Nom",
+                "placeholder": "Rechercher par nom"
+            },
+            "blockName": {
+                "label": "Bloc",
+                "placeholder": "Rechercher par bloc"
+            },
+            "floor": {
+                "label": "Étage",
+                "placeholder": "Rechercher par étage"
+            }
+        }
+    }
+}

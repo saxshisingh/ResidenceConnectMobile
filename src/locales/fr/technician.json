@@ -1,0 +1,153 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "Prénom",
+                "placeholder": "Prénom",
+                "required": "Le prénom est requis"
+            },
+            "lastName": {
+                "label": "Nom de famille",
+                "placeholder": "Nom de famille",
+                "required": "Le nom de famille est requis"
+            },
+            "gender": {
+                "label": "Genre",
+                "placeholder": "Sélectionnez le genre",
+                "required": "Le genre est requis",
+                "options": {
+                    "male": "Homme",
+                    "female": "Femme",
+                    "other": "Autre"
+                }
+            },
+            "mobile": {
+                "label": "Numéro de mobile",
+                "placeholder": "Numéro de mobile",
+                "required": "Le numéro de mobile est requis"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "L'email est requis"
+            },
+            "alternateContact": {
+                "label": "Contact alternatif",
+                "placeholder": "Contact alternatif",
+                "required": "Le contact alternatif est requis"
+            },
+            "serviceCategory": {
+                "label": "Catégorie de service",
+                "placeholder": "Sélectionnez la catégorie de service",
+                "required": "La catégorie de service est requise"
+            },
+            "experience": {
+                "label": "Expérience (années)",
+                "placeholder": "Expérience (années)",
+                "required": "L'expérience est requise"
+            },
+            "skillLevel": {
+                "label": "Niveau de compétence",
+                "placeholder": "Niveau de compétence",
+                "required": "Le niveau de compétence est requis"
+            },
+            "availability": {
+                "label": "Disponibilité",
+                "placeholder": "État de disponibilité",
+                "required": "La disponibilité est requise"
+            },
+            "workingHours": {
+                "label": "Heures de travail",
+                "placeholder": "ex : 9h - 17h",
+                "required": "Les heures de travail sont requises"
+            },
+            "govtIdProof": {
+                "label": "Pièce d'identité gouvernementale",
+                "placeholder": "Pièce d'identité gouvernementale",
+                "required": "La pièce d'identité est requise"
+            },
+            "profilePhoto": {
+                "label": "Photo de profil",
+                "placeholder": "Photo de profil",
+                "required": "La photo de profil est requise"
+            }
+        },
+        "sections": {
+            "technicianDetails": "🧑‍🔧 Détails du technicien",
+            "professionalInfo": "🛠 Informations professionnelles",
+            "documents": "📝 Documents"
+        }
+    },
+    "add": {
+        "title": "Ajouter un technicien",
+        "successMessage": "Technicien ajouté avec succès",
+        "errorMessage": "Échec de l'ajout du technicien",
+        "submit": "Enregistrer le technicien"
+    },
+    "edit": {
+        "title": "Modifier le technicien",
+        "errorLoadMessage": "Échec du chargement des détails du technicien",
+        "successMessage": "Technicien mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du technicien",
+        "submit": "Mettre à jour le technicien"
+    },
+    "delete": {
+        "title": "Supprimer le technicien",
+        "message": "Êtes-vous sûr de vouloir supprimer ce technicien ?",
+        "successMessage": "Technicien supprimé avec succès",
+        "errorMessage": "Échec de la suppression du technicien",
+        "invalidRecord": "Enregistrement du technicien invalide"
+    },
+    "view": {
+        "title": "Détails du technicien",
+        "loading": "Chargement des détails du technicien...",
+        "errorMessage": "Échec du chargement des détails du technicien.",
+        "technicianDetails": {
+            "title": "🧑‍🔧 Informations sur le technicien",
+            "firstName": "Prénom",
+            "lastName": "Nom de famille",
+            "gender": "Genre",
+            "experience": "Expérience (années)",
+            "skill": "Niveau de compétence",
+            "availability": "État de disponibilité"
+        },
+        "serviceDetails": {
+            "title": "🛠️ Détails du service",
+            "serviceCategory": "Catégorie de service",
+            "workingHours": "Heures de travail"
+        },
+        "documentDetails": {
+            "title": "📝 Documents",
+            "govtId": "Pièce d'identité gouvernementale",
+            "profilePhoto": "Photo de profil"
+        }
+    },
+    "list": {
+        "title": "Liste des techniciens",
+        "add": "Ajouter un technicien",
+        "columns": {
+            "name": "Nom du technicien",
+            "serviceCategory": "Catégorie de service",
+            "mobileNumber": "Numéro de mobile",
+            "skillLevel": "Niveau de compétence",
+            "availability": "Disponibilité",
+            "experience": "Expérience (années)"
+        },
+        "loading": "Chargement des techniciens...",
+        "loadError": "Échec du chargement des techniciens.",
+        "filter": {
+            "name": {
+                "label": "Nom du technicien",
+                "placeholder": "Rechercher par nom du technicien"
+            },
+            "availability": {
+                "label": "Disponibilité",
+                "placeholder": "Rechercher par disponibilité"
+            },
+            "serviceCategory": {
+                "label": "Catégorie de service",
+                "placeholder": "Rechercher par catégorie de service"
+            }
+        }
+    }
+}

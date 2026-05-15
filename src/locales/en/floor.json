@@ -1,0 +1,81 @@
+{
+    "form": {
+        "fields": {
+            "residence": {
+                "label": "Residence",
+                "placeholder": "Select Residence",
+                "required": "Residence is required"
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Select Block",
+                "required": "Block is required"
+            },
+            "floor": {
+                "label": "Floor Number",
+                "placeholder": "Floor Number",
+                "required": "Floor Number is required",
+                "pattern": "Enter a valid floor number",
+                "validate": "Must be greater than 0"
+            },
+            "apartments": {
+                "label": "No of Apartments",
+                "placeholder": "Number of Apartments",
+                "required": "Number of Apartments is required",
+                "pattern": "Enter a valid number of apartments",
+                "validate": "Must be greater than 0"
+            }
+        }
+    },
+    "add": {
+        "title": "Add Floor",
+        "successMessage": "Floor added successfully",
+        "errorMessage": "Failed to add floor",
+        "submit": "Save Floor"
+    },
+    "edit": {
+        "title": "Edit Floor",
+        "errorLoadMessage": "Failed to load floor details",
+        "successMessage": "Floor updated successfully",
+        "errorMessage": "Failed to update floor",
+        "submit": "Update Floor"
+    },
+    "delete": {
+        "title": "Delete Floor",
+        "message": "Are you sure you want to delete this floor?",
+        "successMessage": "Floor deleted successfully",
+        "errorMessage": "Failed to delete floor"
+    },
+    "view": {
+        "title": "Floor Details",
+        "loading": "Loading floor details...",
+        "errorMessage": "Failed to load floor details.",
+        "fields": {
+            "residence": "Residence Name",
+            "block": "Block",
+            "floor": "Floor Number"
+        }
+    },
+    "list": {
+        "title": "All Floors",
+        "add": "Add Floor",
+        "columns": {
+            "residence": "Residence Name",
+            "block": "Block",
+            "floor": "Floor Number",
+            "apartments": "No of Apartments"
+        },
+        "loading": "Loading floors...",
+        "loadError": "Failed to load floors.",
+        "filter": {
+            "floor": {
+                "label": "Floor Number",
+                "placeholder": "Search by Floor Number"
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Search by Block"
+            }
+        }
+    }
+}

@@ -1,0 +1,120 @@
+{
+    "form": {
+        "fields": {
+            "fullName": {
+                "label": "Full Name",
+                "placeholder": "Full Name",
+                "required": "Full Name is required"
+            },
+            "phoneNumber": {
+                "label": "Mobile Number",
+                "placeholder": "Mobile Number",
+                "required": "Mobile Number is required",
+                "pattern": "Enter a valid Algerian phone number (local or international)"
+            },
+            "emergencyContact": {
+                "label": "Emergency Contact",
+                "placeholder": "Emergency Contact",
+                "required": "Emergency Contact is required"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "Email is required"
+            },
+            "age": {
+                "label": "Age",
+                "placeholder": "Age",
+                "required": "Age is required",
+                "pattern": "Enter a valid age"
+            },
+            "shiftTimings": {
+                "label": "Shift Timings",
+                "placeholder": "Select Shift Timings",
+                "required": "Shift Timings is required"
+            },
+            "profilePhoto": {
+                "label": "Profile Photo",
+                "placeholder": "Profile Photo",
+                "required": "Profile Photo is required"
+            },
+            "residence": {
+                "label": "Residence",
+                "placeholder": "Select Residence",
+                "required": "Residence is required"
+            },
+            "assignBlocks": {
+                "label": "🏢 Assign Blocks",
+                "placeholder": "Select Assigned Blocks",
+                "required": "Assigned Blocks is required"
+            }
+        }
+    },
+    "add": {
+        "title": "Add Security Staff",
+        "successMessage": "Security staff added successfully",
+        "errorMessage": "Failed to add security staff",
+        "submit": "Save Staff",
+        "sectionTitle": "🛡 Security Staff Details"
+    },
+    "edit": {
+        "title": "Edit Security Staff",
+        "errorLoadMessage": "Failed to load security staff details",
+        "successMessage": "Security staff updated successfully",
+        "errorMessage": "Failed to update security staff",
+        "submit": "Update Staff",
+        "sectionTitle": "🛡 Security Staff Details"
+    },
+    "delete": {
+        "title": "Delete Security Staff",
+        "message": "Are you sure you want to delete this security staff?",
+        "successMessage": "Security staff deleted successfully",
+        "errorMessage": "Failed to delete security staff"
+    },
+    "view": {
+        "title": "Security Staff Details",
+        "sectionTitle": "🛡 Security Staff Information",
+        "loading": "Loading security staff details...",
+        "errorMessage": "Failed to load security staff details.",
+        "fields": {
+            "fullName": "Full Name",
+            "mobile": "Mobile",
+            "emergencyContact": "Emergency Contact",
+            "email": "Email",
+            "age": "Age",
+            "shiftTimings": "Shift Timings",
+            "residenceName": "Residence",
+            "assignedBlocks": "Assigned Blocks",
+            "status": "Status"
+        }
+    },
+    "list": {
+        "title": "Security Staff",
+        "add": "Add Staff",
+        "columns": {
+            "name": "Name",
+            "mobile": "Mobile",
+            "email": "Email",
+            "age": "Age",
+            "shift": "Shift",
+            "blocks": "Blocks",
+            "status": "Status"
+        },
+        "loading": "Loading security staff...",
+        "loadError": "Failed to load security staff.",
+        "filter": {
+            "name": {
+                "label": "Name",
+                "placeholder": "Search by Name"
+            },
+            "mobile": {
+                "label": "Mobile",
+                "placeholder": "Search by Mobile"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Select Status"
+            }
+        }
+    }
+}

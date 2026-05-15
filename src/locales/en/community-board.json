@@ -1,0 +1,201 @@
+{
+    "announcement": {
+        "title": "Create Announcement",
+        "successMessage": "Announcement created successfully",
+        "errorMessage": "Failed to create announcement",
+        "submit": "Publish Announcement",
+        "fields": {
+            "title": {
+                "label": "Announcement Title",
+                "placeholder": "Announcement Title",
+                "required": "Announcement Title is required"
+            },
+            "content": {
+                "label": "Content",
+                "placeholder": "Content",
+                "required": "Content is required"
+            },
+            "language": {
+                "label": "Language",
+                "placeholder": "Select Language",
+                "required": "Language is required"
+            },
+            "targetType": {
+                "label": "Target Type",
+                "placeholder": "Select Target Type",
+                "required": "Target Type is required"
+            },
+            "attachment": {
+                "label": "Attachment (Aadhar/Passport)",
+                "placeholder": "Attachment (Aadhar/Passport)",
+                "required": "Attachment is required"
+            },
+            "visibility": {
+                "label": "Visibility",
+                "placeholder": "Visibility",
+                "required": "Visibility is required"
+            },
+            "publishDate": {
+                "label": "Publish Date",
+                "placeholder": "Select Publish Date",
+                "required": "Publish Date is required"
+            },
+            "expiryDate": {
+                "label": "Expiry Date (Optional)",
+                "placeholder": "Select Expiry Date",
+                "required": "Expiry Date is required"
+            }
+        }
+    },
+    "view": {
+        "title": "Community Board",
+        "loading": "Loading community posts...",
+        "errorMessage": "Failed to load community posts.",
+        "commentModeration": "Comment Moderation",
+        "postModeration": "Post Moderation",
+        "announcement": "Create Announcement",
+        "noPosts": "No community posts found.",
+        "filter": {
+            "address": {
+                "label": "Address",
+                "placeholder": "Search by Address"
+            },
+            "userName": {
+                "label": "User Name",
+                "placeholder": "Search by Name"
+            }
+        }
+    },
+    
+    "comment": {
+        "list": {
+            "title": "All Comments",
+            "columns": {
+                "postId": "Post ID",
+                "comment": "Comment",
+                "status": "Status"
+            },
+            "loading": "Loading comments...",
+            "loadError": "Failed to load comments",
+            "filter": {
+                "comment": {
+                    "label": "Comment",
+                    "placeholder": "Search by Comment"
+                },
+                "status": {
+                    "label": "Status",
+                    "placeholder": "Search by Status"
+                }
+            }
+        },
+        "status": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "flagged": "Flagged"
+        },
+        "reviewModal": {
+            "title": "Comment Review",
+            "successMessage": "Comment status updated successfully",
+            "errorMessage": "Failed to update comment status",
+            "unsupportedStatus": "Unsupported status",
+            "fields": {
+                "commentId": {
+                    "label": "Comment ID",
+                    "placeholder": "Comment ID"
+                },
+                "comment": {
+                    "label": "Comment",
+                    "placeholder": "Comment"
+                }
+            }
+        }
+    },
+    "post": {
+        "list": {
+            "title": "All Posts",
+            "columns": {
+                "title": "Title",
+                "residentName": "Resident",
+                "report": "Report",
+                "date": "Date",
+                "status": "Status"
+            },
+            "loading": "Loading posts...",
+            "loadError": "Failed to load posts",
+            "filter": {
+                "title": {
+                    "label": "Title",
+                    "placeholder": "Search by Title"
+                },
+                "resident": {
+                    "label": "Resident",
+                    "placeholder": "Search by Resident"
+                },
+                "status": {
+                    "label": "Status",
+                    "placeholder": "Search by Status"
+                }
+            }
+        },
+        "status": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected"
+        },
+        "reviewModal": {
+            "title": "Post Review",
+            "successMessage": "Post status updated successfully",
+            "errorMessage": "Failed to update post status",
+            "unsupportedStattus": "Unsupported status",
+            "fields": {
+                "title": {
+                    "label": "Title",
+                    "placeholder": "Title"
+                },
+                "content": {
+                    "label": "Content",
+                    "placeholder": "Content"
+                },
+                "residentName": {
+                    "label": "Name - Unit",
+                    "placeholder": "Name - Unit"
+                },
+                "phone": {
+                    "label": "Phone",
+                    "placeholder": "Phone"
+                },
+                "attachments": {
+                    "label": "Attachments",
+                    "placeholder": "Attachments"
+                }
+            },
+            "residentSection": "Resident"
+        }
+    },
+    "rejection": {
+        "title": "Rejection Reason",
+        "reject": "Reject",
+        "cancel": "Cancel",
+        "fields": {
+            "select": {
+                "label": "Select Reason",
+                "placeholder": "Select Reason",
+                "options": {
+                    "spam": "Spam or Promotional Content",
+                    "offensive": "Offensive or Inappropriate Language",
+                    "notRelevant": "Not Relevant to the Community",
+                    "duplicate": "Duplicate",
+                    "other": "Other"
+                }
+            }
+        },
+        "otherReason": "Other Reason",
+        "reasonPlaceholder": "Please provide a reason for rejecting this {{type}}",
+        "errorReason": "Please provide a reason for rejection",
+        "type": {
+            "post": "post",
+            "comment": "comment"
+        }
+    }
+}

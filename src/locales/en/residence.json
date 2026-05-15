@@ -1,0 +1,100 @@
+{
+    "form": {
+        "fields": {
+            "residentName": {
+                "label": "Resident Name",
+                "placeholder": "Resident Name",
+                "required": "Resident Name is required"
+            },
+            "address": {
+                "label": "Address",
+                "placeholder": "Address",
+                "required": "Address is required"
+            },
+            "blocks": {
+                "label": "Total Blocks",
+                "placeholder": "Total Blocks",
+                "required": "Total Blocks is required",
+                "pattern": "Only positive numbers are allowed",
+                "validate": "Must be greater than 0"
+            },
+            "parkingSlot": {
+                "label": "Total Parking Slots",
+                "placeholder": "Total Parking Slots",
+                "required": "Total Parking Slots is required",
+                "pattern": "Only positive numbers are allowed",
+                "validate": "Must be greater than 0"
+            }
+        }
+    },
+    "add": {
+        "title": "Add New Residence",
+        "successMessage": "Residence added successfully",
+        "errorMessage": "Failed to add residence",
+        "submit": "Save Residence"
+    },
+    "edit": {
+        "title": "Edit Residence",
+        "errorLoadMessage": "Failed to load residence details",
+        "successMessage": "Residence updated successfully",
+        "errorMessage": "Failed to update residence",
+        "submit": "Update Residence"
+    },
+    "delete": {
+        "title": "Delete Residence",
+        "message": "Are you sure you want to delete this residence?",
+        "successMessage": "Residence deleted successfully",
+        "errorMessage": "Failed to delete residence"
+    },
+    "view": {
+        "title": "Residence Details",
+        "loading": "Loading residence details...",
+        "errorMessage": "Failed to load residence details.",
+        "fields": {
+            "residence": "Residence Name",
+            "address": "Address",
+            "blocks": "No. of Blocks",
+            "allowedResidents": "Total Residents Allowed",
+            "parkingSlots": "Total Parking Slots"
+        }
+    },
+    "list": {
+        "title": "All Residences",
+        "add": "Add Residence",
+        "import": "Import Residences",
+        "downloadTemplate": "Download Sample",
+        "columns": {
+            "residenceName": "Residence Name",
+            "address": "Address",
+            "totalBlocks": "Total Blocks",
+            "maxResidents": "Max Residents Allowed",
+            "maxParkingSlot": "Max Parking Slot Allowed",
+            "status": "Status"
+        },
+        "loading": "Loading residences...",
+        "loadError": "Failed to load residences",
+        "filter": {
+            "residenceName": {
+                "label": "Residence Name",
+                "placeholder": "Search by Residence Name"
+            },
+            "address": {
+                "label": "Address",
+                "placeholder": "Search by Address"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Search by Status"
+            }
+        }
+    },
+    "import": {
+        "title": "Import Residence Excel",
+        "cancel": "Cancel",
+        "importing": "Importing...",
+        "import": "Import",
+        "errorMessage": "Failed to import.",
+        "successMessage": "Imported successfully!",
+        "fileRequiredError": "Please select file"
+    }
+}

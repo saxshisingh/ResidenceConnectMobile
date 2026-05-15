@@ -1,0 +1,109 @@
+{
+    "form": {
+        "fields": {
+            "slotNumber": {
+                "label": "Slot Number",
+                "placeholder": "Slot Number",
+                "required": "Slot Number is required"
+            },
+            "residence": {
+                "label": "Residence",
+                "placeholder": "Select Residence",
+                "required": "Residence is required"
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Select Block",
+                "required": "Block is required"
+            },
+            "level": {
+                "label": "Level",
+                "placeholder": "Level",
+                "required": "Level is required"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Select Status",
+                "required": "Status is required"
+            }
+        }
+    },
+    "add": {
+        "title": "Add Parking Slot",
+        "successMessage": "Parking slot added successfully",
+        "errorMessage": "Failed to add parking slot",
+        "submit": "Save Parking Slot"
+    },
+    "edit": {
+        "title": "Edit Parking Slot",
+        "errorLoadMessage": "Failed to load parking slot details",
+        "successMessage": "Parking slot updated successfully",
+        "errorMessage": "Failed to update parking slot",
+        "submit": "Update Parking Slot"
+    },
+    "delete": {
+        "title": "Delete Parking Slot",
+        "message": "Are you sure you want to delete this parking slot?",
+        "successMessage": "Parking slot deleted successfully",
+        "errorMessage": "Failed to delete parking slot"
+    },
+    "view": {
+        "title": "Parking Slot Details",
+        "loading": "Loading parking slot details...",
+        "errorMessage": "Failed to load parking slot details.",
+        "fields": {
+            "slotNumber": "Slot Number",
+            "residence": "Residence",
+            "block": "Block Name",
+            "level": "Level",
+            "status": "Status"
+        }
+    },
+    "list": {
+        "title": "Parking Slots",
+        "add": "Add Parking Slot",
+        "columns": {
+            "slotNumber": "Slot No.",
+            "level": "Level",
+            "residence": "Assigned To",
+            "status": "Status"
+        },
+        "loading": "Loading parking slots...",
+        "loadError": "Failed to load parking slots."
+    },
+    "parkingSlot": {
+        "title": "Parking Slot Overview",
+        "slots": "Parking Slots",
+        "assign": "Assign Parking Slot",
+        "noSlots": "No parking slots found."
+    },
+    "overview": {
+      "title": "Parking Slot Overview",
+      "links": {
+        "slots": "Parking Slots",
+        "assign": "Assign Parking Slot"
+      },
+      "errors": {
+        "load": "Failed to load parking slots"
+      },
+      "noData": "No parking slots found."
+    },
+    "filter": {
+        "slotNumber": {
+            "label": "Slot Number",
+            "placeholder": "Search by Slot Number"
+        },
+        "residence": {
+            "label": "Residence",
+            "placeholder": "Search by Residence"
+        },
+        "block": {
+            "label": "Block",
+            "placeholder": "Search by Block"
+        },
+        "level": {
+            "label": "Level",
+            "placeholder": "Search by Level"
+        }   
+    }
+}

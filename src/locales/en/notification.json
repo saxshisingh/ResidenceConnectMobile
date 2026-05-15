@@ -1,0 +1,107 @@
+{
+    "form": {
+        "fields": {
+            "notificationType": {
+                "label": "Notification Type",
+                "placeholder": "Select Notification Type",
+                "required": "Notification Type is required"
+            },
+            "target": {
+                "label": "Target",
+                "placeholder": "Select Target",
+                "required": "Target is required"
+            },
+            "specificUnits": {
+                "label": "Specific Units (optional)",
+                "placeholder": "Select Units"
+            },
+            "title": {
+                "label": "Title",
+                "placeholder": "Title",
+                "required": "Title is required"
+            },
+            "content": {
+                "label": "Notification Content",
+                "placeholder": "Notification Content",
+                "required": "Content is required"
+            },
+            "language": {
+                "label": "Language",
+                "placeholder": "Select language",
+                "required": "Language is required"
+            },
+            "media" : {
+                "label": "Upload Media (PNG, JPEG)",
+                "placeholder": ""
+            },
+            "scheduledTime" : {
+                "label": "Scheduled Time",
+                "placeholder": "Select schedule time"
+            }
+        }
+    },
+    "add": {
+        "title": "Compose Notification",
+        "successMessage": "Notification added successfully",
+        "errorMessage": "Failed to add notification",
+        "submit": "Send Notification",
+        "sending": "Sending..."
+    },
+    "edit": {
+        "title": "Edit Notification",
+        "errorLoadMessage": "Failed to load notification details",
+        "successMessage": "Notification updated successfully",
+        "errorMessage": "Failed to update notification",
+        "submit": "Update Notification",
+        "updating": "Updating..."
+    },
+    "delete": {
+        "title": "Delete Notification",
+        "message": "Are you sure you want to delete this notification?",
+        "successMessage": "Notification deleted successfully",
+        "errorMessage": "Failed to delete notification"
+    },
+    "view": {
+        "title": "Notification Details",
+        "loading": "Loading notification details...",
+        "errorMessage": "Failed to load notification details.",
+        "notFound": "Notification not found",
+        "goBack": "Go Back",
+        "messageLabel": "Message",
+        "fields": {
+            "title": "Notification Title",
+            "content": "Notification Content",
+            "delivered": "Delivered",
+            "seen": "Seen",
+            "clicked": "Clicked"
+        }
+    },
+    "list": {
+        "title": "All Notifications",
+        "add": "Compose Notification",
+        "emptyTitle": "No Notification Available",
+        "emptyTitleSuffix": "At This Time",
+        "emptyDescription": "We'll notify you when something important comes up.",
+        "columns": {
+            "serialNumber": "S.No.",
+            "title": "Title",
+            "floorNumber": "Floor Number",
+            "notificationType": "Type",
+            "targetType": "Target",
+            "sentOn": "Sent On",
+            "delivered": "Delivered"
+        },
+        "loading": "Loading notifications...",
+        "loadError": "Failed to load notifications",
+        "filter": {
+            "buildingName": {
+                "label": "Building Name",
+                "placeholder": "Search by building name"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Search by status"
+            }
+        }
+    }
+}

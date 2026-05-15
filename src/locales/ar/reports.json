@@ -1,0 +1,89 @@
+{
+    "common": {
+        "export": "تصدير",
+        "loading": "جارٍ التحميل…",
+        "loadError": "فشل في تحميل البيانات"
+    },
+    "residents": {
+        "title": "تقارير المقيمين",
+        "loadError": "فشل في تحميل تقرير المقيمين.",
+        "metrics": {
+            "totalResidents": "إجمالي المقيمين",
+            "activeResidents": "المقيمون النشطون",
+            "inactiveResidents": "المقيمون غير النشطين",
+            "sosAllowed": "المصرح لهم بخدمة SOS"
+        },
+        "charts": {
+            "monthlyTrend": "الاتجاه الشهري للمقيمين",
+            "genderDistribution": "توزيع الجنس",
+            "occupancyStatus": "حالة الإشغال"
+        },
+        "filter": {
+            "block": {
+                "label": "البلوك",
+                "placeholder": "اختر البلوك"
+            },
+            "timePeriod": {
+                "label": "الفترة الزمنية",
+                "placeholder": "اختر الفترة الزمنية"
+            },
+            "status": {
+                "label": "حالة المقيم",
+                "placeholder": "اختر الحالة"
+            }
+        }
+    },
+    "maintenance": {
+        "title": "لوحة تحليلات الصيانة",
+        "metrics": {
+            "totalRequests": "إجمالي الطلبات",
+            "avgResolution": "متوسط وقت الحل (بالساعات)",
+            "pendingRequests": "الطلبات المعلقة",
+            "closedRequests": "الطلبات المغلقة"
+        },
+        "charts": {
+            "byCategory": "الطلبات حسب الفئة",
+            "status": "حالة الطلبات",
+            "monthlyTrend": "الاتجاه الشهري"
+        }
+    },
+    "accessLog": {
+        "title": "تقارير سجلات الدخول",
+        "filters": {
+            "searchPlaceholder": "بحث..."
+        },
+        "metrics": {
+            "totalAccesses": "إجمالي عمليات الدخول",
+            "doorAccesses": "دخول الأبواب",
+            "elevatorAccesses": "دخول المصاعد",
+            "visitorAccesses": "دخول الزوار"
+        },
+        "charts": {
+            "monthlyTrend": "الاتجاه الشهري",
+            "deviceSplit": "توزيع الأجهزة"
+        },
+        "columns": {
+            "device": "الجهاز",
+            "type": "النوع",
+            "resident": "المقيم",
+            "floor": "الطابق",
+            "mode": "الوضع",
+            "action": "الإجراء",
+            "time": "الوقت"
+        },
+        "filter": {
+            "block": {
+                "label": "البلوك",
+                "placeholder": "اختر البلوك"
+            },
+            "paymentType": {
+                "label": "نوع الدفع",
+                "placeholder": "اختر نوع الدفع"
+            },
+            "status": {
+                "label": "الحالة",
+                "placeholder": "اختر الحالة"
+            }
+        }
+    }
+}

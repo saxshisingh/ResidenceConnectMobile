@@ -1,0 +1,30 @@
+{
+    "title": "Dashboard",
+    "loading": "Loading dashboard...",
+    "error": "Failed to load dashboard data.",
+    "export": "Export",
+    "summary": {
+        "totalResidents": "Total Residents",
+        "active": "Active",
+        "ttlockAccessLogs": "TTLock Access Logs",
+        "doors": "Doors",
+        "elevators": "Elevators",
+        "visitorEntries": "Visitor Entries",
+        "alertsToday": "Alerts Today",
+        "critical": "Critical"
+    },
+    "alerts": {
+        "overview": "Alert Overview",
+        "total": "Total",
+        "today": "Today",
+        "critical": "Critical"
+    },
+    "maintenance": {
+        "title": "Maintenance Requests by Category"
+    },
+    "community": {
+        "title": "Community",
+        "totalPosts": "Total Posts",
+        "postsThisMonth": "Posts This Month"
+    }
+}

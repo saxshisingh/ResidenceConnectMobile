@@ -1,0 +1,132 @@
+{
+    "form": {
+        "fields": {
+            "deviceName": {
+                "label": "اسم الجهاز",
+                "placeholder": "اسم الجهاز",
+                "required": "اسم الجهاز مطلوب"
+            },
+            "deviceType": {
+                "label": "نوع الجهاز",
+                "placeholder": "اختر نوع الجهاز",
+                "required": "نوع الجهاز مطلوب",
+                "options": {
+                    "door": "باب",
+                    "elevator": "مصعد"
+                }
+            },
+            "block": {
+                "label": "المبنى",
+                "placeholder": "اختر المبنى",
+                "required": "المبنى مطلوب"
+            },
+            "floor": {
+                "label": "الطابق",
+                "placeholder": "اختر الطابق",
+                "required": "الطابق مطلوب"
+            },
+            "notes": {
+                "label": "ملاحظات موقع التركيب",
+                "placeholder": "ملاحظات موقع التركيب",
+                "required": "ملاحظات موقع التركيب مطلوبة"
+            }
+        }
+    },
+    "doorPermission": {
+        "title": "مصفوفة صلاحيات أبواب السكان",
+        "export": "تصدير CSV",
+        "modal": {
+            "title": "صلاحيات الوصول إلى الأبواب",
+            "selectDoors": "اختر الأبواب",
+            "loading": "جارٍ تحميل الأبواب…",
+            "noDevices": "لا توجد أجهزة أبواب مهيأة لهذا المبنى",
+            "grantAccess": "منح الصلاحية",
+            "saving": "جارٍ الحفظ...",
+            "cancel": "إلغاء",
+            "warnings": {
+                "selectAtLeastOne": "يرجى اختيار باب واحد على الأقل"
+            },
+            "success": {
+                "granted": "تم منح صلاحية الوصول بنجاح"
+            }
+        },
+        "errors": {
+        "loadResidents": "فشل في تحميل السكان",
+        "loadData": "فشل في تحميل البيانات"
+        }
+    },
+    "add": {
+        "title": "إضافة جهاز دخول",
+        "successMessage": "تمت إضافة جهاز الدخول بنجاح",
+        "errorMessage": "فشل في إضافة جهاز الدخول",
+        "submit": "حفظ جهاز الدخول"
+    },
+    "edit": {
+        "title": "تعديل جهاز دخول",
+        "errorLoadMessage": "فشل في تحميل تفاصيل جهاز الدخول",
+        "successMessage": "تم تحديث جهاز الدخول بنجاح",
+        "errorMessage": "فشل في تحديث جهاز الدخول",
+        "submit": "تحديث جهاز الدخول"
+    },
+    "delete": {
+        "title": "حذف جهاز دخول",
+        "message": "هل أنت متأكد أنك تريد حذف جهاز الدخول هذا؟",
+        "successMessage": "تم حذف الجهاز بنجاح",
+        "errorMessage": "فشل في حذف الجهاز"
+    },
+    "view": {
+        "title": "تفاصيل جهاز الدخول",
+        "loading": "جارٍ تحميل تفاصيل جهاز الدخول...",
+        "errorMessage": "فشل في تحميل تفاصيل جهاز الدخول.",
+        "fields": {
+            "deviceName": "اسم الجهاز",
+            "deviceType": "نوع الجهاز",
+            "lockId": "معرّف القفل",
+            "block": "المبنى",
+            "floor": "الطابق",
+            "status": "الحالة"
+        }
+    },
+    "list": {
+        "title": "جميع أجهزة الدخول",
+        "add": "إضافة جهاز دخول",
+        "columns": {
+            "deviceName": "اسم الجهاز",
+            "deviceType": "النوع",
+            "lockId": "معرّف القفل",
+            "block": "المبنى",
+            "floor": "الطابق",
+            "status": "الحالة"
+        },
+        "loading": "جارٍ تحميل أجهزة الدخول...",
+        "loadError": "فشل في تحميل أجهزة الدخول.",
+        "filter": {
+            "deviceName": {
+                "label": "اسم الجهاز",
+                "placeholder": "البحث باسم الجهاز"
+            },
+            "block": {
+                "label": "المبنى",
+                "placeholder": "البحث بالمبنى"
+            },
+            "floor": {
+                "label": "الطابق",
+                "placeholder": "البحث بالطابق"
+            },
+            "deviceType": {
+                "label": "نوع الجهاز",
+                "placeholder": "البحث بنوع الجهاز",
+                "options": {
+                    "door": "باب",
+                    "elevator": "مصعد"
+                }
+            }
+        }
+    },
+    "status": {
+        "Processing": "قيد المعالجة",
+        "Approved": "تمت الموافقة",
+        "Rejected": "مرفوض",
+        "Unknown": "غير معروف"
+    }
+}

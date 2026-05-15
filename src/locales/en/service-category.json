@@ -1,0 +1,68 @@
+{
+    "form": {
+        "fields": {
+            "category": {
+                "label": "Category Name",
+                "placeholder": "Category Name",
+                "required": "Category is required"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Description (optional)",
+                "required": "Description is required"
+            }
+        },
+        "sectionTitle": "🗂 Service Category Details"
+    },
+    "add": {
+        "title": "Add Service Category",
+        "successMessage": "Service category added successfully",
+        "errorMessage": "Failed to add service category",
+        "submit": "Save Category"
+    },
+    "edit": {
+        "title": "Edit Service Category",
+        "errorLoadMessage": "Failed to load service category details",
+        "successMessage": "Service category updated successfully",
+        "errorMessage": "Failed to update service category",
+        "submit": "Update Category"
+    },
+    "delete": {
+        "title": "Delete Service Category",
+        "message": "Are you sure you want to delete this service category?",
+        "successMessage": "Service category deleted successfully",
+        "errorMessage": "Failed to delete service category",
+        "invalidRecord": "Invalid service category record"
+    },
+    "view": {
+        "title": "Service Category Details",
+        "loading": "Loading service category details...",
+        "errorMessage": "Failed to load service category details.",
+        "fields": {
+            "residence": "Residence",
+            "description": "Description",
+            "status": "Status"
+        }
+    },
+    "list": {
+        "title": "Service Categories",
+        "add": "Add Category",
+        "columns": {
+            "category": "Category Name",
+            "description": "Description",
+            "status": "Status"
+        },
+        "loading": "Loading service categories...",
+        "loadError": "Failed to load service categories",
+        "filter": {
+            "category": {
+                "label": "Category Name",
+                "placeholder": "Search by Category Name"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Search by Status"
+            }
+        }
+    }
+}

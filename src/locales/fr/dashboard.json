@@ -1,0 +1,30 @@
+{
+    "title": "Tableau de bord",
+    "loading": "Chargement du tableau de bord...",
+    "error": "Échec du chargement des données du tableau de bord.",
+    "export": "Exporter",
+    "summary": {
+        "totalResidents": "Nombre total de résidents",
+        "active": "Actifs",
+        "ttlockAccessLogs": "Journaux d'accès TTLock",
+        "doors": "Portes",
+        "elevators": "Ascenseurs",
+        "visitorEntries": "Entrées des visiteurs",
+        "alertsToday": "Alertes d'aujourd'hui",
+        "critical": "Critique"
+    },
+    "alerts": {
+        "overview": "Aperçu des alertes",
+        "total": "Total",
+        "today": "Aujourd'hui",
+        "critical": "Critique"
+    },
+    "maintenance": {
+        "title": "Demandes de maintenance par catégorie"
+    },
+    "community": {
+        "title": "Communauté",
+        "totalPosts": "Nombre total de publications",
+        "postsThisMonth": "Publications ce mois-ci"
+    }
+}
