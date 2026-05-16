@@ -271,7 +271,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.residenceconnect.dz";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.residenceconnect.myapp";
 				PRODUCT_NAME = ResidenceConnect;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -298,7 +298,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.residenceconnect.dz";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.residenceconnect.myapp";
 				PRODUCT_NAME = ResidenceConnect;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
