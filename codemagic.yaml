@@ -47,7 +47,8 @@ workflows:
             --archive-xcargs "IPHONEOS_DEPLOYMENT_TARGET=15.1"
 
     artifacts:
-      - build/ios/ipa/*.ipa
+    - ios/build/ios/ipa/*.ipa
+    - ios/build/ios/xcarchive/*.xcarchive
 
     publishing:
       email:
