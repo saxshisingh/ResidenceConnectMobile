@@ -49,21 +49,35 @@ target 'MyGate' do
 
   post_install do |installer|
 
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false
-    )
+  react_native_post_install(
+    installer,
+    config[:reactNativePath],
+    :mac_catalyst_enabled => false
+  )
 
-    # =====================================================
-    # FIX ALL PODS DEPLOYMENT TARGET
-    # =====================================================
+  installer.pods_project.targets.each do |target|
 
-    installer.pods_project.targets.each do |target|
-      target.build_configurations.each do |config|
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-      end
+    target.build_configurations.each do |config|
+
+      # =====================================================
+      # DEPLOYMENT TARGET
+      # =====================================================
+
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+
+      # =====================================================
+      # FIX XCODE 26 / FMT / FOLLY ISSUES
+      # =====================================================
+
+      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
+      config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+
+      # =====================================================
+      # DISABLE STRICT WARNINGS
+      # =====================================================
+
+      config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+
     end
-
   end
 end
