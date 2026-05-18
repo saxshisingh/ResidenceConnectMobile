@@ -16,9 +16,6 @@ workflows:
         XCODE_WORKSPACE: "MyGate.xcworkspace"
         XCODE_SCHEME: "MyGate"
 
-        APP_STORE_CONNECT_ISSUER_ID: "b51f39ee-e96f-4823-8a79-0d75f8dea001"
-        APP_STORE_CONNECT_KEY_IDENTIFIER: "A3P495R34H"
-
       node: latest
       xcode: 16.2
       cocoapods: default
@@ -58,12 +55,10 @@ workflows:
 
     publishing:
       app_store_connect:
-        api_key:
-          key: $APP_STORE_CONNECT_PRIVATE_KEY
-          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-
+        auth: integration
         submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
 
       email:
         recipients:
