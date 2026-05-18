@@ -42,13 +42,13 @@ workflows:
           xcode-project use-profiles
 
       - name: Build IPA
-          script: |
-            cd ios
+        script: |
+          cd ios
 
-            xcode-project build-ipa \
-              --workspace "$XCODE_WORKSPACE" \
-              --scheme "$XCODE_SCHEME" \
-              --archive-xcargs "IPHONEOS_DEPLOYMENT_TARGET=15.1 GCC_WARN_INHIBIT_ALL_WARNINGS=YES CLANG_CXX_LANGUAGE_STANDARD=gnu++17"
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --archive-xcargs "IPHONEOS_DEPLOYMENT_TARGET=15.1 GCC_WARN_INHIBIT_ALL_WARNINGS=YES CLANG_CXX_LANGUAGE_STANDARD=gnu++17"
 
     artifacts:
       - ios/build/ios/ipa/*.ipa
