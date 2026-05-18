@@ -14,7 +14,7 @@ workflows:
         XCODE_SCHEME: "MyGate"
 
       node: latest
-      xcode: latest
+      xcode: 16.4
       cocoapods: default
 
     integrations:
