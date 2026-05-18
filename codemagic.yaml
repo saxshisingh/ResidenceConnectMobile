@@ -29,7 +29,13 @@ workflows:
       - name: Install CocoaPods
         script: |
           cd ios
-          rm -rf Pods Podfile.lock
+
+          rm -rf Pods
+          rm -rf build
+          rm -rf ~/Library/Caches/CocoaPods
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          rm -f Podfile.lock
+
           RCT_NEW_ARCH_ENABLED=0 pod install --repo-update
 
       - name: Verify workspace
@@ -45,14 +51,25 @@ workflows:
         script: |
           cd ios
 
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-xcargs "IPHONEOS_DEPLOYMENT_TARGET=15.1 GCC_WARN_INHIBIT_ALL_WARNINGS=YES CLANG_CXX_LANGUAGE_STANDARD=gnu++17"
+          xcodebuild clean \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME"
+
+          xcodebuild archive \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath build/MyGate.xcarchive \
+            CODE_SIGNING_ALLOWED=YES \
+            GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+            CLANG_CXX_LANGUAGE_STANDARD=gnu++17 \
+            RCT_NEW_ARCH_ENABLED=0 \
+            USE_FABRIC=0
 
     artifacts:
-      - ios/build/ios/ipa/*.ipa
-      - ios/build/ios/xcarchive/*.xcarchive
+      - ios/build/**/*.ipa
+      - ios/build/**/*.xcarchive
 
     publishing:
       app_store_connect:
