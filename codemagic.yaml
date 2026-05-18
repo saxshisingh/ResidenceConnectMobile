@@ -5,9 +5,6 @@ workflows:
     max_build_duration: 120
 
     environment:
-      groups:
-        - appstore-secrets
-
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.residenceconnect.myapp
@@ -58,6 +55,7 @@ workflows:
 
     publishing:
       app_store_connect:
+        auth: integration
         submit_to_testflight: true
         beta_groups:
           - Internal Testers
