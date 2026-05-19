@@ -18,6 +18,8 @@ platform :ios, '15.1'
 # =====================================================
 
 ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+ENV['USE_HERMES'] = '1'
+ENV['USE_FABRIC'] = '0'
 
 prepare_react_native_project!
 
@@ -51,10 +53,6 @@ target 'MyGate' do
   # POST INSTALL
   # =====================================================
 
-    # =====================================================
-  # POST INSTALL
-  # =====================================================
-
   post_install do |installer|
 
     react_native_post_install(
@@ -64,6 +62,15 @@ target 'MyGate' do
     )
 
     installer.pods_project.targets.each do |target|
+
+      # =====================================================
+      # REMOVE REACT PERFLOGGER
+      # =====================================================
+
+      if target.name == 'React-perflogger'
+        target.remove_from_project
+        next
+      end
 
       target.build_configurations.each do |config|
 
