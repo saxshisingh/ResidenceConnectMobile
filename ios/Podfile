@@ -13,10 +13,6 @@ require Pod::Executable.execute_command(
 
 platform :ios, '15.1'
 
-# =====================================================
-# DISABLE NEW ARCHITECTURE
-# =====================================================
-
 ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 
 prepare_react_native_project!
@@ -27,20 +23,10 @@ target 'MyGate' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-
-    # =====================================================
-    # REACT NATIVE SETTINGS
-    # =====================================================
-
     :hermes_enabled => true,
     :fabric_enabled => false,
-
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-
-  # =====================================================
-  # POST INSTALL
-  # =====================================================
 
   post_install do |installer|
 
@@ -58,13 +44,14 @@ target 'MyGate' do
 
           config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
 
-          # =====================================================
-          # ONLY DISABLE SIGNING
-          # =====================================================
-
+          # ONLY THIS
           config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
-          config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-          config.build_settings['DEVELOPMENT_TEAM'] = ''
+
+          # DO NOT SET:
+          # CODE_SIGN_IDENTITY
+          # EXPANDED_CODE_SIGN_IDENTITY
+          # CODE_SIGNING_REQUIRED
+          # DEVELOPMENT_TEAM
 
         end
       end

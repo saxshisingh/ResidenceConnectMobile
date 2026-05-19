@@ -12,6 +12,7 @@ workflows:
       vars:
         XCODE_WORKSPACE: "MyGate.xcworkspace"
         XCODE_SCHEME: "MyGate"
+        RCT_NEW_ARCH_ENABLED: "0"
 
       node: latest
       xcode: 16.4
@@ -47,7 +48,7 @@ workflows:
           cd ios
           xcode-project use-profiles
 
-      - name: Build IPA
+            - name: Build IPA
         script: |
           cd ios
 
@@ -61,7 +62,6 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath build/MyGate.xcarchive \
-            CODE_SIGNING_ALLOWED=YES \
             GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
             CLANG_CXX_LANGUAGE_STANDARD=gnu++17 \
             RCT_NEW_ARCH_ENABLED=0 \
