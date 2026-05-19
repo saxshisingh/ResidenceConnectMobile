@@ -1,4 +1,4 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
+# Resolve react_native_pods.rb with node
 require Pod::Executable.execute_command(
   'node',
   [
@@ -18,19 +18,14 @@ platform :ios, '15.1'
 # =====================================================
 
 ENV['RCT_NEW_ARCH_ENABLED'] = '0'
-ENV['USE_HERMES'] = '1'
-ENV['USE_FABRIC'] = '0'
 
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
+# =====================================================
+# STATIC FRAMEWORKS
+# =====================================================
 
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-else
-  use_frameworks! :linkage => :static
-end
+use_frameworks! :linkage => :static
 
 target 'MyGate' do
 
@@ -64,10 +59,10 @@ target 'MyGate' do
     installer.pods_project.targets.each do |target|
 
       # =====================================================
-      # REMOVE REACT PERFLOGGER
+      # REMOVE REACT-JSINSPECTOR
       # =====================================================
 
-      if target.name == 'React-perflogger'
+      if target.name == 'React-jsinspector'
         target.remove_from_project
         next
       end
@@ -81,17 +76,11 @@ target 'MyGate' do
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
 
         # =====================================================
-        # FIX XCODE / FMT / FOLLY ISSUES
+        # C++ FIXES
         # =====================================================
 
         config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
         config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
-
-        # =====================================================
-        # DISABLE STRICT WARNINGS
-        # =====================================================
-
-        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
 
         # =====================================================
         # DISABLE POD CODE SIGNING
@@ -99,8 +88,12 @@ target 'MyGate' do
 
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-        config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
-        config.build_settings['CODE_SIGN_IDENTITY'] = ''
+
+        # =====================================================
+        # DISABLE WARNINGS
+        # =====================================================
+
+        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
 
       end
     end
