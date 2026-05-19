@@ -23,7 +23,7 @@ target 'MyGate' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => true,
+    :hermes_enabled => false,
     :fabric_enabled => false,
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )

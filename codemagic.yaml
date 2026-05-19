@@ -16,6 +16,7 @@ workflows:
         XCODE_WORKSPACE: "MyGate.xcworkspace"
         XCODE_SCHEME: "MyGate"
         RCT_NEW_ARCH_ENABLED: "0"
+        USE_HERMES: "0"
         NODE_OPTIONS: "--max_old_space_size=8192"
 
       node: latest
