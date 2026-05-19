@@ -59,7 +59,7 @@ workflows:
           xcode-project build-ipa \
             --workspace "ios/$XCODE_WORKSPACE" \
             --scheme "$XCODE_SCHEME" \
-            --archive-xcargs "CLANG_CXX_LANGUAGE_STANDARD=gnu++17 GCC_WARN_INHIBIT_ALL_WARNINGS=YES"
+            --archive-xcargs "CLANG_CXX_LANGUAGE_STANDARD=gnu++17 OTHER_CPLUSPLUSFLAGS='$(inherited) -std=c++17'"
 
     artifacts:
       - build/ios/ipa/*.ipa
