@@ -58,29 +58,9 @@ target 'MyGate' do
 
     installer.pods_project.targets.each do |target|
 
-      # =====================================================
-      # REMOVE REACT-JSINSPECTOR
-      # =====================================================
-
-      if target.name == 'React-jsinspector'
-        target.remove_from_project
-        next
-      end
-
       target.build_configurations.each do |config|
 
-        # =====================================================
-        # DEPLOYMENT TARGET
-        # =====================================================
-
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-
-        # =====================================================
-        # C++ FIXES
-        # =====================================================
-
-        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
-        config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
 
         # =====================================================
         # DISABLE POD CODE SIGNING
@@ -88,13 +68,35 @@ target 'MyGate' do
 
         config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+        config.build_settings['CODE_SIGNING_IDENTITY'] = ''
+        config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ''
 
         # =====================================================
-        # DISABLE WARNINGS
+        # FIX RESOURCE BUNDLE SIGNING
         # =====================================================
 
-        config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
+        config.build_settings['DEVELOPMENT_TEAM'] = ''
 
+      end
+    end
+
+    # =====================================================
+    # DISABLE CODE SIGNING FOR RESOURCE BUNDLES
+    # =====================================================
+
+    installer.target_installation_results.pod_target_installation_results
+      .each do |_pod_name, target_installation_result|
+
+      target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
+
+        resource_bundle_target.build_configurations.each do |config|
+
+          config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+          config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
+          config.build_settings['CODE_SIGNING_IDENTITY'] = ''
+          config.build_settings['DEVELOPMENT_TEAM'] = ''
+
+        end
       end
     end
   end
