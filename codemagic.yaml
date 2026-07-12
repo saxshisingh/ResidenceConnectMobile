@@ -13,8 +13,8 @@ workflows:
         bundle_identifier: com.residenceconnect.myapp
 
       vars:
-        XCODE_WORKSPACE: "ResidenceConnect.xcworkspace"
-        XCODE_SCHEME: "ResidenceConnect"
+        XCODE_WORKSPACE: "MyGate.xcworkspace"
+        XCODE_SCHEME: "MyGate"
         NODE_OPTIONS: "--max_old_space_size=8192"
 
       node: latest
