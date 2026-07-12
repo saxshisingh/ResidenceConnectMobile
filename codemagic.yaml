@@ -1,0 +1,169 @@
+workflows:
+
+  ios-release:
+
+    name: iOS Release Build
+
+    max_build_duration: 120
+
+    environment:
+
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.residenceconnect.myapp
+
+      vars:
+        XCODE_WORKSPACE: "ResidenceConnect.xcworkspace"
+        XCODE_SCHEME: "ResidenceConnect"
+        NODE_OPTIONS: "--max_old_space_size=8192"
+
+      node: latest
+      xcode: latest
+      cocoapods: default
+
+    integrations:
+      app_store_connect: Codemagic Key
+
+    scripts:
+
+      - name: Install dependencies
+        script: |
+          npm ci
+
+      - name: Clean iOS & Install Pods
+        script: |
+          cd ios
+
+          rm -rf Pods
+          rm -rf build
+          rm -rf ~/Library/Caches/CocoaPods
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          rm -f Podfile.lock
+
+          pod deintegrate
+          pod repo update
+          pod install --repo-update
+
+      - name: Show Podfile.lock
+        script: |
+          echo "===== PODFILE.LOCK ====="
+          cat ios/Podfile.lock
+
+      - name: Show TTLock Pods
+        script: |
+          echo "===== TTLOCK PODS ====="
+          grep -i "TTLock" ios/Podfile.lock || true
+          grep -i "react-native-ttlock" ios/Podfile.lock || true
+
+      - name: Show React Native configuration
+        script: |
+          echo "===== PACKAGE.JSON ====="
+          node -p "require('./package.json').dependencies"
+
+          echo "===== PODFILE.PROPERTIES ====="
+          cat ios/Podfile.properties.json
+
+      - name: Verify Hermes
+        script: |
+          grep -i hermes ios/Podfile.lock || true
+
+      - name: Force disable fmt consteval
+        script: |
+          FILE="ios/Pods/fmt/include/fmt/base.h"
+
+          perl -0pi -e 's/#\s*define\s+FMT_USE_CONSTEVAL\s+1/#define FMT_USE_CONSTEVAL 0/g' "$FILE"
+
+          echo "===== VERIFY ====="
+          grep -n "FMT_USE_CONSTEVAL" "$FILE"
+          
+      - name: Patch fmt for Xcode 26.4
+        script: |
+          echo "===== PATCHING FMT ====="
+
+          FILE="ios/Pods/fmt/include/fmt/base.h"
+
+          grep -n "FMT_USE_CONSTEVAL" "$FILE" || true
+
+          sed -i '' 's/#define FMT_USE_CONSTEVAL 1/#define FMT_USE_CONSTEVAL 0/g' "$FILE" || true
+
+          sed -i '' 's/#define FMT_USE_CONSTEVAL FMT_HAS_CONSTEVAL/#define FMT_USE_CONSTEVAL 0/g' "$FILE" || true
+
+          echo "===== AFTER PATCH ====="
+          grep -n "FMT_USE_CONSTEVAL" "$FILE" || true
+      - name: Show fmt section
+        script: |
+          sed -n '100,140p' ios/Pods/fmt/include/fmt/base.h
+          
+      - name: Verify workspace
+        script: |
+          ls -la ios
+
+      - name: Set up code signing
+        script: |
+          cd ios
+          xcode-project use-profiles
+
+      - name: Check Build Environment
+        script: |
+          echo "===== XCODE VERSION ====="
+          xcodebuild -version
+
+          echo "===== AVAILABLE SDKS ====="
+          xcodebuild -showsdks
+
+      - name: Check fmt Version
+        script: |
+          echo "===== FMT VERSION ====="
+          grep -A 2 "fmt (" ios/Podfile.lock || true
+
+      - name: Verify Release Build
+        script: |
+          cd ios
+          xcodebuild \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Increment build number
+        script: |
+          cd ios
+          agvtool new-version -all $BUILD_NUMBER
+
+      - name: Set build number
+        script: |
+          cd ios
+          agvtool new-version -all $BUILD_NUMBER
+
+      - name: Build IPA
+        script: |
+          set -o pipefail
+
+          xcode-project build-ipa \
+            --workspace "ios/$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --verbose 2>&1 | tee build.log
+
+          echo "===== BUILD ERRORS ====="
+          grep -i "error:" build.log || true
+
+    artifacts:
+      - ios/Podfile.lock
+      - build/ios/ipa/*.ipa
+      - build.log
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/Archives/**/*.xcarchive
+
+    publishing:
+
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+
+      email:
+        recipients:
+          - your-email@gmail.com

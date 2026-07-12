@@ -1,0 +1,100 @@
+{
+    "form": {
+        "fields": {
+            "residentName": {
+                "label": "اسم الإقامة",
+                "placeholder": "اسم الإقامة",
+                "required": "اسم الإقامة مطلوب"
+            },
+            "address": {
+                "label": "العنوان",
+                "placeholder": "العنوان",
+                "required": "العنوان مطلوب"
+            },
+            "blocks": {
+                "label": "إجمالي البلوكات",
+                "placeholder": "إجمالي البلوكات",
+                "required": "إجمالي البلوكات مطلوب",
+                "pattern": "يسمح بالأرقام الموجبة فقط",
+                "validate": "يجب أن يكون أكبر من 0"
+            },
+            "parkingSlot": {
+                "label": "إجمالي مواقف السيارات",
+                "placeholder": "إجمالي مواقف السيارات",
+                "required": "إجمالي مواقف السيارات مطلوب",
+                "pattern": "يسمح بالأرقام الموجبة فقط",
+                "validate": "يجب أن يكون أكبر من 0"
+            }
+        }
+    },
+    "add": {
+        "title": "إضافة إقامة جديدة",
+        "successMessage": "تمت إضافة الإقامة بنجاح",
+        "errorMessage": "فشل في إضافة الإقامة",
+        "submit": "حفظ الإقامة"
+    },
+    "edit": {
+        "title": "تعديل الإقامة",
+        "errorLoadMessage": "فشل في تحميل تفاصيل الإقامة",
+        "successMessage": "تم تحديث الإقامة بنجاح",
+        "errorMessage": "فشل في تحديث الإقامة",
+        "submit": "تحديث الإقامة"
+    },
+    "delete": {
+        "title": "حذف الإقامة",
+        "message": "هل أنت متأكد أنك تريد حذف هذه الإقامة؟",
+        "successMessage": "تم حذف الإقامة بنجاح",
+        "errorMessage": "فشل في حذف الإقامة"
+    },
+    "view": {
+        "title": "تفاصيل الإقامة",
+        "loading": "جارٍ تحميل تفاصيل الإقامة...",
+        "errorMessage": "فشل في تحميل تفاصيل الإقامة.",
+        "fields": {
+            "residence": "اسم الإقامة",
+            "address": "العنوان",
+            "blocks": "عدد البلوكات",
+            "allowedResidents": "إجمالي المقيمين المسموح بهم",
+            "parkingSlots": "إجمالي مواقف السيارات"
+        }
+    },
+    "list": {
+        "title": "جميع الإقامات",
+        "add": "إضافة إقامة",
+        "import": "استيراد الإقامات",
+        "downloadTemplate": "تحميل نموذج",
+        "columns": {
+            "residenceName": "اسم الإقامة",
+            "address": "العنوان",
+            "totalBlocks": "إجمالي البلوكات",
+            "maxResidents": "الحد الأقصى للمقيمين",
+            "maxParkingSlot": "الحد الأقصى لمواقف السيارات",
+            "status": "الحالة"
+        },
+        "loading": "جارٍ تحميل الإقامات...",
+        "loadError": "فشل في تحميل الإقامات",
+        "filter": {
+            "residenceName": {
+                "label": "اسم الإقامة",
+                "placeholder": "بحث حسب اسم الإقامة"
+            },
+            "address": {
+                "label": "العنوان",
+                "placeholder": "بحث حسب العنوان"
+            },
+            "status": {
+                "label": "الحالة",
+                "placeholder": "بحث حسب الحالة"
+            }
+        }
+    },
+    "import": {
+        "title": "استيراد ملف إكسل للإقامات",
+        "cancel": "إلغاء",
+        "importing": "جارٍ الاستيراد...",
+        "import": "استيراد",
+        "errorMessage": "فشل في الاستيراد.",
+        "successMessage": "تم الاستيراد بنجاح!",
+        "fileRequiredError": "يرجى اختيار ملف"
+    }
+}

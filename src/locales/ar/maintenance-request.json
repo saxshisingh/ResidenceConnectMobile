@@ -1,0 +1,105 @@
+{
+  "form": {
+    "fields": {
+      "owner": {
+        "label": "المالك",
+        "placeholder": "اختر المالك",
+        "required": "المالك مطلوب"
+      },
+      "vehicleNumber": {
+        "label": "رقم اللوحة",
+        "placeholder": "رقم اللوحة",
+        "required": "رقم اللوحة مطلوب"
+      },
+      "model": {
+        "label": "الموديل",
+        "placeholder": "الموديل",
+        "required": "الموديل مطلوب"
+      },
+      "color": {
+        "label": "اللون",
+        "placeholder": "اللون",
+        "required": "اللون مطلوب"
+      },
+      "rcDocs": {
+        "label": "مستندات التسجيل (الهوية/جواز السفر)",
+        "placeholder": "مستندات التسجيل (الهوية/جواز السفر)",
+        "required": "مستندات التسجيل مطلوبة"
+      },
+      "vehicleType": {
+        "label": "نوع المركبة",
+        "placeholder": "اختر نوع المركبة",
+        "required": "نوع المركبة مطلوب"
+      }
+    }
+  },
+  "add": {
+    "title": "إضافة طلب صيانة",
+    "successMessage": "تمت إضافة طلب الصيانة بنجاح",
+    "errorMessage": "فشل في إضافة طلب الصيانة",
+    "submit": "حفظ طلب الصيانة"
+  },
+  "edit": {
+    "title": "تعديل طلب صيانة",
+    "errorLoadMessage": "فشل في تحميل تفاصيل طلب الصيانة",
+    "successMessage": "تم تحديث طلب الصيانة بنجاح",
+    "errorMessage": "فشل في تحديث طلب الصيانة",
+    "submit": "تحديث طلب الصيانة"
+  },
+  "delete": {
+    "title": "حذف طلب صيانة",
+    "message": "هل أنت متأكد أنك تريد حذف طلب الصيانة هذا؟",
+    "successMessage": "تم حذف طلب الصيانة بنجاح",
+    "errorMessage": "فشل في حذف طلب الصيانة"
+  },
+  "view": {
+    "title": "تفاصيل طلب الصيانة",
+    "loading": "جارٍ تحميل تفاصيل طلب الصيانة...",
+    "errorMessage": "فشل في تحميل تفاصيل طلب الصيانة.",
+    "fields": {
+      "owner": "المالك",
+      "vehicleNumber": "رقم اللوحة",
+      "numberPlate": "رقم اللوحة",
+      "model": "الموديل",
+      "color": "اللون",
+      "vehicleType": "نوع المركبة",
+      "occupancyStatus": "حالة الإشغال",
+      "ownershipType": "نوع الملكية"
+    }
+  },
+  "list": {
+    "title": "جميع طلبات الصيانة",
+    "add": "إضافة فني",
+    "columns": {
+      "requestId": "رقم الطلب",
+      "category": "الفئة",
+      "resident": "المقيم",
+      "unit": "الوحدة",
+      "issueSummary": "ملخص المشكلة",
+      "createdAt": "تاريخ الإنشاء",
+      "status": "الحالة"
+    },
+    "loading": "جارٍ تحميل طلبات الصيانة...",
+    "loadError": "فشل في تحميل طلبات الصيانة",
+    "filter": {
+      "serviceCategory": {
+        "label": "فئة الخدمة",
+        "placeholder": "بحث حسب فئة الخدمة"
+      },
+      "status": {
+        "label": "الحالة",
+        "placeholder": "بحث حسب الحالة"
+      },
+      "block": {
+        "label": "البلوك",
+        "placeholder": "بحث حسب البلوك"
+      }
+    }
+  },
+  "status": {
+    "pending": "قيد الانتظار",
+    "processing": "قيد المعالجة",
+    "completed": "مكتمل",
+    "rejected": "مرفوض"
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "form": {
+    "fields": {
+      "resident": {
+        "label": "المقيم",
+        "placeholder": "اختر المقيم",
+        "required": "المقيم مطلوب"
+      },
+      "billType": {
+        "label": "نوع الفاتورة",
+        "placeholder": "اختر نوع الفاتورة",
+        "required": "نوع الفاتورة مطلوب"
+      },
+      "amount": {
+        "label": "المبلغ",
+        "placeholder": "المبلغ",
+        "required": "المبلغ مطلوب",
+        "pattern": "أدخل مبلغًا صحيحًا",
+        "validate": "يرجى إدخال مبلغ صحيح"
+      },
+      "billFile": {
+        "label": "رفع الفاتورة",
+        "placeholder": "رفع ملف الفاتورة",
+        "required": "ملف الفاتورة مطلوب"
+      },
+      "notes": {
+        "label": "ملاحظات",
+        "placeholder": "أدخل ملاحظات"
+      }
+    }
+  },
+  "send": {
+    "title": "إرسال فاتورة",
+    "successMessage": "تم إرسال الفاتورة بنجاح",
+    "errorMessage": "فشل في إرسال الفاتورة",
+    "submit": "إرسال الفاتورة"
+  },
+  "edit": {
+    "title": "تعديل الفاتورة",
+    "errorLoadMessage": "فشل في تحميل تفاصيل الفاتورة",
+    "successMessage": "تم تحديث الفاتورة بنجاح",
+    "errorMessage": "فشل في تحديث الفاتورة",
+    "submit": "تحديث الفاتورة"
+  },
+  "markAsPaid": {
+    "successMessage": "تم تحديد الفاتورة كمدفوعة بنجاح",
+    "errorMessage": "فشل في تحديد الفاتورة كمدفوعة"
+  },
+  "list": {
+    "title": "سجل الفواتير",
+    "send": "إرسال فاتورة",
+    "columns": {
+      "resident": "اسم المقيم",
+      "billType": "نوع الفاتورة",
+      "amount": "المبلغ",
+      "createdOn": "تاريخ الإنشاء",
+      "status": "الحالة"
+    },
+    "loading": "جارٍ تحميل سجل الفواتير...",
+    "loadError": "فشل في تحميل سجل الفواتير.",
+    "filter": {
+      "resident": {
+        "label": "اسم المقيم",
+        "placeholder": "ابحث حسب المقيم"
+      },
+      "status": {
+        "label": "الحالة",
+        "placeholder": "ابحث حسب الحالة",
+        "options": {
+          "paid": "مدفوعة",
+          "unpaid": "غير مدفوعة"
+        }
+      }
+    }
+  }
+}

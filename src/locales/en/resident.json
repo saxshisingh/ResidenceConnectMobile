@@ -1,0 +1,213 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "First Name",
+                "placeholder": "First Name",
+                "required": "First Name is required"
+            },
+            "lastName": {
+                "label": "Last Name",
+                "placeholder": "Last Name",
+                "required": "Last Name is required"
+            },
+            "gender": {
+                "label": "Gender",
+                "placeholder": "Select Gender",
+                "required": "Gender is required",
+                "options": {
+                    "male": "Male",
+                    "female": "Female",
+                    "other": "Other"
+                }
+            },
+            "dateOfBirth": {
+                "label": "Date Of Birth",
+                "placeholder": "Date Of Birth",
+                "required": "Date Of Birth is required"
+            },
+            "petOwnership": {
+                "label": "Pet Ownership",
+                "placeholder": "Select Pet Ownership",
+                "required": "Pet Ownership is required",
+                "options": {
+                    "true": "True",
+                    "false": "False"
+                }
+            },
+            "maximumAllowedResidents": {
+                "label": "Maximum Allowed Residents",
+                "placeholder": "Maximum Allowed Residents",
+                "required": "Maximum Allowed Residents is required",
+                "pattern": "Only positive numbers are allowed",
+                "validate": "Must be greater than 0"
+            },
+            "mobileNumber": {
+                "label": "Mobile Number",
+                "placeholder": "Mobile Number",
+                "required": "Mobile Number is required",
+                "pattern": "Enter a valid Algerian phone number (local or international)",
+                "validate": "Mobile number must be a valid Algerian number"
+            },
+            "email": {
+                "label": "Email Address",
+                "placeholder": "Email",
+                "required": "Email is required"
+            },
+            "block": {
+                "label": "Block / Tower",
+                "placeholder": "Select Block",
+                "required": "Block is required"
+            },
+            "floor": {
+                "label": "Floor",
+                "placeholder": "Select Floor",
+                "required": "Floor is required"
+            },
+            "unit": {
+                "label": "Unit / Flat No.",
+                "placeholder": "Select Unit/Flat No.",
+                "required": "Unit/Flat No. is required"
+            },
+            "occupancyStatus": {
+                "label": "Occupancy Status",
+                "placeholder": "Select Occupancy Status",
+                "required": "Occupancy Status is required",
+                "options": {
+                    "occupied": "Occupied",
+                    "available": "Available",
+                    "reserved": "Reserved",
+                    "maintenance": "Maintenance"
+                }
+            },
+            "waterMeterNumber": {
+                "label": "Water Meter No.",
+                "placeholder": "Water Meter No.",
+                "required": "Water Meter No. is required"
+            },
+            "gasMeterNumber": {
+                "label": "Gas Meter No.",
+                "placeholder": "Gas Meter No.",
+                "required": "Gas Meter No. is required"
+            },
+            "electricityMeterNumber": {
+                "label": "Electricity Meter No.",
+                "placeholder": "Electricity Meter No.",
+                "required": "Electricity Meter No. is required"
+            },
+            "govtIdProofFile": {
+                "label": "Govt ID Proof (Aadhar/Passport)",
+                "placeholder": "Upload Govt ID Proof",
+                "required": "Government ID Proof is required"
+            },
+            "ownershipProofFile": {
+                "label": "Rental Agreement / Ownership Proof",
+                "placeholder": "Upload Rental Agreement / Ownership Proof",
+                "required": "Ownership Proof is required"
+            },
+            "profilePhotoFile": {
+                "label": "Profile Photo",
+                "placeholder": "Upload Profile Photo",
+                "required": "Profile Photo is required"
+            }
+        },
+        "sections": {
+            "basicInfo": "🧍 Basic Information",
+            "contactInfo": "📞 Contact Information",
+            "apartmentInfo": "🏠 Apartment / Unit Assignment",
+            "documentUpload": "📝 Document Upload"
+        }
+    },
+    "add": {
+        "title": "Add New Resident",
+        "successMessage": "Resident added successfully",
+        "errorMessage": "Failed to add resident",
+        "submit": "Save Resident"
+    },
+    "edit": {
+        "title": "Edit Resident",
+        "errorLoadMessage": "Failed to load resident details",
+        "successMessage": "Resident updated successfully",
+        "errorMessage": "Failed to update resident",
+        "submit": "Update Resident"
+    },
+    "delete": {
+        "title": "Delete Resident",
+        "message": "Are you sure you want to delete this resident?",
+        "successMessage": "Resident deleted successfully",
+        "errorMessage": "Failed to delete resident"
+    },
+    "view": {
+        "title": "Resident Details",
+        "loading": "Loading resident details...",
+        "errorMessage": "Failed to load resident details.",
+        "apartmentDetails": {
+            "title": "🏠 Apartment / Unit Assignment",
+            "block": "Block/Tower",
+            "unit": "Unit/Flat No.",
+            "floor": "Floor",
+            "occupancyStatus": "Occupancy Status"
+        },
+        "documentUpload": {
+            "title": "📝 Document Upload",
+            "govtIdProof": "Govt ID Proof (Aadhar/Passport)",
+            "rentalAgreement": "Rental Agreement / Ownership Proof",
+            "profilePhoto": "Profile Photo",
+            "fileTypes": "Accepted file types: PDF, JPG, PNG",
+            "maxSize": "Max file size: 5MB"
+        },
+        "parkingDetails": {
+            "title": "🅿️ Parking & Vehicle Details",
+            "parkingSlot": "Parking Slot",
+            "registeredVehicles": "Registered Vehicles",
+            "view": "View"
+        },
+        "accessPermissions": {
+            "title": "🔐 Access Permissions (TTLock)",
+            "manage": "Manage Permissions",
+            "doorAccess": "Door Access",
+            "visitorAccess": "Visitor Access",
+            "amenitiesAccess": "Amenities Access"
+        },
+        "familyMembers": {
+            "title": "👨‍👩‍👧 Family Members",
+            "manage": "Manage Members",
+            "noMembers": "No family members found."
+        },
+        "utilityDetails": {
+            "title": "Utility & Household Details",
+            "water": "Water Meter No.",
+            "gas": "Gas Meter No.",
+            "electricity": "Electricity Meter No.",
+            "petOwnership": "Pet Ownership"
+        }
+    },
+    "list": {
+        "title": "Residents List",
+        "add": "Add New Resident",
+        "columns": {
+            "profile": "Profile",
+            "owner": "Owner",
+            "phone": "Phone",
+            "block": "Block",
+            "unit": "Unit",
+            "status": "Status"
+        },
+        "loading": "Loading residents...",
+        "loadError": "Failed to load residents",
+        "filter": {
+            "name": {
+                "label": "Name",
+                "placeholder": "Search by Name"
+            },
+            "blockName": {
+                "label": "Block",
+                "placeholder": "Search by Block"
+            },
+            "floor": {
+                "label": "Floor",
+                "placeholder": "Search by Floor"
+            }
+        }
+    }
+}

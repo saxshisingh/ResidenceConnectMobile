@@ -1,0 +1,105 @@
+{
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "First Name",
+                "placeholder": "First Name",
+                "required": "First Name is required"
+            },
+            "lastName": {
+                "label": "Last Name",
+                "placeholder": "Last Name",
+                "required": "Last Name is required"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "Email is required"
+            },
+            "password": {
+                "label": "Password",
+                "placeholder": "Password",
+                "required": "Password is required"
+            },
+            "mobile": {
+                "label": "Mobile Number",
+                "placeholder": "Mobile Number",
+                "required": "Mobile Number is required",
+                "pattern": "Enter a valid Algerian phone number (local or international)",
+                "validate": "Must be greater than 0"
+            },
+            "role": {
+                "label": "Role Assignment",
+                "placeholder": "Select User Type",
+                "required": "Role Assignment is required"
+            },
+            "profilePhoto": {
+                "label": "Profile Photo (PNG, JPEG)",
+                "placeholder": "Profile Photo",
+                "required": "Profile Photo is required"
+            }
+        }
+    },
+    "users": {
+        "title": "Users"
+    },
+    "add": {
+        "title": "Add User",
+        "successMessage": "User added successfully",
+        "errorMessage": "Failed to add user",
+        "submit": "Save User"
+    },
+    "edit": {
+        "title": "Edit User",
+        "errorLoadMessage": "Failed to load user details.",
+        "successMessage": "User updated successfully",
+        "errorMessage": "Failed to update user",
+        "submit": "Update User"
+    },
+    "delete": {
+        "title": "Delete User",
+        "message": "Are you sure you want to delete this user?",
+        "successMessage": "User deleted successfully",
+        "errorMessage": "Failed to delete user"
+    },
+    "view": {
+        "title": "User Details",
+        "loading": "Loading user details...",
+        "errorMessage": "Failed to load user details.",
+        "fields": {
+            "roleName": "Role Name",
+            "assignedBuilding": "Assigned Building",
+            "status": "Status",
+            "lastLogin": "Last Login"
+        }
+    },
+    "list": {
+        "title": "All Users",
+        "add": "Add User",
+        "columns": {
+            "name": "Name",
+            "mobile": "Phone",
+            "email": "Email",
+            "role": "Role",
+            "model": "Model",
+            "assignedBlock": "Assigned Block",
+            "status": "Status"
+        },
+        "loading": "Loading users...",
+        "loadError": "Failed to load users",
+        "filter": {
+            "name": {
+                "label": "Name",
+                "placeholder": "Search by Name"
+            },
+            "role": {
+                "label": "Role",
+                "placeholder": "Search by Role"
+            }
+        }
+    }
+}

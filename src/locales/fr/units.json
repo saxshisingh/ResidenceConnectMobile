@@ -1,0 +1,17 @@
+{
+    "loading": "Chargement des unités...",
+    "loadError": "Échec du chargement des unités.",
+    "noUnits": "Aucune unité trouvée.",
+    "status": {
+        "Occupied": "Occupée",
+        "Vacant": "Disponible",
+        "Reserved": "Réservée",
+        "UnderMaintenance": "Maintenance"
+        },
+    "filter": {
+        "block": {
+            "label": "Bloc",
+            "placeholder": "Sélectionnez un bloc"
+        }
+    }
+}

@@ -1,0 +1,72 @@
+{
+    "form": {
+        "fields": {
+            "residence": {
+                "label": "المجمع السكني",
+                "placeholder": "اختر المجمع السكني",
+                "required": "المجمع السكني مطلوب"
+            },
+            "block": {
+                "label": "اسم المبنى",
+                "placeholder": "اسم المبنى",
+                "required": "اسم المبنى مطلوب"
+            },
+            "floors": {
+                "label": "عدد الطوابق",
+                "placeholder": "عدد الطوابق",
+                "required": "عدد الطوابق مطلوب"
+            }
+        }
+    },
+    "add": {
+        "title": "إضافة مبنى",
+        "successMessage": "تمت إضافة المبنى بنجاح",
+        "errorMessage": "فشل في إضافة المبنى",
+        "submit": "حفظ المبنى"
+    },
+    "edit": {
+        "title": "تعديل مبنى",
+        "errorLoadMessage": "فشل في تحميل تفاصيل المبنى",
+        "successMessage": "تم تحديث المبنى بنجاح",
+        "errorMessage": "فشل في تحديث المبنى",
+        "submit": "تحديث المبنى"
+    },
+    "delete": {
+        "title": "حذف مبنى",
+        "message": "هل أنت متأكد أنك تريد حذف هذا المبنى؟",
+        "successMessage": "تم حذف المبنى بنجاح",
+        "errorMessage": "فشل في حذف المبنى"
+    },
+    "view": {
+        "title": "تفاصيل المبنى",
+        "loading": "جارٍ تحميل تفاصيل المبنى...",
+        "errorMessage": "فشل في تحميل تفاصيل المبنى.",
+        "fields": {
+            "blockName": "اسم المبنى",
+            "residence": "المجمع السكني",
+            "floors": "عدد الطوابق",
+            "status": "الحالة"
+        }
+    },
+    "list": {
+        "title": "جميع المباني",
+        "add": "إضافة مبنى",
+        "columns": {
+            "blockName": "اسم المبنى",
+            "floors": "عدد الطوابق",
+            "residenceName": "اسم المجمع السكني"
+        },
+        "loading": "جارٍ تحميل المباني...",
+        "loadError": "فشل في تحميل المباني.",
+        "filter": {
+            "buildingName": {
+                "label": "اسم المبنى",
+                "placeholder": "البحث باسم المبنى"
+            },
+            "status": {
+                "label": "الحالة",
+                "placeholder": "البحث بالحالة"
+            }
+        }
+    }
+}

@@ -1,0 +1,81 @@
+{
+    "form": {
+        "fields": {
+            "residence": {
+                "label": "المجمع السكني",
+                "placeholder": "اختر المجمع السكني",
+                "required": "المجمع السكني مطلوب"
+            },
+            "block": {
+                "label": "المبنى",
+                "placeholder": "اختر المبنى",
+                "required": "المبنى مطلوب"
+            },
+            "floor": {
+                "label": "رقم الطابق",
+                "placeholder": "رقم الطابق",
+                "required": "رقم الطابق مطلوب",
+                "pattern": "أدخل رقم طابق صحيح",
+                "validate": "يجب أن يكون أكبر من 0"
+            },
+            "apartments": {
+                "label": "عدد الشقق",
+                "placeholder": "عدد الشقق",
+                "required": "عدد الشقق مطلوب",
+                "pattern": "أدخل عددًا صحيحًا للشقق",
+                "validate": "يجب أن يكون أكبر من 0"
+            }
+        }
+    },
+    "add": {
+        "title": "إضافة طابق",
+        "successMessage": "تمت إضافة الطابق بنجاح",
+        "errorMessage": "فشل في إضافة الطابق",
+        "submit": "حفظ الطابق"
+    },
+    "edit": {
+        "title": "تعديل الطابق",
+        "errorLoadMessage": "فشل في تحميل تفاصيل الطابق",
+        "successMessage": "تم تحديث الطابق بنجاح",
+        "errorMessage": "فشل في تحديث الطابق",
+        "submit": "تحديث الطابق"
+    },
+    "delete": {
+        "title": "حذف الطابق",
+        "message": "هل أنت متأكد أنك تريد حذف هذا الطابق؟",
+        "successMessage": "تم حذف الطابق بنجاح",
+        "errorMessage": "فشل في حذف الطابق"
+    },
+    "view": {
+        "title": "تفاصيل الطابق",
+        "loading": "جارٍ تحميل تفاصيل الطابق...",
+        "errorMessage": "فشل في تحميل تفاصيل الطابق.",
+        "fields": {
+            "residence": "اسم المجمع السكني",
+            "block": "المبنى",
+            "floor": "رقم الطابق"
+        }
+    },
+    "list": {
+        "title": "جميع الطوابق",
+        "add": "إضافة طابق",
+        "columns": {
+            "residence": "اسم المجمع السكني",
+            "block": "المبنى",
+            "floor": "رقم الطابق",
+            "apartments": "عدد الشقق"
+        },
+        "loading": "جارٍ تحميل الطوابق...",
+        "loadError": "فشل في تحميل الطوابق.",
+        "filter": {
+            "floor": {
+                "label": "رقم الطابق",
+                "placeholder": "بحث حسب رقم الطابق"
+            },
+            "block": {
+                "label": "المبنى",
+                "placeholder": "بحث حسب المبنى"
+            }
+        }
+    }
+}

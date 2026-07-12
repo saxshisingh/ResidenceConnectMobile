@@ -1,0 +1,125 @@
+{
+    "form": {
+        "fields": {
+            "owner": {
+                "label": "Owner",
+                "placeholder": "Select Owner",
+                "required": "Owner is required"
+            },
+            "vehicleNumber": {
+                "label": "Number Plate",
+                "placeholder": "Number Plate",
+                "required": "Number Plate is required"
+            },
+            "model": {
+                "label": "Model",
+                "placeholder": "Model",
+                "required": "Model is required"
+            },
+            "color": {
+                "label": "Color",
+                "placeholder": "Color",
+                "required": "Color is required"
+            },
+            "rcDocs": {
+                "label": "RC Docs (Aadhar/Passport)",
+                "placeholder": "RC Docs (Aadhar/Passport)",
+                "required": "RC Docs is required"
+            },
+            "vehicleType": {
+                "label": "Vehicle Type",
+                "placeholder": "Select Vehicle Type",
+                "required": "Type is required"
+            }
+        }
+    },
+    "add": {
+        "title": "Add Vehicle",
+        "successMessage": "Vehicle added successfully",
+        "errorMessage": "Failed to add vehicle",
+        "submit": "Save Vehicle"
+    },
+    "edit": {
+        "title": "Edit Vehicle",
+        "errorLoadMessage": "Failed to load vehicle details",
+        "successMessage": "Vehicle updated successfully",
+        "errorMessage": "Failed to update vehicle",
+        "submit": "Update Vehicle"
+    },
+    "delete": {
+        "title": "Delete Vehicle",
+        "message": "Are you sure you want to delete this vehicle?",
+        "successMessage": "Vehicle deleted successfully",
+        "errorMessage": "Failed to delete vehicle"
+    },
+    "view": {
+        "title": "Vehicle Details",
+        "loading": "Loading vehicle details...",
+        "errorMessage": "Failed to load vehicle details.",
+        "fields": {
+            "owner": "Owner",
+            "vehicleNumber": "Number Plate",
+            "model": "Model",
+            "color": "Color",
+            "vehicleType": "Vehicle Type",
+            "occupancyStatus": "Occupancy Status",
+            "ownershipType": "Ownership Type"
+        }
+    },
+    "list": {
+        "title": "All Vehicles",
+        "add": "Add Vehicle",
+        "columns": {
+            "residentName": "Owner",
+            "blockName": "Block",
+            "apartmentUnit": "Unit",
+            "vehicleNumber": "Vehicle No.",
+            "model": "Model",
+            "color": "Color",
+            "rcDocs": "RC Docs"
+        },
+        "loading": "Loading vehicles...",
+        "loadError": "Failed to load vehicles",
+        "filter": {
+            "residentName": {
+                "label": "Owner",
+                "placeholder": "Search by Owner"
+            },
+            "blockName": {
+                "label": "Block",
+                "placeholder": "Search by Block"
+            },
+            "vehicleType": {
+                "label": "Vehicle Type",
+                "placeholder": "Search by Vehicle Type"
+            },
+            "vehicleNumber": {
+                "label": "Vehicle No.",
+                "placeholder": "Search by Vehicle No."
+            },
+            "model": {
+                "label": "Model",
+                "placeholder": "Search by Model"
+            },
+            "color": {
+                "label": "Color",
+                "placeholder": "Search by Color"
+            }
+        }
+    },
+    "mobile": {
+        "title": "Vehicle",
+        "vehicleBrand": "Vehicle Brand",
+        "vehicleColor": "Vehicle Color",
+        "vehicleNumberPlate": "Vehicle Number Plate",
+        "uploadRcDocument": "Upload RC Document",
+        "rcDocument": "RC Document",
+        "residentNotFound": "Resident not found",
+        "requiredFields": "Please fill all required vehicle details",
+        "invalidFieldLength": "One or more fields are invalid",
+        "invalidPlate": "Please enter a valid vehicle number plate",
+        "invalidRcDoc": "RC document value is too long",
+        "emptyTitle": "No vehicles found",
+        "emptyDescription": "Add your vehicle details to manage parking and access."
+    }
+}

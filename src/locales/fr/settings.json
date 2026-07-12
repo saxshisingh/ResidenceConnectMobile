@@ -1,0 +1,85 @@
+{
+    "title": "Paramètres",
+    "theme": {
+        "label": "Apparence",
+        "light": "Mode Clair",
+        "dark": "Mode Sombre",
+        "system": "Mode Auto",
+        "followSystem": "Suivre le système",
+        "successMessage": "Thème mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du thème"
+    },
+    "language": {
+        "label": "Langue",
+        "successMessage": "Langue mise à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de la langue"
+    },
+    "bluetooth": {
+        "label": "Bluetooth",
+        "disconnected": "Bluetooth est OFF",
+        "connected": "Bluetooth est ON",
+        "successMessage": "Statut Bluetooth mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour du statut Bluetooth",
+        "enable": "Activer",
+        "disable": "Désactiver"
+    },
+    "security": {
+        "label": "Sécurité",
+        "login": "Se connecter",
+        "logout": "Se déconnecter",
+        "successMessage": "Paramètres de sécurité mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour des paramètres de sécurité",
+        "forgotPassword": "Mot de passe oublié"
+    },
+    "info": {
+        "label": "Infos sur l'application",
+        "version": "Version"
+    },
+    "mobile": {
+      "title": "Parametres",
+      "changeLanguage": "Changer la langue",
+      "changePassword": "Changer le mot de passe",
+      "darkMode": "Mode sombre",
+      "policies": "Politiques de confidentialite",
+      "policiesDescription": "Consultez nos documents de confidentialite, mentions legales et conditions d'utilisation. Touchez un element pour l'ouvrir dans votre navigateur.",
+      "policyPrivacy": "Politique de confidentialite",
+      "policyLegal": "Mentions legales",
+      "policyCgu": "Conditions d'utilisation",
+      "policyOpenError": "Impossible d'ouvrir cette politique pour le moment.",
+      "subtitle": "Gerez les preferences de votre application",
+      "preferences": "PREFERENCES",
+      "accountActions": "ACTIONS DU COMPTE",
+      "about": "A PROPOS",
+      "appVersion": "Version de l'application",
+      "deleteAccountTitle": "Supprimer mon compte",
+      "deleteAccountAction": "Supprimer mon compte",
+      "deleteAccountDescription": "Demandez la suppression definitive de votre compte directement depuis l'application.",
+      "deleteAccountConfirmMessage": "Voulez-vous vraiment supprimer votre compte ? Cette action est irreversible.",
+      "deleteAccountSuccess": "La demande de suppression du compte a ete traitee avec succes.",
+      "deleteAccountError": "Impossible de traiter votre demande de suppression du compte pour le moment.",
+      "deleteAccountEmailMissing": "Nous n'avons pas trouve l'adresse e-mail de ce compte. Veuillez mettre a jour votre profil ou contacter le support.",
+      "deleteAccountOpenError": "Impossible d'ouvrir la page de suppression du compte pour le moment."
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "subtitle": "Créez un nouveau mot de passe sécurisé",
+      "fields": {
+        "newPassword": "Nouveau mot de passe",
+        "confirmPassword": "Confirmer le mot de passe"
+      },
+      "validation": {
+        "minLength": "Le mot de passe doit contenir au moins 6 caractères",
+        "passwordMismatch": "Les mots de passe ne correspondent pas"
+      },
+      "tips": {
+        "minLength": "Doit contenir au moins 6 caractères"
+      },
+      "buttons": {
+        "update": "Mettre à jour le mot de passe",
+        "updating": "Mise à jour...",
+        "cancel": "Annuler"
+      },
+      "success": "Mot de passe mis à jour avec succès",
+      "error": "Échec de la mise à jour du mot de passe"
+    }
+}

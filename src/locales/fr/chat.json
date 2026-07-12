@@ -1,0 +1,109 @@
+{
+    "message": {
+        "title": "Boîte de Réception",
+        "broadCast": "Message de Diffusion",
+        "filter": {
+            "conversationType": {
+                "label": "Type de Conversation",
+                "placeholder": "Rechercher par type de conversation"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Rechercher par statut"
+            },
+            "block": {
+                "label": "Bloc",
+                "placeholder": "Rechercher par bloc"
+            }
+        },
+        "emptyChatState": "Sélectionnez une conversation pour commencer à discuter."
+    },
+    "broadcastMessage": {
+        "title": "Message de Diffusion",
+        "successMessage": "Message de diffusion envoyé avec succès !",
+        "errorMessage": "Échec de l'envoi du message de diffusion.",
+        "submit": "Envoyer la Diffusion",
+        "fields": {
+            "messageTitle": {
+                "label": "Titre du Message",
+                "placeholder": "Titre du Message",
+                "required": "Le titre est requis"
+            },
+            "messageBody": {
+                "label": "Contenu du Message",
+                "placeholder": "Contenu du Message",
+                "required": "Le message est requis"
+            },
+            "language": {
+                "label": "Langue",
+                "placeholder": "Sélectionnez la langue",
+                "required": "La langue est requise"
+            },
+            "blocks": {
+                "label": "Blocs",
+                "placeholder": "Sélectionner les blocs",
+                "required": "Le bloc est requis"
+            },
+            "allBlocks": {
+                "label": "Tous les Blocs",
+                "placeholder": "Sélectionner",
+                "required": "Tous les blocs sont requis"
+            },
+            "specificUnits": {
+                "label": "Unités Spécifiques (Optionnel)",
+                "placeholder": "Sélectionner les unités",
+                "required": "Les unités spécifiques sont requises"
+            },
+            "media": {
+                "label": "Téléverser Média",
+                "placeholder": "Téléverser Média",
+                "required": "Le média est requis"
+            }
+        }
+    },
+    "communicationLog": {
+        "delete": {
+            "title": "Supprimer le Message",
+            "message": "Êtes-vous sûr de vouloir supprimer ce message ?",
+            "successMessage": "Message supprimé avec succès",
+            "errorMessage": "Échec de la suppression du message"
+        }
+    },
+    "mobile": {
+        "title": "Messagerie",
+        "yesterday": "Hier",
+        "conversationSingle": "conversation",
+        "conversationPlural": "conversations",
+        "unreadCount": "{{count}} non lus",
+        "noConversationsTitle": "Aucune conversation pour le moment",
+        "noConversationsDescription": "Vos messages apparaitront ici une fois la discussion commencee",
+        "noMessagesYet": "Aucun message pour le moment",
+        "loadingMessages": "Chargement des messages...",
+        "messagePlaceholder": "Message..",
+        "unableToSendNow": "Impossible d'envoyer le message pour le moment.",
+        "sendFailed": "Impossible d'envoyer cette piece jointe pour le moment.",
+        "invalidMessageLength": "Le message doit contenir entre 1 et 500 caracteres",
+        "addAttachmentTitle": "Ajouter une piece jointe",
+        "addAttachmentMessage": "Choisissez comment joindre votre media.",
+        "photo": "Photo",
+        "camera": "Camera",
+        "document": "Document",
+        "video": "Video",
+        "audio": "Audio",
+        "openDocument": "Ouvrir le document",
+        "openVideo": "Ouvrir la video",
+        "playAudio": "Lire l'audio",
+        "galleryFailed": "Impossible d'ouvrir la galerie.",
+        "documentFailed": "Impossible d'ouvrir le selecteur de document.",
+        "documentUnavailable": "Le televersement de documents n'est pas encore disponible dans cette version installee de l'application.",
+        "cameraPermissionTitle": "Permission camera",
+        "cameraPermissionMessage": "L'application a besoin de la camera pour prendre une photo.",
+        "cameraPermissionRequired": "La permission camera est requise pour prendre une photo.",
+        "cameraFailed": "Impossible d'ouvrir la camera.",
+        "attachmentTooLarge": "Ce fichier est trop volumineux. Veuillez choisir une photo ou une video plus petite.",
+        "unableToOpenAttachment": "Impossible d'ouvrir cette piece jointe.",
+        "uploadErrorTitle": "Erreur de televersement",
+        "failedLabel": "Echec",
+        "startConversation": "Commencez la conversation !"
+    }
+}

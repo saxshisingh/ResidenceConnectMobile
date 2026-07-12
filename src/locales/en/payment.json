@@ -1,0 +1,76 @@
+{
+    "form": {
+        "fields": {
+            "resident": {
+                "label": "Resident",
+                "placeholder": "Select Resident",
+                "required": "Resident is required"
+            },
+            "billType": {
+                "label": "Bill Type",
+                "placeholder": "Select Bill Type",
+                "required": "Bill Type is required"
+            },
+            "amount": {
+                "label": "Amount",
+                "placeholder": "Amount",
+                "required": "Amount is required",
+                "pattern": "Enter a valid amount",
+                "validate": "Enter a valid amount"
+            },
+            "billFile": {
+                "label": "Upload Bill",
+                "placeholder": "Upload Bill File",
+                "required": "Bill file is required"
+            },
+            "notes": {
+                "label": "Notes",
+                "placeholder": "Enter Notes"
+            }
+        }
+    },
+    "send": {
+        "title": "Send Bill",
+        "successMessage": "Bill sent successfully",
+        "errorMessage": "Failed to send bill",
+        "submit": "Send Bill"
+    },
+    "edit": {
+        "title": "Edit Bill",
+        "errorLoadMessage": "Failed to load bill details",
+        "successMessage": "Bill updated successfully",
+        "errorMessage": "Failed to update bill",
+        "submit": "Update Bill"
+    },
+    "markAsPaid": {
+        "successMessage": "Bill marked as paid successfully",
+        "errorMessage": "Failed to mark bill as paid"
+    },
+    "list": {
+        "title": "Bill History",
+        "send": "Send Bill",
+        "columns": {
+            "resident": "Resident Name",
+            "billType": "Bill Type",
+            "amount": "Amount",
+            "createdOn": "Created On",
+            "status": "Status"
+        },
+        "loading": "Loading bill history...",
+        "loadError": "Failed to load bill history.",
+        "filter": {
+            "resident": {
+                "label": "Resident Name",
+                "placeholder": "Search by Resident"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Search by Status",
+                "options": {
+                    "paid": "Paid",
+                    "unpaid": "Unpaid"
+                }
+            }
+        }
+    }
+}

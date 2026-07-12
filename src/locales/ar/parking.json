@@ -1,0 +1,49 @@
+{
+  "form": {
+    "fields": {
+      "slotNumber": {
+        "label": "رقم الموقف",
+        "placeholder": "رقم الموقف",
+        "required": "رقم الموقف مطلوب"
+      },
+      "residence": {
+        "label": "المجمع السكني",
+        "placeholder": "اختر المجمع السكني",
+        "required": "المجمع السكني مطلوب"
+      },
+      "block": {
+        "label": "البلوك",
+        "placeholder": "اختر البلوك",
+        "required": "البلوك مطلوب"
+      },
+      "level": {
+        "label": "المستوى",
+        "placeholder": "المستوى",
+        "required": "المستوى مطلوب"
+      },
+      "status": {
+        "label": "الحالة",
+        "placeholder": "اختر الحالة",
+        "required": "الحالة مطلوبة"
+      }
+    }
+  },
+  "view": {
+    "title": "تفاصيل الموقف",
+    "loading": "جارٍ تحميل تفاصيل الموقف...",
+    "errorMessage": "فشل في تحميل تفاصيل الموقف.",
+    "fields": {
+      "slotNumber": "رقم الموقف",
+      "residence": "المجمع السكني",
+      "block": "اسم البلوك",
+      "level": "المستوى",
+      "status": "الحالة"
+    }
+  },
+  "list": {
+    "title": "المواقف",
+    "add": "إضافة موقف",
+    "loading": "جارٍ تحميل المواقف...",
+    "loadError": "فشل في تحميل المواقف."
+  }
+}

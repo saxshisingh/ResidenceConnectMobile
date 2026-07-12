@@ -1,0 +1,116 @@
+{
+  "form": {
+    "fields": {
+      "name": {
+        "label": "Nom",
+        "placeholder": "Nom",
+        "required": "Le nom est requis"
+      },
+      "gender": {
+        "label": "Genre",
+        "placeholder": "Selectionner le genre",
+        "required": "Le genre est requis",
+        "options": {
+          "male": "Homme",
+          "female": "Femme",
+          "other": "Autre"
+        }
+      },
+      "relation": {
+        "label": "Relation",
+        "placeholder": "Selectionner la relation",
+        "required": "La relation est requise",
+        "values": {
+          "Father": "Pere",
+          "Mother": "Mere",
+          "Son": "Fils",
+          "Daughter": "Fille",
+          "Spouse": "Conjoint(e)",
+          "Sibling": "Frere / Soeur",
+          "Other": "Autre"
+        }
+      },
+      "mobile": {
+        "label": "Mobile",
+        "placeholder": "Numero de mobile",
+        "required": "Le numero de mobile est requis",
+        "pattern": "Veuillez saisir un numero de mobile algerien valide",
+        "validate": "Le numero de mobile doit etre un numero algerien valide"
+      },
+      "accessPermission": {
+        "label": "Permission d'acces",
+        "placeholder": "Selectionner la permission d'acces",
+        "required": "La permission d'acces est requise",
+        "values": {
+          "Complete": "Complete",
+          "Partial": "Partielle",
+          "None": "Aucune"
+        }
+      }
+    }
+  },
+  "add": {
+    "title": "Ajouter un membre de la famille",
+    "successMessage": "Membre de la famille ajoute avec succes",
+    "errorMessage": "Echec de l'ajout du membre de la famille",
+    "submit": "Enregistrer le membre",
+    "subtitle": "Ajouter un nouveau membre du foyer"
+  },
+  "edit": {
+    "title": "Modifier le membre de la famille",
+    "errorLoadMessage": "Echec du chargement des details du membre de la famille",
+    "successMessage": "Membre de la famille mis a jour avec succes",
+    "errorMessage": "Echec de la mise a jour du membre de la famille",
+    "submit": "Mettre a jour le membre",
+    "subtitle": "Mettre a jour les informations du membre"
+  },
+  "delete": {
+    "title": "Supprimer le membre de la famille",
+    "message": "Etes-vous sur de vouloir supprimer ce membre de la famille ?",
+    "successMessage": "Membre de la famille supprime avec succes",
+    "errorMessage": "Echec de la suppression du membre de la famille"
+  },
+  "view": {
+    "title": "Details du membre de la famille",
+    "loading": "Chargement des details du membre de la famille...",
+    "errorMessage": "Echec du chargement des details du membre de la famille.",
+    "subtitle": "Voir les details du membre",
+    "badge": "VOIR",
+    "fields": {
+      "name": "Nom",
+      "gender": "Genre",
+      "relation": "Relation",
+      "mobile": "Mobile",
+      "accessPermission": "Permission d'acces"
+    }
+  },
+  "list": {
+    "title": "Membres de la famille",
+    "subtitle": "Gerez les membres de votre foyer",
+    "membersLabel": "MEMBRES",
+    "add": "Ajouter un membre de la famille",
+    "columns": {
+      "profile": "Profil",
+      "name": "Nom du membre",
+      "relation": "Relation",
+      "accessPermission": "Permission d'acces"
+    },
+    "loading": "Chargement des membres de la famille...",
+    "loadError": "Echec du chargement des membres de la famille",
+    "filter": {
+      "name": {
+        "label": "Nom",
+        "placeholder": "Rechercher par nom"
+      },
+      "relation": {
+        "label": "Relation",
+        "placeholder": "Rechercher par relation"
+      }
+    }
+  },
+  "sections": {
+    "personalInfo": "INFOS PERSONNELLES",
+    "contact": "CONTACT",
+    "statusAccess": "STATUT ET ACCES"
+  }
+}

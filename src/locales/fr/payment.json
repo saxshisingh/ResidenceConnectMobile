@@ -1,0 +1,76 @@
+{
+  "form": {
+    "fields": {
+      "resident": {
+        "label": "Resident",
+        "placeholder": "Selectionner le resident",
+        "required": "Le resident est requis"
+      },
+      "billType": {
+        "label": "Type de facture",
+        "placeholder": "Selectionner le type de facture",
+        "required": "Le type de facture est requis"
+      },
+      "amount": {
+        "label": "Montant",
+        "placeholder": "Montant",
+        "required": "Le montant est requis",
+        "pattern": "Entrez un montant valide",
+        "validate": "Entrez un montant valide"
+      },
+      "billFile": {
+        "label": "Televerser la facture",
+        "placeholder": "Televerser le fichier de facture",
+        "required": "Le fichier de facture est requis"
+      },
+      "notes": {
+        "label": "Notes",
+        "placeholder": "Entrer des notes"
+      }
+    }
+  },
+  "send": {
+    "title": "Envoyer la facture",
+    "successMessage": "Facture envoyee avec succes",
+    "errorMessage": "Echec de l'envoi de la facture",
+    "submit": "Envoyer la facture"
+  },
+  "edit": {
+    "title": "Modifier la facture",
+    "errorLoadMessage": "Echec du chargement des details de la facture",
+    "successMessage": "Facture mise a jour avec succes",
+    "errorMessage": "Echec de la mise a jour de la facture",
+    "submit": "Mettre a jour la facture"
+  },
+  "markAsPaid": {
+    "successMessage": "Facture marquee comme payee avec succes",
+    "errorMessage": "Echec du marquage de la facture comme payee"
+  },
+  "list": {
+    "title": "Historique des factures",
+    "send": "Envoyer la facture",
+    "columns": {
+      "resident": "Nom du resident",
+      "billType": "Type de facture",
+      "amount": "Montant",
+      "createdOn": "Creee le",
+      "status": "Statut"
+    },
+    "loading": "Chargement de l'historique des factures...",
+    "loadError": "Echec du chargement de l'historique des factures.",
+    "filter": {
+      "resident": {
+        "label": "Nom du resident",
+        "placeholder": "Rechercher par resident"
+      },
+      "status": {
+        "label": "Statut",
+        "placeholder": "Rechercher par statut",
+        "options": {
+          "paid": "Payee",
+          "unpaid": "Non payee"
+        }
+      }
+    }
+  }
+}

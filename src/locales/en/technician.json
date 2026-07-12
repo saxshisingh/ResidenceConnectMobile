@@ -1,0 +1,153 @@
+{
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "First Name",
+                "placeholder": "First Name",
+                "required": "First Name is required"
+            },
+            "lastName": {
+                "label": "Last Name",
+                "placeholder": "Last Name",
+                "required": "Last Name is required"
+            },
+            "gender": {
+                "label": "Gender",
+                "placeholder": "Select Gender",
+                "required": "Gender is required",
+                "options": {
+                    "male": "Male",
+                    "female": "Female",
+                    "other": "Other"
+                }
+            },
+            "mobile": {
+                "label": "Mobile Number",
+                "placeholder": "Mobile Number",
+                "required": "Mobile Number is required"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "Email is required"
+            },
+            "alternateContact": {
+                "label": "Alternate Contact",
+                "placeholder": "Alternate Contact",
+                "required": "Alternate Contact is required"
+            },
+            "serviceCategory": {
+                "label": "Service Category",
+                "placeholder": "Select Service Category",
+                "required": "Service Category is required"
+            },
+            "experience": {
+                "label": "Experience (Years)",
+                "placeholder": "Experience (Years)",
+                "required": "Experience is required"
+            },
+            "skillLevel": {
+                "label": "Skill Level",
+                "placeholder": "Skill Level",
+                "required": "Skill Level is required"
+            },
+            "availability": {
+                "label": "Availability",
+                "placeholder": "Availability Status",
+                "required": "Availability is required"
+            },
+            "workingHours": {
+                "label": "Working Hours",
+                "placeholder": "e.g. 9 AM - 5 PM",
+                "required": "Working Hours are required"
+            },
+            "govtIdProof": {
+                "label": "Government ID Proof",
+                "placeholder": "Government ID Proof",
+                "required": "Government ID is required"
+            },
+            "profilePhoto": {
+                "label": "Profile Photo",
+                "placeholder": "Profile Photo",
+                "required": "Profile Photo is required"
+            }
+        },
+        "sections": {
+            "technicianDetails": "🧑‍🔧 Technician Details",
+            "professionalInfo": "🛠 Professional Information",
+            "documents": "📝 Documents"
+        }
+    },
+    "add": {
+        "title": "Add Technician",
+        "successMessage": "Technician added successfully",
+        "errorMessage": "Failed to add technician",
+        "submit": "Save Technician"
+    },
+    "edit": {
+        "title": "Edit Technician",
+        "errorLoadMessage": "Failed to load technician details",
+        "successMessage": "Technician updated successfully",
+        "errorMessage": "Failed to update technician",
+        "submit": "Update Technician"
+    },
+    "delete": {
+        "title": "Delete Technician",
+        "message": "Are you sure you want to delete this technician?",
+        "successMessage": "Technician deleted successfully",
+        "errorMessage": "Failed to delete technician",
+        "invalidRecord": "Invalid technician record"
+    },
+    "view": {
+        "title": "Technician Details",
+        "loading": "Loading technician details...",
+        "errorMessage": "Failed to load technician details.",
+        "technicianDetails": {
+            "title": "🧑‍🔧 Technician Information",
+            "firstName": "First Name",
+            "lastName": "Last Name",
+            "gender": "Gender",
+            "experience": "Experience (Years)",
+            "skill": "Skill Level",
+            "availability": "Availability Status"
+        },
+        "serviceDetails": {
+            "title": "🛠️ Service Details",
+            "serviceCategory": "Service Category",
+            "workingHours": "Working Hours"
+        },
+        "documentDetails": {
+            "title": "📝 Documents",
+            "govtId": "Govt ID Proof",
+            "profilePhoto": "Profile Photo"
+        }
+    },
+    "list": {
+        "title": "Technicians List",
+        "add": "Add Technician",
+        "columns": {
+            "name": "Technician Name",
+            "serviceCategory": "Service Category",
+            "mobileNumber": "Mobile Number",
+            "skillLevel": "Skill Level",
+            "availability": "Availability",
+            "experience": "Experience (Years)"
+        },
+        "loading": "Loading technicians...",
+        "loadError": "Failed to load technicians.",
+        "filter": {
+            "name": {
+                "label": "Technician Name",
+                "placeholder": "Search by Technician Name"
+            },
+            "availability": {
+                "label": "Availability",
+                "placeholder": "Search by Availability"
+            },
+            "serviceCategory": {
+                "label": "Service Category",
+                "placeholder": "Search by Service Category"
+            }
+        }
+    }
+}

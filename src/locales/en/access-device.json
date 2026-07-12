@@ -1,0 +1,132 @@
+{
+    "form": {
+        "fields": {
+            "deviceName": {
+                "label": "Device Name",
+                "placeholder": "Device Name",
+                "required": "Device Name is required"
+            },
+            "deviceType": {
+                "label": "Device Type",
+                "placeholder": "Select Device Type",
+                "required": "Device Type is required",
+                "options": {
+                    "door": "Door",
+                    "elevator": "Elevator"
+                }
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Select Block",
+                "required": "Block is required"
+            },
+            "floor": {
+                "label": "Floor",
+                "placeholder": "Select Floor",
+                "required": "Floor is required"
+            },
+            "notes": {
+                "label": "Installation Location Notes",
+                "placeholder": "Installation Location Notes",
+                "required": "Installation Location Notes is required"
+            }
+        }
+    },
+    "doorPermission": {
+        "title": "Resident Door Permission Matrix",
+        "export": "Export CSV",
+        "modal": {
+            "title": "Door Access Permissions",
+            "selectDoors": "Select Doors",
+            "loading": "Loading doors…",
+            "noDevices": "No door devices configured for this block",
+            "grantAccess": "Grant Access",
+            "saving": "Saving...",
+            "cancel": "Cancel",
+            "warnings": {
+                "selectAtLeastOne": "Please select at least one door"
+            },
+            "success": {
+                "granted": "Door access granted successfully"
+            }
+        },
+        "errors": {
+        "loadResidents": "Failed to load residents",
+        "loadData": "Failed to load data"
+        }
+    },
+    "add": {
+        "title": "Add Access Device",
+        "successMessage": "Access device added successfully",
+        "errorMessage": "Failed to add access device",
+        "submit": "Save Access Device"
+    },
+    "edit": {
+        "title": "Edit Access Device",
+        "errorLoadMessage": "Failed to load access device details",
+        "successMessage": "Access device updated successfully",
+        "errorMessage": "Failed to update access device",
+        "submit": "Update Access Device"
+    },
+    "delete": {
+        "title": "Delete Access Device",
+        "message": "Are you sure you want to delete this access device?",
+        "successMessage": "Device deleted successfully",
+        "errorMessage": "Failed to delete device"
+    },
+    "view": {
+        "title": "Access Device Details",
+        "loading": "Loading access device details...",
+        "errorMessage": "Failed to load access device details.",
+        "fields": {
+            "deviceName": "Device Name",
+            "deviceType": "Device Type",
+            "lockId": "Lock ID",
+            "block": "Block",
+            "floor": "Floor",
+            "status": "Status"
+        }
+    },
+    "list": {
+        "title": "All Access Devices",
+        "add": "Add Access Device",
+        "columns": {
+            "deviceName": "Device Name",
+            "deviceType": "Type",
+            "lockId": "Lock ID",
+            "block": "Block",
+            "floor": "Floor",
+            "status": "Status"
+        },
+        "loading": "Loading access devices...",
+        "loadError": "Failed to load access devices.",
+        "filter": {
+            "deviceName": {
+                "label": "Device Name",
+                "placeholder": "Search by Device Name"
+            },
+            "block": {
+                "label": "Block",
+                "placeholder": "Search by Block"
+            },
+            "floor": {
+                "label": "Floor",
+                "placeholder": "Search by Floor"
+            },
+            "deviceType": {
+                "label": "Device Type",
+                "placeholder": "Search by Device Type",
+                "options": {
+                    "door": "Door",
+                    "elevator": "Elevator"
+                }
+            }
+        }
+    },
+    "status": {
+        "Processing": "Processing",
+        "Approved": "Approved",
+        "Rejected": "Rejected",
+        "Unknown": "Unknown"
+    }
+}

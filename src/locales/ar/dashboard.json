@@ -1,0 +1,30 @@
+{
+    "title": "لوحة التحكم",
+    "loading": "جارٍ تحميل لوحة التحكم...",
+    "error": "فشل في تحميل بيانات لوحة التحكم.",
+    "export": "تصدير",
+    "summary": {
+        "totalResidents": "إجمالي السكان",
+        "active": "نشط",
+        "ttlockAccessLogs": "سجلات دخول TTLock",
+        "doors": "الأبواب",
+        "elevators": "المصاعد",
+        "visitorEntries": "دخول الزوار",
+        "alertsToday": "تنبيهات اليوم",
+        "critical": "حرجة"
+    },
+    "alerts": {
+        "overview": "نظرة عامة على التنبيهات",
+        "total": "الإجمالي",
+        "today": "اليوم",
+        "critical": "حرجة"
+    },
+    "maintenance": {
+        "title": "طلبات الصيانة حسب الفئة"
+    },
+    "community": {
+        "title": "المجتمع",
+        "totalPosts": "إجمالي المنشورات",
+        "postsThisMonth": "منشورات هذا الشهر"
+    }
+}

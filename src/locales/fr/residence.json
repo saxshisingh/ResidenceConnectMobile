@@ -1,0 +1,100 @@
+{
+    "form": {
+        "fields": {
+            "residentName": {
+                "label": "Nom du résident",
+                "placeholder": "Nom du résident",
+                "required": "Le nom du résident est requis"
+            },
+            "address": {
+                "label": "Adresse",
+                "placeholder": "Adresse",
+                "required": "L'adresse est requise"
+            },
+            "blocks": {
+                "label": "Nombre total de blocs",
+                "placeholder": "Nombre total de blocs",
+                "required": "Le nombre total de blocs est requis",
+                "pattern": "Seuls les nombres positifs sont autorisés",
+                "validate": "Doit être supérieur à 0"
+            },
+            "parkingSlot": {
+                "label": "Nombre total de places de parking",
+                "placeholder": "Nombre total de places de parking",
+                "required": "Le nombre total de places de parking est requis",
+                "pattern": "Seuls les nombres positifs sont autorisés",
+                "validate": "Doit être supérieur à 0"
+            }
+        }
+    },
+    "add": {
+        "title": "Ajouter une nouvelle résidence",
+        "successMessage": "Résidence ajoutée avec succès",
+        "errorMessage": "Échec de l'ajout de la résidence",
+        "submit": "Enregistrer la résidence"
+    },
+    "edit": {
+        "title": "Modifier la résidence",
+        "errorLoadMessage": "Échec du chargement des détails de la résidence",
+        "successMessage": "Résidence mise à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de la résidence",
+        "submit": "Mettre à jour la résidence"
+    },
+    "delete": {
+        "title": "Supprimer la résidence",
+        "message": "Êtes-vous sûr de vouloir supprimer cette résidence ?",
+        "successMessage": "Résidence supprimée avec succès",
+        "errorMessage": "Échec de la suppression de la résidence"
+    },
+    "view": {
+        "title": "Détails de la résidence",
+        "loading": "Chargement des détails de la résidence...",
+        "errorMessage": "Échec du chargement des détails de la résidence.",
+        "fields": {
+            "residence": "Nom de la résidence",
+            "address": "Adresse",
+            "blocks": "Nombre de blocs",
+            "allowedResidents": "Nombre total de résidents autorisés",
+            "parkingSlots": "Nombre total de places de parking"
+        }
+    },
+    "list": {
+        "title": "Toutes les résidences",
+        "add": "Ajouter une résidence",
+        "import": "Importer des résidences",
+        "downloadTemplate": "Télécharger l'exemple",
+        "columns": {
+            "residenceName": "Nom de la résidence",
+            "address": "Adresse",
+            "totalBlocks": "Nombre total de blocs",
+            "maxResidents": "Nombre maximum de résidents autorisés",
+            "maxParkingSlot": "Nombre maximum de places de parking autorisées",
+            "status": "Statut"
+        },
+        "loading": "Chargement des résidences...",
+        "loadError": "Échec du chargement des résidences",
+        "filter": {
+            "residenceName": {
+                "label": "Nom de la résidence",
+                "placeholder": "Rechercher par nom de résidence"
+            },
+            "address": {
+                "label": "Adresse",
+                "placeholder": "Rechercher par adresse"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Rechercher par statut"
+            }
+        }
+    },
+    "import": {
+        "title": "Importer un fichier Excel de résidence",
+        "cancel": "Annuler",
+        "importing": "Importation en cours...",
+        "import": "Importer",
+        "errorMessage": "Échec de l'importation.",
+        "successMessage": "Importé avec succès !",
+        "fileRequiredError": "Veuillez sélectionner un fichier"
+    }
+}

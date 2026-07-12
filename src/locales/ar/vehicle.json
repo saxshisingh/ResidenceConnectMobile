@@ -1,0 +1,100 @@
+{
+  "form": {
+    "fields": {
+      "owner": {
+        "label": "المالك",
+        "placeholder": "اختر المالك",
+        "required": "المالك مطلوب"
+      },
+      "vehicleNumber": {
+        "label": "رقم المركبة",
+        "placeholder": "رقم المركبة",
+        "required": "رقم المركبة مطلوب"
+      },
+      "model": {
+        "label": "الموديل",
+        "placeholder": "الموديل",
+        "required": "الموديل مطلوب"
+      },
+      "color": {
+        "label": "اللون",
+        "placeholder": "اللون",
+        "required": "اللون مطلوب"
+      },
+      "rcDocs": {
+        "label": "مستندات تسجيل المركبة",
+        "placeholder": "مستندات تسجيل المركبة",
+        "required": "مستندات التسجيل مطلوبة"
+      },
+      "vehicleType": {
+        "label": "نوع المركبة",
+        "placeholder": "اختر نوع المركبة",
+        "required": "نوع المركبة مطلوب"
+      }
+    }
+  },
+  "add": {
+    "title": "إضافة مركبة",
+    "successMessage": "تمت إضافة المركبة بنجاح",
+    "errorMessage": "فشل في إضافة المركبة",
+    "submit": "حفظ المركبة"
+  },
+  "edit": {
+    "title": "تعديل المركبة",
+    "errorLoadMessage": "فشل في تحميل تفاصيل المركبة",
+    "successMessage": "تم تحديث المركبة بنجاح",
+    "errorMessage": "فشل في تحديث المركبة",
+    "submit": "تحديث المركبة"
+  },
+  "delete": {
+    "title": "حذف المركبة",
+    "message": "هل أنت متأكد أنك تريد حذف هذه المركبة؟",
+    "successMessage": "تم حذف المركبة بنجاح",
+    "errorMessage": "فشل في حذف المركبة"
+  },
+  "view": {
+    "title": "تفاصيل المركبة",
+    "loading": "جارٍ تحميل تفاصيل المركبة...",
+    "errorMessage": "فشل في تحميل تفاصيل المركبة.",
+    "fields": {
+      "owner": "المالك",
+      "vehicleNumber": "رقم المركبة",
+      "model": "الموديل",
+      "color": "اللون",
+      "vehicleType": "نوع المركبة",
+      "occupancyStatus": "حالة الإشغال",
+      "ownershipType": "نوع الملكية"
+    }
+  },
+  "list": {
+    "title": "المركبات",
+    "add": "إضافة مركبة",
+    "deleteTitle": "حذف المركبة",
+    "deleteConfirm": "هل أنت متأكد أنك تريد حذف هذه المركبة؟",
+    "deleteSuccess": "تم حذف المركبة بنجاح",
+    "deleteError": "فشل في حذف المركبة",
+    "loadError": "فشل في تحميل المركبات"
+  },
+  "mobile": {
+    "title": "المركبات",
+    "vehicleBrand": "ماركة المركبة",
+    "vehicleColor": "لون المركبة",
+    "vehicleNumberPlate": "رقم لوحة المركبة",
+    "uploadRcDocument": "رفع مستند RC",
+    "rcDocument": "مستند RC",
+    "residentNotFound": "تعذر العثور على المقيم",
+    "requiredFields": "يرجى تعبئة جميع بيانات المركبة المطلوبة",
+    "invalidFieldLength": "أحد الحقول قصير جدًا أو طويل جدًا",
+    "invalidPlate": "يرجى إدخال رقم لوحة صالح",
+    "invalidRcDoc": "قيمة مستند RC غير صالحة",
+    "emptyTitle": "لا توجد مركبات مسجلة",
+    "emptyDescription": "أضف مركبتك الأولى لإدارة تفاصيل المركبات.",
+    "manageVehicles": "إدارة المركبات",
+    "vehiclesCountLabel": "المركبات",
+    "viewVehicleInformation": "عرض معلومات المركبة",
+    "updateVehicleDetails": "تحديث تفاصيل المركبة",
+    "registerVehicle": "تسجيل مركبة جديدة",
+    "vehicleInfoSection": "معلومات المركبة",
+    "numberPlateSection": "رقم اللوحة"
+  }
+}

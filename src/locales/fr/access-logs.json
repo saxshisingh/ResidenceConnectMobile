@@ -1,0 +1,62 @@
+{
+    "accessLogs": {
+        "title": "Journaux d’accès",
+        "add": "Ajouter un dispositif",
+        "elevator": "Journaux d’ascenseur",
+        "columns": {
+            "residentName": "Nom du résident",
+            "unit": "Unité",
+            "device": "Dispositif",
+            "actionResult": "Résultat de l’action",
+            "time": "Heure",
+            "accessType": "Type d’accès"
+        },
+        "loading": "Chargement des journaux d’accès...",
+        "loadError": "Échec du chargement des journaux d’accès.",
+        "filter": {
+            "resident": {
+                "label": "Résident",
+                "placeholder": "Rechercher par résident"
+            },
+            "device": {
+                "label": "Dispositif",
+                "placeholder": "Rechercher par dispositif"
+            },
+            "result": {
+                "label": "Résultat d’accès",
+                "placeholder": "Rechercher par résultat",
+                "options": {
+                    "success": "Succès",
+                    "failed": "Échec",
+                    "timeout": "Délai dépassé"
+                }
+            }
+        },
+        "accessResults": {
+            "success": "Succès",
+            "failed": "Échec",
+            "timeout": "Délai dépassé"
+        }
+    },
+    "elevatorLogs": {
+        "title": "Journaux d’utilisation de l’ascenseur",
+        "add": "Ajouter un dispositif",
+        "export": "Exporter CSV",
+        "elevator": "Journaux d’ascenseur",
+        "columns": {
+            "resident": "Résident",
+            "fromFloor": "Étage de départ",
+            "toFloor": "Étage d’arrivée",
+            "time": "Heure",
+            "accessType": "Type d’accès"
+        },
+        "loading": "Chargement des journaux d’ascenseur...",
+        "loadError": "Échec du chargement des journaux d’ascenseur.",
+        "filter": {
+            "resident": {
+                "label": "Résident",
+                "placeholder": "Rechercher par résident"
+            }
+        }
+    }
+}

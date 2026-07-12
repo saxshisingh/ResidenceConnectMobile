@@ -1,0 +1,155 @@
+{
+    "form": {
+        "fields": {
+            "block": {
+                "label": "Block Name",
+                "placeholder": "Block Name",
+                "required": "Block Name is required"
+            },
+            "allBlocks": {
+                "label": "All Blocks",
+                "placeholder": "All Blocks",
+                "required": "All Blocks is required",
+                "values": {
+                    "true": "Yes",
+                    "false": "No"
+                }
+            },
+            "urgency": {
+                "label": "Alert Urgency Level",
+                "placeholder": "Alert Urgency Level",
+                "required": "Alert Urgency Level is required"
+            },
+            "title": {
+                "label": "Alert Title",
+                "placeholder": "Title",
+                "required": "Alert Title is required"
+            },
+            "message": {
+                "label": "Alert Message",
+                "placeholder": "Notification Content",
+                "required": "Message is required"
+            },
+            "language": {
+                "label": "Language",
+                "placeholder": "Select Language",
+                "required": "Language is required"
+            },
+            "media": {
+                "label": "Upload Media (PNG, JPEG)",
+                "placeholder": "Upload Media",
+                "required": "Media is required"
+            },
+            "location": {
+                "label": "Location",
+                "placeholder": "Location",
+                "required": "Location is required"
+            }
+        }
+    },
+    "add": {
+        "title": "Send Alert Notification",
+        "successMessage": "Alert notification sent successfully.",
+        "errorMessage": "Failed to send alert notification.",
+        "submit": "Send Alert"
+    },
+    "edit": {
+        "title": "Edit Alert Notification",
+        "errorLoadMessage": "Failed to load alert notification details.",
+        "successMessage": "Alert notification updated successfully.",
+        "errorMessage": "Failed to update alert notification.",
+        "submit": "Update Alert"
+    },
+    "delete": {
+        "title": "Delete Alert Notification",
+        "message": "Are you sure you want to delete this alert notification?",
+        "successMessage": "Alert notification deleted successfully.",
+        "errorMessage": "Failed to delete alert notification."
+    },
+    "view": {
+        "title": "Alert Details",
+        "download": "Download",
+        "preview": "Preview",
+        "loading": "Loading alert notification details...",
+        "errorMessage": "Failed to load alert notification details.",
+        "fields": {
+            "alertId": "Alert ID",
+            "title": "Alert Title",
+            "sentOn": "Sent On",
+            "sentBy": "Sent By",
+            "urgency": "Urgency Level",
+            "targetBlocks": "Target Blocks",
+            "totalRecipients": "Total Recipients",
+            "acknowledgement": "Acknowledgement",
+            "messageBody": "Message Body",
+            "attachment": {
+                "label": "Attachment",
+                "noAttachment": "No attachments"
+            }
+        }
+    },
+    "list": {
+        "title": "Alert Logs",
+        "add": "Create Alert",
+        "columns": {
+            "title": "Title",
+            "urgencyLevel": "Urgency",
+            "blockName": "Block",
+            "unit": "Unit",
+            "sentOn": "Sent On",
+            "delivered": "Delivered"
+        },
+        "loading": "Loading notifications...",
+        "loadError": "Failed to load notifications.",
+        "filter": {
+            "title": {
+                "label": "Title",
+                "placeholder": "Search by Title"
+            },
+            "urgency": {
+                "label": "Urgency",
+                "placeholder": "Search by Urgency"
+            },
+            "status": {
+                "label": "Status",
+                "placeholder": "Select Status"
+            }
+        }
+    },
+    "mobile": {
+        "system": {
+            "title": "Alert System",
+            "emergencyTitle": "Emergency Use Only",
+            "emergencyText": "Triggering an alert will notify all relevant residents and the management team immediately.",
+            "alertMyBlock": "Alert My Block",
+            "alertEntireBuilding": "Alert Entire Building",
+            "infoIntro": "Please trigger alerts only for genuine emergencies such as:",
+            "bulletFire": "Fire",
+            "bulletMedical": "Medical emergency",
+            "bulletSuspicious": "Suspicious activity",
+            "bulletSecurity": "Security threat",
+            "misuseWarning": "Misuse of this function may result in penalties.",
+            "pastAlerts": "Past Alerts",
+            "viewAll": "View All",
+            "noAlertsYet": "No alerts yet",
+            "noAlertsYetDesc": "Recent emergency alerts will appear here.",
+            "allAlertsTitle": "All Alerts",
+            "loadingAlerts": "Loading alerts...",
+            "noAlertsFound": "No alerts found",
+            "noAlertsFoundDesc": "All emergency alerts will appear here."
+        },
+        "block": {
+            "alertType": "Alert Type",
+            "alertTypePlaceholder": "e.g., Fire Emergency, Medical Emergency",
+            "description": "Description",
+            "descriptionPlaceholder": "Describe the emergency situation...",
+            "yourLocation": "Your Location",
+            "addPhoto": "Add Photo (Optional)",
+            "tapToUpload": "Tap to upload photo",
+            "userNotFound": "User information not found",
+            "successTitle": "Success",
+            "successBuilding": "Alert sent successfully to entire building",
+            "successBlock": "Alert sent successfully to your block"
+        }
+    }
+}

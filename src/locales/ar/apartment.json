@@ -1,0 +1,107 @@
+{
+    "form": {
+        "fields": {
+            "unit": {
+                "label": "رقم الشقة",
+                "placeholder": "أدخل رقم الشقة",
+                "required": "رقم الشقة مطلوب"
+            },
+            "block": {
+                "label": "المبنى",
+                "placeholder": "اختر المبنى",
+                "required": "المبنى مطلوب"
+            },
+            "floorNumber": {
+                "label": "رقم الطابق",
+                "placeholder": "اختر الطابق",
+                "required": "الطابق مطلوب"
+            },
+            "apartmentType": {
+                "label": "نوع الشقة",
+                "placeholder": "اختر نوع الشقة",
+                "required": "نوع الشقة مطلوب"
+            },
+            "occupancyStatus": {
+                "label": "حالة الإشغال",
+                "placeholder": "اختر حالة الإشغال",
+                "required": "حالة الإشغال مطلوبة"
+            },
+            "ownershipType": {
+                "label": "نوع الملكية",
+                "placeholder": "اختر نوع الملكية",
+                "required": "نوع الملكية مطلوبة"
+            }
+        }
+    },
+    "occupancyModal": {
+      "unit": "الوحدة",
+      "floor": "الطابق",
+      "status": {
+        "occupied": "مشغولة",
+        "vacant": "شاغرة"
+      },
+      "fields": {
+        "resident": "السكان",
+        "vehicles": "المركبات",
+        "parkingSlot": "موقف السيارة",
+        "location": "الموقع"
+      }
+    },
+    "add": {
+        "title": "إضافة شقة",
+        "successMessage": "تمت إضافة الشقة بنجاح",
+        "errorMessage": "فشل في إضافة الشقة",
+        "submit": "حفظ الشقة"
+    },
+    "edit": {
+        "title": "تعديل شقة",
+        "errorLoadMessage": "فشل في تحميل تفاصيل الشقة",
+        "successMessage": "تم تحديث الشقة بنجاح",
+        "errorMessage": "فشل في تحديث الشقة",
+        "submit": "تحديث الشقة"
+    },
+    "delete": {
+        "title": "حذف شقة",
+        "message": "هل أنت متأكد أنك تريد حذف هذه الشقة؟",
+        "successMessage": "تم حذف الشقة بنجاح",
+        "errorMessage": "فشل في حذف الشقة"
+    },
+    "view": {
+        "title": "تفاصيل الشقة",
+        "loading": "جارٍ تحميل تفاصيل الشقة...",
+        "errorMessage": "فشل في تحميل تفاصيل الشقة.",
+        "fields": {
+            "residence": "المجمع السكني",
+            "unit": "رقم الشقة",
+            "apartmentType": "نوع الشقة",
+            "floorNumber": "رقم الطابق",
+            "block": "المبنى",
+            "occupancyStatus": "حالة الإشغال",
+            "ownershipType": "نوع الملكية"
+        }
+    },
+    "list": {
+        "title": "جميع الشقق",
+        "add": "إضافة شقة",
+        "columns": {
+            "unit": "رقم الشقة",
+            "floorNumber": "رقم الطابق",
+            "block": "المبنى",
+            "apartmentType": "نوع الشقة",
+            "occupancyStatus": "حالة الإشغال",
+            "ownershipType": "نوع الملكية"
+        },
+        "loading": "جارٍ تحميل الشقق...",
+        "loadError": "فشل في تحميل الشقق",
+        "filter": {
+            "floorNumber": {
+                "label": "رقم الطابق",
+                "placeholder": "البحث برقم الطابق"
+            },
+            "blockName": {
+                "label": "المبنى",
+                "placeholder": "البحث بالمبنى"
+            }
+        }
+    }
+}

@@ -1,0 +1,105 @@
+{
+    "login": "Connexion",
+    "logout": "Déconnexion",
+    "email": "Email",
+    "password": "Mot de passe",
+    "form": {
+        "fields": {
+            "firstName": {
+                "label": "Prénom",
+                "placeholder": "Prénom",
+                "required": "Le prénom est requis"
+            },
+            "lastName": {
+                "label": "Nom",
+                "placeholder": "Nom",
+                "required": "Le nom est requis"
+            },
+            "email": {
+                "label": "Email",
+                "placeholder": "Email",
+                "required": "L'email est requis"
+            },
+            "password": {
+                "label": "Mot de passe",
+                "placeholder": "Mot de passe",
+                "required": "Le mot de passe est requis"
+            },
+            "mobile": {
+                "label": "Numéro de téléphone",
+                "placeholder": "Numéro de téléphone",
+                "required": "Le numéro de téléphone est requis",
+                "pattern": "Veuillez entrer un numéro de téléphone valide",
+                "validate": "Doit être supérieur à 0"
+            },
+            "role": {
+                "label": "Attribution du rôle",
+                "placeholder": "Sélectionnez le type d'utilisateur",
+                "required": "L'attribution du rôle est requise"
+            },
+            "profilePhoto": {
+                "label": "Photo de profil (PNG, JPEG)",
+                "placeholder": "Photo de profil",
+                "required": "La photo de profil est requise"
+            }
+        }
+    },
+    "users": {
+        "title": "Utilisateurs"
+    },
+    "add": {
+        "title": "Ajouter un utilisateur",
+        "successMessage": "Utilisateur ajouté avec succès",
+        "errorMessage": "Échec de l'ajout de l'utilisateur",
+        "submit": "Enregistrer l'utilisateur"
+    },
+    "edit": {
+        "title": "Modifier l'utilisateur",
+        "errorLoadMessage": "Échec du chargement des détails de l'utilisateur.",
+        "successMessage": "Utilisateur mis à jour avec succès",
+        "errorMessage": "Échec de la mise à jour de l'utilisateur",
+        "submit": "Mettre à jour l'utilisateur"
+    },
+    "delete": {
+        "title": "Supprimer l'utilisateur",
+        "message": "Êtes-vous sûr de vouloir supprimer cet utilisateur ?",
+        "successMessage": "Utilisateur supprimé avec succès",
+        "errorMessage": "Échec de la suppression de l'utilisateur"
+    },
+    "view": {
+        "title": "Détails de l'utilisateur",
+        "loading": "Chargement des détails de l'utilisateur...",
+        "errorMessage": "Échec du chargement des détails de l'utilisateur.",
+        "fields": {
+            "roleName": "Nom du rôle",
+            "assignedBuilding": "Bâtiment attribué",
+            "status": "Statut",
+            "lastLogin": "Dernière connexion"
+        }
+    },
+    "list": {
+        "title": "Tous les utilisateurs",
+        "add": "Ajouter un utilisateur",
+        "columns": {
+            "name": "Nom",
+            "mobile": "Téléphone",
+            "email": "Email",
+            "role": "Rôle",
+            "model": "Modèle",
+            "assignedBlock": "Bloc attribué",
+            "status": "Statut"
+        },
+        "loading": "Chargement des utilisateurs...",
+        "loadError": "Échec du chargement des utilisateurs",
+        "filter": {
+            "name": {
+                "label": "Nom",
+                "placeholder": "Rechercher par nom"
+            },
+            "role": {
+                "label": "Rôle",
+                "placeholder": "Rechercher par rôle"
+            }
+        }
+    }
+}

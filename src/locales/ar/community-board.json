@@ -1,0 +1,201 @@
+{
+    "announcement": {
+        "title": "إنشاء إعلان",
+        "successMessage": "تم إنشاء الإعلان بنجاح",
+        "errorMessage": "فشل في إنشاء الإعلان",
+        "submit": "نشر الإعلان",
+        "fields": {
+            "title": {
+                "label": "عنوان الإعلان",
+                "placeholder": "عنوان الإعلان",
+                "required": "عنوان الإعلان مطلوب"
+            },
+            "content": {
+                "label": "المحتوى",
+                "placeholder": "المحتوى",
+                "required": "المحتوى مطلوب"
+            },
+            "language": {
+                "label": "اللغة",
+                "placeholder": "اختر اللغة",
+                "required": "اللغة مطلوبة"
+            },
+            "targetType": {
+                "label": "نوع الاستهداف",
+                "placeholder": "اختر نوع الاستهداف",
+                "required": "نوع الاستهداف مطلوب"
+            },
+            "attachment": {
+                "label": "مرفق (الهوية/جواز السفر)",
+                "placeholder": "مرفق (الهوية/جواز السفر)",
+                "required": "المرفق مطلوب"
+            },
+            "visibility": {
+                "label": "مستوى الظهور",
+                "placeholder": "مستوى الظهور",
+                "required": "مستوى الظهور مطلوب"
+            },
+            "publishDate": {
+                "label": "تاريخ النشر",
+                "placeholder": "اختر تاريخ النشر",
+                "required": "تاريخ النشر مطلوب"
+            },
+            "expiryDate": {
+                "label": "تاريخ الانتهاء (اختياري)",
+                "placeholder": "اختر تاريخ الانتهاء",
+                "required": "تاريخ الانتهاء مطلوب"
+            }
+        }
+    },
+    "view": {
+        "title": "لوحة المجتمع",
+        "loading": "جارٍ تحميل منشورات المجتمع...",
+        "errorMessage": "فشل في تحميل منشورات المجتمع.",
+        "commentModeration": "إدارة التعليقات",
+        "postModeration": "إدارة المنشورات",
+        "announcement": "إنشاء إعلان",
+        "noPosts": "لا توجد منشورات.",
+        "filter": {
+            "address": {
+                "label": "العنوان",
+                "placeholder": "البحث حسب العنوان"
+            },
+            "userName": {
+                "label": "اسم المستخدم",
+                "placeholder": "البحث بالاسم"
+            }
+        }
+    },
+    
+    "comment": {
+        "list": {
+            "title": "جميع التعليقات",
+            "columns": {
+                "postId": "رقم المنشور",
+                "comment": "التعليق",
+                "status": "الحالة"
+            },
+            "loading": "جارٍ تحميل التعليقات...",
+            "loadError": "فشل في تحميل التعليقات",
+            "filter": {
+                "comment": {
+                    "label": "التعليق",
+                    "placeholder": "بحث حسب التعليق"
+                },
+                "status": {
+                    "label": "الحالة",
+                    "placeholder": "بحث حسب الحالة"
+                }
+            }
+        },
+        "status": {
+            "pending": "قيد المراجعة",
+            "approved": "مقبول",
+            "rejected": "مرفوض",
+            "flagged": "مُعلّم"
+        },
+        "reviewModal": {
+            "title": "مراجعة التعليق",
+            "successMessage": "تم تحديث حالة التعليق بنجاح",
+            "errorMessage": "فشل في تحديث حالة التعليق",
+            "unsupportedStatus": "حالة غير مدعومة",
+            "fields": {
+                "commentId": {
+                    "label": "رقم التعليق",
+                    "placeholder": "رقم التعليق"
+                },
+                "comment": {
+                    "label": "التعليق",
+                    "placeholder": "التعليق"
+                }
+            }
+        }
+    },
+    "post": {
+        "list": {
+            "title": "جميع المنشورات",
+            "columns": {
+                "title": "العنوان",
+                "residentName": "المقيم",
+                "report": "بلاغ",
+                "date": "التاريخ",
+                "status": "الحالة"
+            },
+            "loading": "جارٍ تحميل المنشورات...",
+            "loadError": "فشل في تحميل المنشورات",
+            "filter": {
+                "title": {
+                    "label": "العنوان",
+                    "placeholder": "بحث حسب العنوان"
+                },
+                "resident": {
+                    "label": "المقيم",
+                    "placeholder": "بحث حسب المقيم"
+                },
+                "status": {
+                    "label": "الحالة",
+                    "placeholder": "بحث حسب الحالة"
+                }
+            }
+        },
+        "status": {
+            "pending": "قيد المراجعة",
+            "approved": "مقبول",
+            "rejected": "مرفوض"
+        },
+        "reviewModal": {
+            "title": "مراجعة المنشور",
+            "successMessage": "تم تحديث حالة المنشور بنجاح",
+            "errorMessage": "فشل في تحديث حالة المنشور",
+            "unsupportedStattus": "حالة غير مدعومة",
+            "fields": {
+                "title": {
+                    "label": "العنوان",
+                    "placeholder": "العنوان"
+                },
+                "content": {
+                    "label": "المحتوى",
+                    "placeholder": "المحتوى"
+                },
+                "residentName": {
+                    "label": "الاسم - الوحدة",
+                    "placeholder": "الاسم - الوحدة"
+                },
+                "phone": {
+                    "label": "رقم الهاتف",
+                    "placeholder": "رقم الهاتف"
+                },
+                "attachments": {
+                    "label": "المرفقات",
+                    "placeholder": "المرفقات"
+                }
+            },
+            "residentSection": "المقيم"
+        }
+    },
+    "rejection": {
+        "title": "سبب الرفض",
+        "reject": "رفض",
+        "cancel": "إلغاء",
+        "fields": {
+            "select": {
+                "label": "اختر السبب",
+                "placeholder": "اختر السبب",
+                "options": {
+                    "spam": "محتوى مزعج أو ترويجي",
+                    "offensive": "لغة مسيئة أو غير لائقة",
+                    "notRelevant": "غير متعلق بالمجتمع",
+                    "duplicate": "مكرر",
+                    "other": "أخرى"
+                }
+            }
+        },
+        "otherReason": "سبب آخر",
+        "reasonPlaceholder": "يرجى توضيح سبب رفض هذا {{type}}",
+        "errorReason": "يرجى إدخال سبب الرفض",
+        "type": {
+            "post": "منشور",
+            "comment": "تعليق"
+        }
+    }
+}

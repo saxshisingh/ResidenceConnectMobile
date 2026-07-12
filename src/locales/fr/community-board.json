@@ -1,0 +1,201 @@
+{
+    "announcement": {
+        "title": "Créer une annonce",
+        "successMessage": "Annonce créée avec succès",
+        "errorMessage": "Échec de la création de l'annonce",
+        "submit": "Publier l'annonce",
+        "fields": {
+            "title": {
+                "label": "Titre de l'annonce",
+                "placeholder": "Titre de l'annonce",
+                "required": "Le titre de l'annonce est requis"
+            },
+            "content": {
+                "label": "Contenu",
+                "placeholder": "Contenu",
+                "required": "Le contenu est requis"
+            },
+            "language": {
+                "label": "Langue",
+                "placeholder": "Sélectionner la langue",
+                "required": "La langue est requise"
+            },
+            "targetType": {
+                "label": "Type de destinataire",
+                "placeholder": "Sélectionner le type de destinataire",
+                "required": "Le type de destinataire est requis"
+            },
+            "attachment": {
+                "label": "Pièce jointe (Aadhar/Passport)",
+                "placeholder": "Pièce jointe (Aadhar/Passport)",
+                "required": "La pièce jointe est requise"
+            },
+            "visibility": {
+                "label": "Visibilité",
+                "placeholder": "Visibilité",
+                "required": "La visibilité est requise"
+            },
+            "publishDate": {
+                "label": "Date de publication",
+                "placeholder": "Sélectionner la date de publication",
+                "required": "La date de publication est requise"
+            },
+            "expiryDate": {
+                "label": "Date d'expiration (optionnelle)",
+                "placeholder": "Sélectionner la date d'expiration",
+                "required": "La date d'expiration est requise"
+            }
+        }
+    },
+    "view": {
+        "title": "Tableau de la communauté",
+        "loading": "Chargement des publications communautaires...",
+        "errorMessage": "Échec du chargement des publications communautaires.",
+        "commentModeration": "Modération des commentaires",
+        "postModeration": "Modération des publications",
+        "announcement": "Créer une annonce",
+        "noPosts": "Aucune publication communautaire trouvée.",
+        "filter": {
+            "address": {
+                "label": "Adresse",
+                "placeholder": "Rechercher par adresse"
+            },
+            "userName": {
+                "label": "Nom d'utilisateur",
+                "placeholder": "Rechercher par nom"
+            }
+        }
+    },
+    
+    "comment": {
+        "list": {
+            "title": "Tous les commentaires",
+            "columns": {
+                "postId": "ID de la publication",
+                "comment": "Commentaire",
+                "status": "Statut"
+            },
+            "loading": "Chargement des commentaires...",
+            "loadError": "Échec du chargement des commentaires",
+            "filter": {
+                "comment": {
+                    "label": "Commentaire",
+                    "placeholder": "Rechercher par commentaire"
+                },
+                "status": {
+                    "label": "Statut",
+                    "placeholder": "Rechercher par statut"
+                }
+            }
+        },
+        "status": {
+            "pending": "En attente",
+            "approved": "Approuvé",
+            "rejected": "Rejeté",
+            "flagged": "Signalé"
+        },
+        "reviewModal": {
+            "title": "Révision du commentaire",
+            "successMessage": "Statut du commentaire mis à jour avec succès",
+            "errorMessage": "Échec de la mise à jour du statut du commentaire",
+            "unsupportedStatus": "Statut non pris en charge",
+            "fields": {
+                "commentId": {
+                    "label": "ID du commentaire",
+                    "placeholder": "ID du commentaire"
+                },
+                "comment": {
+                    "label": "Commentaire",
+                    "placeholder": "Commentaire"
+                }
+            }
+        }
+    },
+    "post": {
+        "list": {
+            "title": "Toutes les publications",
+            "columns": {
+                "title": "Titre",
+                "residentName": "Résident",
+                "report": "Rapport",
+                "date": "Date",
+                "status": "Statut"
+            },
+            "loading": "Chargement des publications...",
+            "loadError": "Échec du chargement des publications",
+            "filter": {
+                "title": {
+                    "label": "Titre",
+                    "placeholder": "Rechercher par titre"
+                },
+                "resident": {
+                    "label": "Résident",
+                    "placeholder": "Rechercher par résident"
+                },
+                "status": {
+                    "label": "Statut",
+                    "placeholder": "Rechercher par statut"
+                }
+            }
+        },
+        "status": {
+            "pending": "En attente",
+            "approved": "Approuvé",
+            "rejected": "Rejeté"
+        },
+        "reviewModal": {
+            "title": "Révision de la publication",
+            "successMessage": "Statut de la publication mis à jour avec succès",
+            "errorMessage": "Échec de la mise à jour du statut de la publication",
+            "unsupportedStattus": "Statut non pris en charge",
+            "fields": {
+                "title": {
+                    "label": "Titre",
+                    "placeholder": "Titre"
+                },
+                "content": {
+                    "label": "Contenu",
+                    "placeholder": "Contenu"
+                },
+                "residentName": {
+                    "label": "Nom - Unité",
+                    "placeholder": "Nom - Unité"
+                },
+                "phone": {
+                    "label": "Téléphone",
+                    "placeholder": "Téléphone"
+                },
+                "attachments": {
+                    "label": "Pièces jointes",
+                    "placeholder": "Pièces jointes"
+                }
+            },
+            "residentSection": "Résident"
+        }
+    },
+    "rejection": {
+        "title": "Raison du rejet",
+        "reject": "Rejeter",
+        "cancel": "Annuler",
+        "fields": {
+            "select": {
+                "label": "Sélectionner la raison",
+                "placeholder": "Sélectionner la raison",
+                "options": {
+                    "spam": "Contenu spam ou promotionnel",
+                    "offensive": "Langage offensant ou inapproprié",
+                    "notRelevant": "Non pertinent pour la communauté",
+                    "duplicate": "Dupliqué",
+                    "other": "Autre"
+                }
+            }
+        },
+        "otherReason": "Autre raison",
+        "reasonPlaceholder": "Veuillez fournir une raison pour rejeter ce {{type}}",
+        "errorReason": "Veuillez fournir une raison pour le rejet",
+        "type": {
+            "post": "publication",
+            "comment": "commentaire"
+        }
+    }
+}

@@ -1,0 +1,155 @@
+{
+    "form": {
+        "fields": {
+            "block": {
+                "label": "Nom du Bloc",
+                "placeholder": "Nom du Bloc",
+                "required": "Le nom du bloc est requis"
+            },
+            "allBlocks": {
+                "label": "Tous les Blocs",
+                "placeholder": "Tous les Blocs",
+                "required": "La sélection de tous les blocs est requise",
+                "values": {
+                    "true": "Oui",
+                    "false": "Non"
+                }
+            },
+            "urgency": {
+                "label": "Niveau d’urgence de l’alerte",
+                "placeholder": "Niveau d’urgence de l’alerte",
+                "required": "Le niveau d’urgence est requis"
+            },
+            "title": {
+                "label": "Titre de l’Alerte",
+                "placeholder": "Titre",
+                "required": "Le titre de l’alerte est requis"
+            },
+            "message": {
+                "label": "Message d’Alerte",
+                "placeholder": "Contenu de la notification",
+                "required": "Le message est requis"
+            },
+            "language": {
+                "label": "Langue",
+                "placeholder": "Sélectionnez la langue",
+                "required": "La langue est requise"
+            },
+            "media": {
+                "label": "Téléverser un média (PNG, JPEG)",
+                "placeholder": "Téléverser un média",
+                "required": "Le média est requis"
+            },
+            "location": {
+                "label": "Emplacement",
+                "placeholder": "Emplacement",
+                "required": "L’emplacement est requis"
+            }
+        }
+    },
+    "add": {
+        "title": "Envoyer une notification d’alerte",
+        "successMessage": "Notification d’alerte envoyée avec succès.",
+        "errorMessage": "Échec de l’envoi de la notification d’alerte.",
+        "submit": "Envoyer l’alerte"
+    },
+    "edit": {
+        "title": "Modifier la notification d’alerte",
+        "errorLoadMessage": "Échec du chargement des détails de la notification d’alerte.",
+        "successMessage": "Notification d’alerte mise à jour avec succès.",
+        "errorMessage": "Échec de la mise à jour de la notification d’alerte.",
+        "submit": "Mettre à jour l’alerte"
+    },
+    "delete": {
+        "title": "Supprimer la notification d’alerte",
+        "message": "Êtes-vous sûr de vouloir supprimer cette notification d’alerte ?",
+        "successMessage": "Notification d’alerte supprimée avec succès.",
+        "errorMessage": "Échec de la suppression de la notification d’alerte."
+    },
+    "view": {
+        "title": "Détails de l’alerte",
+        "download": "Télécharger",
+        "preview": "Aperçu",
+        "loading": "Chargement des détails de la notification d’alerte...",
+        "errorMessage": "Échec du chargement des détails de la notification d’alerte.",
+        "fields": {
+            "alertId": "ID de l’alerte",
+            "title": "Titre de l’alerte",
+            "sentOn": "Envoyé le",
+            "sentBy": "Envoyé par",
+            "urgency": "Niveau d’urgence",
+            "targetBlocks": "Blocs ciblés",
+            "totalRecipients": "Nombre total de destinataires",
+            "acknowledgement": "Accusé de réception",
+            "messageBody": "Contenu du message",
+            "attachment": {
+                "label": "Pièce jointe",
+                "noAttachment": "Aucune pièce jointe"
+            }
+        }
+    },
+    "list": {
+        "title": "Journaux d’alertes",
+        "add": "Créer une alerte",
+        "columns": {
+            "title": "Titre",
+            "urgencyLevel": "Urgence",
+            "blockName": "Bloc",
+            "unit": "Unité",
+            "sentOn": "Envoyé le",
+            "delivered": "Livré"
+        },
+        "loading": "Chargement des notifications...",
+        "loadError": "Échec du chargement des notifications.",
+        "filter": {
+            "title": {
+                "label": "Titre",
+                "placeholder": "Rechercher par titre"
+            },
+            "urgency": {
+                "label": "Urgence",
+                "placeholder": "Rechercher par niveau d’urgence"
+            },
+            "status": {
+                "label": "Statut",
+                "placeholder": "Sélectionner le statut"
+            }
+        }
+    },
+    "mobile": {
+        "system": {
+            "title": "SystÃ¨me d'alerte",
+            "emergencyTitle": "Usage d'urgence uniquement",
+            "emergencyText": "Le dÃ©clenchement d'une alerte avertit immÃ©diatement les rÃ©sidents concernÃ©s et l'Ã©quipe de gestion.",
+            "alertMyBlock": "Alerter mon bloc",
+            "alertEntireBuilding": "Alerter tout l'immeuble",
+            "infoIntro": "Veuillez dÃ©clencher une alerte uniquement pour de vraies urgences comme :",
+            "bulletFire": "Incendie",
+            "bulletMedical": "Urgence mÃ©dicale",
+            "bulletSuspicious": "ActivitÃ© suspecte",
+            "bulletSecurity": "Menace Ã  la sÃ©curitÃ©",
+            "misuseWarning": "Un usage abusif peut entraÃ®ner des pÃ©nalitÃ©s.",
+            "pastAlerts": "Alertes passÃ©es",
+            "viewAll": "Voir tout",
+            "noAlertsYet": "Aucune alerte pour le moment",
+            "noAlertsYetDesc": "Les alertes d'urgence rÃ©centes s'afficheront ici.",
+            "allAlertsTitle": "Toutes les alertes",
+            "loadingAlerts": "Chargement des alertes...",
+            "noAlertsFound": "Aucune alerte trouvÃ©e",
+            "noAlertsFoundDesc": "Toutes les alertes d'urgence apparaÃ®tront ici."
+        },
+        "block": {
+            "alertType": "Type d'alerte",
+            "alertTypePlaceholder": "ex : incendie, urgence mÃ©dicale",
+            "description": "Description",
+            "descriptionPlaceholder": "DÃ©crivez la situation d'urgence...",
+            "yourLocation": "Votre position",
+            "addPhoto": "Ajouter une photo (optionnel)",
+            "tapToUpload": "Touchez pour ajouter une photo",
+            "userNotFound": "Informations utilisateur introuvables",
+            "successTitle": "SuccÃ¨s",
+            "successBuilding": "Alerte envoyÃ©e Ã  tout l'immeuble",
+            "successBlock": "Alerte envoyÃ©e Ã  votre bloc"
+        }
+    }
+}

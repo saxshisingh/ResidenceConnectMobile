@@ -1,0 +1,105 @@
+{
+  "form": {
+    "fields": {
+      "owner": {
+        "label": "Proprietaire",
+        "placeholder": "Selectionner le proprietaire",
+        "required": "Le proprietaire est requis"
+      },
+      "vehicleNumber": {
+        "label": "Plaque d'immatriculation",
+        "placeholder": "Plaque d'immatriculation",
+        "required": "La plaque d'immatriculation est requise"
+      },
+      "model": {
+        "label": "Modele",
+        "placeholder": "Modele",
+        "required": "Le modele est requis"
+      },
+      "color": {
+        "label": "Couleur",
+        "placeholder": "Couleur",
+        "required": "La couleur est requise"
+      },
+      "rcDocs": {
+        "label": "Documents RC (Aadhar/Passport)",
+        "placeholder": "Documents RC (Aadhar/Passport)",
+        "required": "Les documents RC sont requis"
+      },
+      "vehicleType": {
+        "label": "Type de vehicule",
+        "placeholder": "Selectionner le type de vehicule",
+        "required": "Le type est requis"
+      }
+    }
+  },
+  "add": {
+    "title": "Ajouter une demande de maintenance",
+    "successMessage": "Demande de maintenance ajoutee avec succes",
+    "errorMessage": "Echec de l'ajout de la demande de maintenance",
+    "submit": "Enregistrer la demande de maintenance"
+  },
+  "edit": {
+    "title": "Modifier la demande de maintenance",
+    "errorLoadMessage": "Echec du chargement des details de la demande de maintenance",
+    "successMessage": "Demande de maintenance mise a jour avec succes",
+    "errorMessage": "Echec de la mise a jour de la demande de maintenance",
+    "submit": "Mettre a jour la demande de maintenance"
+  },
+  "delete": {
+    "title": "Supprimer la demande de maintenance",
+    "message": "Etes-vous sur de vouloir supprimer cette demande de maintenance ?",
+    "successMessage": "Demande de maintenance supprimee avec succes",
+    "errorMessage": "Echec de la suppression de la demande de maintenance"
+  },
+  "view": {
+    "title": "Details de la demande de maintenance",
+    "loading": "Chargement des details de la demande de maintenance...",
+    "errorMessage": "Echec du chargement des details de la demande de maintenance",
+    "fields": {
+      "owner": "Proprietaire",
+      "vehicleNumber": "Plaque d'immatriculation",
+      "numberPlate": "Plaque d'immatriculation",
+      "model": "Modele",
+      "color": "Couleur",
+      "vehicleType": "Type de vehicule",
+      "occupancyStatus": "Statut d'occupation",
+      "ownershipType": "Type de propriete"
+    }
+  },
+  "list": {
+    "title": "Toutes les demandes de maintenance",
+    "add": "Ajouter un technicien",
+    "columns": {
+      "requestId": "ID de la demande",
+      "category": "Categorie",
+      "resident": "Resident",
+      "unit": "Unite",
+      "issueSummary": "Resume du probleme",
+      "createdAt": "Cree le",
+      "status": "Statut"
+    },
+    "loading": "Chargement des demandes de maintenance...",
+    "loadError": "Echec du chargement des demandes de maintenance",
+    "filter": {
+      "serviceCategory": {
+        "label": "Categorie de service",
+        "placeholder": "Rechercher par categorie de service"
+      },
+      "status": {
+        "label": "Statut",
+        "placeholder": "Rechercher par statut"
+      },
+      "block": {
+        "label": "Bloc",
+        "placeholder": "Rechercher par bloc"
+      }
+    }
+  },
+  "status": {
+    "pending": "En attente",
+    "processing": "En cours",
+    "completed": "Termine",
+    "rejected": "Rejete"
+  }
+}

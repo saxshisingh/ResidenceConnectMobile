@@ -1,0 +1,17 @@
+{
+    "loading": "جارٍ تحميل الوحدات...",
+    "loadError": "فشل في تحميل الوحدات.",
+    "noUnits": "لا توجد وحدات.",
+    "status": {
+        "Occupied": "مشغولة",
+        "Vacant": "متاحة",
+        "Reserved": "محجوزة",
+        "UnderMaintenance": "قيد الصيانة"
+        },
+    "filter": {
+        "block": {
+            "label": "البلوك",
+            "placeholder": "اختر البلوك"
+        }
+    }
+}
