@@ -55,6 +55,12 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ResidenceConnect uses your location to show your current position for location sharing and related resident features.</string>
 
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ResidenceConnect uses your location to provide location-based features and smart access when required, even when transitioning between app states.</string>
+
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>ResidenceConnect uses your location to provide location-based features and smart access when required.</string>
+
 	<key>NSMicrophoneUsageDescription</key>
 	<string>ResidenceConnect uses the microphone for voice input when creating maintenance requests.</string>
 
