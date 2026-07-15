@@ -67,6 +67,9 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>ResidenceConnect uses speech recognition to convert your voice into text for voice input features.</string>
 
+	<key>NSCameraUsageDescription</key>
+	<string>ResidenceConnect uses the camera to capture profile photos and KYC documents.</string>
+
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ResidenceConnect uses your photo library so you can upload community images and resident documents.</string>
 
