@@ -90,6 +90,22 @@ afterEvaluate {
     }.configureEach {
         dependsOn(tasks.named("prepareMissingCodegenJni"))
     }
+
+    // Gradle's generated externalNativeBuildClean* tasks can fail if a stale
+    // ReactAndroid release prefab cache has already been deleted from ~/.gradle.
+    // We still get a usable clean by deleting build/.cxx outputs directly.
+    tasks.matching { task ->
+        task.name.startsWith("externalNativeBuildClean")
+    }.configureEach {
+        enabled = false
+    }
+
+    tasks.matching { task ->
+        task.name == "clean"
+    }.configureEach {
+        delete(layout.buildDirectory)
+        delete(file("${projectDir}/.cxx"))
+    }
 }
 
 /**
@@ -129,8 +145,8 @@ android {
         applicationId "com.ResidenceConnect.myapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.10"
+        versionCode 11
+        versionName "1.0.11"
     }
     signingConfigs {
         debug {

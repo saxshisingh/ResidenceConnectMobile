@@ -9,6 +9,7 @@ import {
 } from '../../features/onboarding/screens/OnBoardingScreens/OnboardingScreens';
 import LoginScreen from '../../features/auth/screens/Login/LoginScreen';
 import ConfirmPasswordScreen from '../../features/auth/screens/ConfirmPassword/ConfirmPasswordScreen';
+import ForgotPasswordScreen from '../../features/auth/screens/ForgotPassword/ForgotPasswordScreen';
 import LanguageScreen from '../../features/language/screens/Language/LanguageScreen';
 
 import MainTabNavigator from './MainTabNavigator';
@@ -119,6 +120,10 @@ export default function AppNavigator() {
         <Stack.Screen name="StepTwo" component={DetailsStepTwo} />
         <Stack.Screen name="StepThree" component={DetailsStepThree} />
         <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPasswordScreen}
+        />
         <Stack.Screen
           name="ConfirmPassword"
           component={ConfirmPasswordScreen}

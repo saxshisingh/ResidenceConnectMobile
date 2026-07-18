@@ -153,6 +153,8 @@ export default function UnlockDoorScreen() {
   const [activeControlId, setActiveControlId] = useState<string | null>(null);
   const [selectedDevice, setSelectedDevice] =
     useState<ResidentAccessDevice | null>(null);
+  const [isSelectedDeviceModalVisible, setIsSelectedDeviceModalVisible] =
+    useState(false);
   const [deviceLockStates, setDeviceLockStates] = useState<Record<string, boolean>>({});
   const [deviceBatteryLevels, setDeviceBatteryLevels] = useState<Record<string, number>>({});
 
@@ -201,7 +203,7 @@ export default function UnlockDoorScreen() {
       const permissionDevices = await getResidentAccessDevices(String(residentId));
       setDevices(permissionDevices);
 
-      if (selectedDevice) {
+      if (selectedDevice && isSelectedDeviceModalVisible) {
         const nextSelected =
           permissionDevices.find(item => item.id === selectedDevice.id) || null;
         setSelectedDevice(nextSelected);
@@ -227,7 +229,7 @@ export default function UnlockDoorScreen() {
   }, [residentId]);
 
   useEffect(() => {
-    if (!selectedDevice || !residentId) {
+    if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
       return;
     }
 
@@ -278,7 +280,16 @@ export default function UnlockDoorScreen() {
     return () => {
       cancelled = true;
     };
-  }, [selectedDevice, residentId]);
+  }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
+
+  const openSelectedDeviceModal = (device: ResidentAccessDevice) => {
+    setSelectedDevice(device);
+    setIsSelectedDeviceModalVisible(true);
+  };
+
+  const closeSelectedDeviceModal = () => {
+    setIsSelectedDeviceModalVisible(false);
+  };
 
   const ensureBluetoothReady = async () => {
     const permissionsGranted = await requestBluetoothPermissions();
@@ -449,13 +460,18 @@ export default function UnlockDoorScreen() {
       <Modal
         transparent
         animationType="slide"
-        visible
-        onRequestClose={() => setSelectedDevice(null)}>
+        visible={isSelectedDeviceModalVisible}
+        onRequestClose={closeSelectedDeviceModal}
+        onDismiss={() => {
+          if (!isSelectedDeviceModalVisible) {
+            setSelectedDevice(null);
+          }
+        }}>
         <View style={styles.modalOverlay}>
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={() => setSelectedDevice(null)}
+            onPress={closeSelectedDeviceModal}
           />
 
           <View style={styles.modalSheet}>
@@ -486,7 +502,7 @@ export default function UnlockDoorScreen() {
 
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={() => setSelectedDevice(null)}>
+              onPress={closeSelectedDeviceModal}>
               <Text style={styles.cancelButtonText}>{t('common.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
           </View>
@@ -622,12 +638,12 @@ export default function UnlockDoorScreen() {
                 const isBusy = activeControlId === device.id;
 
                 return (
-                  <TouchableOpacity
-                    key={device.id}
-                    style={[styles.deviceCard, isBusy && styles.deviceCardBusy]}
-                    activeOpacity={0.8}
-                    onPress={() => setSelectedDevice(device)}
-                    disabled={isBusy}>
+                    <TouchableOpacity
+                      key={device.id}
+                      style={[styles.deviceCard, isBusy && styles.deviceCardBusy]}
+                      activeOpacity={0.8}
+                      onPress={() => openSelectedDeviceModal(device)}
+                      disabled={isBusy}>
                     <View style={styles.deviceIconCircle}>
                       <IconComponent width={34} height={34} />
                     </View>

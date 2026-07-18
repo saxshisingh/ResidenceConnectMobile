@@ -16,14 +16,15 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 //  import { loginUser } from '../../../services/authService';
 import styles from './LoginScreen.styles';
+import Config from 'react-native-config';
 import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
 import { callAuthMeAndLog, login } from '../../state/authSlice';
 import { AUTH_STORAGE_KEYS } from '../../services/authService';
 import ThemedLoader from '../../../../components/ThemedLoader';
-import Config from 'react-native-config';
 import { useI18n } from '../../../../i18n';
 import {
   isEmail,
+  normalizeEmail,
   trimValue,
 } from '../../../../shared/validation/formValidation';
 
@@ -47,7 +48,7 @@ export default function LoginScreen() {
   const { t } = useI18n();
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(width - 32, 520);
-
+  
 
 console.log('LOGIN SCREEN TOKEN:', token);
 
@@ -64,7 +65,7 @@ useEffect(() => {
 }, [dispatch, token]);
 
 
- const webClientId = Config.GOOGLE_WEB_CLIENT_ID;
+  const webClientId = Config.GOOGLE_WEB_CLIENT_ID;
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
@@ -167,27 +168,14 @@ const handleLogin = async () => {
   }
 };
 
-const handleForgotPassword = async () => {
-  const storedToken = await AsyncStorage.getItem(AUTH_STORAGE_KEYS.token);
-  const normalizedEmail = trimValue(email).toLowerCase();
+const handleForgotPassword = () => {
+  const normalizedEmail = trimValue(email)
+    ? normalizeEmail(email)
+    : '';
 
-  if (token || storedToken) {
-    navigation.navigate('ConfirmPassword');
-    return;
-  }
-
-  Alert.alert(
-    t('common.oops', 'Oops'),
-    normalizedEmail
-      ? t(
-          'auth.mobile.forgotPasswordNeedsSession',
-          'Password reset from this app needs an active session. Please contact support or sign in on a device where you are already logged in.',
-        )
-      : t(
-          'auth.mobile.forgotPasswordEnterEmail',
-          'Enter your email first, then continue with your password reset support flow.',
-        ),
-  );
+  navigation.navigate('ForgotPassword', {
+    email: normalizedEmail,
+  });
 };
 
 
@@ -340,9 +328,9 @@ const handleForgotPassword = async () => {
             </Svg>
             <Text style={styles.remember}>{t('auth.mobile.rememberMe', 'Remember me')}</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
+          <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
             <Text style={styles.forgot}>{t('auth.mobile.forgotPassword', 'Forgot Password?')}</Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
         </View>
 
         

@@ -707,8 +707,20 @@
       "invalidCredentials": "Identifiants invalides",
       "wrongPassword": "Mot de passe incorrect. Veuillez reessayer.",
       "sessionExpired": "Votre session a expire. Veuillez vous reconnecter.",
+      "enterEmail": "Veuillez saisir votre e-mail",
+      "enterValidEmail": "Veuillez saisir une adresse e-mail valide",
+      "enterEmailPlaceholder": "Saisissez votre e-mail",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublie ?",
+      "forgotPasswordTitle": "Reinitialiser votre mot de passe",
+      "forgotPasswordDescription": "Saisissez votre adresse e-mail ci-dessous et nous enverrons un lien de reinitialisation du mot de passe si le compte existe.",
+      "forgotPasswordHelper": "Si cette adresse e-mail est liee a un compte, nous enverrons un lien de reinitialisation du mot de passe.",
+      "forgotPasswordSendLink": "Envoyer le lien de reinitialisation",
+      "forgotPasswordLinkSentMessage": "Si un compte existe, un lien de reinitialisation du mot de passe a ete envoye.",
+      "forgotPasswordFailed": "Impossible d'envoyer le lien de reinitialisation du mot de passe pour le moment. Veuillez reessayer.",
       "passwordMinExact": "Le mot de passe doit comporter au minimum 4 caracteres.",
-      "passwordMaxExact": "Le mot de passe doit comporter au maximum 8 caracteres."
+      "passwordMaxExact": "Le mot de passe doit comporter au maximum 8 caracteres.",
+      "passwordUpdated": "Mot de passe mis a jour avec succes"
     }
   },
   "security": {

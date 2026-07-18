@@ -12,6 +12,10 @@ export interface LoginResponse {
   isFirstLogin: boolean;
 }
 
+export interface ForgotPasswordResponse {
+  message?: string;
+}
+
 export const AUTH_STORAGE_KEYS = {
   token: 'authToken',
   isFirstLogin: 'isFirstLogin',
@@ -137,6 +141,60 @@ export const loginUser = async (
   }
 };
 
+export const forgotPassword = async (
+  email: string,
+): Promise<ForgotPasswordResponse | null> => {
+  try {
+    const payloads: Array<Record<string, string>> = [
+      { Email: email },
+      { email },
+    ];
+
+    let response: Response | null = null;
+    let lastErrorText = '';
+
+    for (const payload of payloads) {
+      response = await fetch(`${API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        break;
+      }
+
+      lastErrorText = await extractResponseErrorMessage(response);
+
+      if (response.status !== 400) {
+        break;
+      }
+    }
+
+    if (!response || !response.ok) {
+      const statusCode = response?.status ? ` (HTTP ${response.status})` : '';
+      throw new Error(lastErrorText || `Forgot password failed${statusCode}`);
+    }
+
+    const text = await response.text();
+
+    if (!text.trim()) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(text) as ForgotPasswordResponse;
+    } catch {
+      return { message: text.trim() };
+    }
+  } catch (error: any) {
+    console.error('FORGOT PASSWORD ERROR:', error);
+    throw new Error(error.message || 'Network error');
+  }
+};
+
 
 
 
@@ -243,4 +301,3 @@ export const fetchUserProfile = async () => {
 
   return json;
 };
-
