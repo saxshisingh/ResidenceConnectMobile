@@ -3,6 +3,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
+  InteractionManager,
   Modal,
   PermissionsAndroid,
   Platform,
@@ -236,6 +237,11 @@ export default function UnlockDoorScreen() {
     let cancelled = false;
 
     const loadBatteryLevel = async () => {
+      if (Platform.OS === 'ios') {
+        // Wait for modal animation to finish
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 400));
+      }
+
       const fallbackBattery =
         typeof selectedDevice?.raw?.electricQuantity === 'number'
           ? selectedDevice.raw.electricQuantity
@@ -275,7 +281,15 @@ export default function UnlockDoorScreen() {
       }
     };
 
-    loadBatteryLevel();
+    if (Platform.OS === 'ios') {
+      InteractionManager.runAfterInteractions(() => {
+        if (!cancelled) {
+          loadBatteryLevel();
+        }
+      });
+    } else {
+      loadBatteryLevel();
+    }
 
     return () => {
       cancelled = true;

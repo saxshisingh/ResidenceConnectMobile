@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, AppState } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../../features/home/screens/Home/HomeScreen';
@@ -60,18 +60,32 @@ export default function MainTabNavigator() {
   const tabIconColor = resolvedTheme === 'dark' ? '#FFFFFF' : colors.textSecondary;
   const inactiveOpacity = resolvedTheme === 'dark' ? 0.72 : 0.4;
 
+  const appState = useRef(AppState.currentState);
+
   useEffect(() => {
     if (!token) {
       return;
     }
 
-    dispatch(loadInbox() as any);
-    const intervalId = setInterval(() => {
-      dispatch(loadInbox() as any);
-    }, CHAT_BADGE_POLL_MS);
+    const loadChat = () => {
+      if (appState.current === 'active') {
+        dispatch(loadInbox() as any);
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      appState.current = nextAppState;
+      if (nextAppState === 'active') {
+        loadChat();
+      }
+    });
+
+    loadChat();
+    const intervalId = setInterval(loadChat, CHAT_BADGE_POLL_MS);
 
     return () => {
       clearInterval(intervalId);
+      subscription.remove();
     };
   }, [dispatch, token]);
 

@@ -1,5 +1,5 @@
-﻿/* eslint-disable react/no-unstable-nested-components */
-import React, { useEffect, useMemo, useState } from 'react';
+﻿﻿/* eslint-disable react/no-unstable-nested-components */
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   useWindowDimensions,
+  AppState,
 } from 'react-native';
 import { createStyles } from './HomeScreen.styles';
 import { useNavigation } from '@react-navigation/native';
@@ -128,16 +129,30 @@ export default function HomeScreen() {
   const maintenanceHistory = useAppSelector(state => state.maintenance.history);
   const residentId = user?.data?.residentId;
 
+  const appState = useRef(AppState.currentState);
+
   useEffect(() => {
     const checkNotifications = async () => {
+      if (appState.current !== 'active') return;
       try {
         const id = residentId || await AsyncStorage.getItem('residentId');
         if (id) dispatch(checkUnreadNotifications(id));
       } catch {}
     };
+    
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      appState.current = nextAppState;
+      if (nextAppState === 'active') {
+        checkNotifications();
+      }
+    });
+    
     checkNotifications();
     const interval = setInterval(checkNotifications, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+    };
   }, [dispatch, residentId]);
 
   useEffect(() => {
