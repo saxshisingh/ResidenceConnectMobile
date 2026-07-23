@@ -302,7 +302,11 @@ export default function UnlockDoorScreen() {
   };
 
   const closeSelectedDeviceModal = () => {
-    setIsSelectedDeviceModalVisible(false);
+      setIsSelectedDeviceModalVisible(false);
+
+      setTimeout(() => {
+          setSelectedDevice(null);
+      }, 300);
   };
 
   const ensureBluetoothReady = async () => {
@@ -473,14 +477,15 @@ export default function UnlockDoorScreen() {
     return (
       <Modal
         transparent
-        animationType="slide"
+        animationType="none"
         visible={isSelectedDeviceModalVisible}
         onRequestClose={closeSelectedDeviceModal}
-        onDismiss={() => {
-          if (!isSelectedDeviceModalVisible) {
-            setSelectedDevice(null);
-          }
-        }}>
+        // onDismiss={() => {
+        //   if (!isSelectedDeviceModalVisible) {
+        //     setSelectedDevice(null);
+        //   }
+        // }}
+        >
         <View style={styles.modalOverlay}>
           <TouchableOpacity
             style={styles.modalBackdrop}
