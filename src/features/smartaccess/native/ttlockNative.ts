@@ -71,6 +71,7 @@ type IOSScanLock = {
   lockName?: string;
   lockVersion?: string;
   isInited?: boolean;
+  lockData?: string;
 };
 
 type IOSTTLockApi = {
@@ -482,6 +483,36 @@ export const scanLocks = async (): Promise<ScannedLock[]> => {
             return;
           }
           iosScanCache.set(mac, device);
+
+          // iOS: Initialize the lock after scanning to ensure it's ready for control
+          // This fixes the screen freeze issue where lock doesn't respond
+          const initLockNative = iosModule.initLock;
+          if (initLockNative && !device.isInited) {
+            try {
+              initLockNative(
+                {
+                  lockMac: mac,
+                  lockVersion: device.lockVersion,
+                },
+                (lockData: string) => {
+                  const cached = iosScanCache.get(mac);
+                  if (cached) {
+                    iosScanCache.set(mac, {
+                      ...cached,
+                      isInited: true,
+                      lockData,
+                    });
+                  }
+                },
+                (error: unknown) => {
+                  // Don't fail the scan if init fails - user can retry
+                  console.log('[iOS TTLock] initLock failed for', mac, error);
+                },
+              );
+            } catch (initError) {
+              console.log('[iOS TTLock] initLock threw for', mac, initError);
+            }
+          }
         },
         error => {
           if (finished) {
