@@ -71,7 +71,7 @@ type IOSScanLock = {
   lockName?: string;
   lockVersion?: string;
   isInited?: boolean;
-  lockData?: string;
+  lockData?:string;
 };
 
 type IOSTTLockApi = {
@@ -425,7 +425,7 @@ export const isBluetoothEnabled = async (): Promise<boolean> => {
 
   return new Promise((resolve, reject) => {
     try {
-      getBluetoothState(state => resolve(normalizeBluetoothState(state)));
+      getBluetoothState.call(iosModule, state => resolve(normalizeBluetoothState(state)));
     } catch (error) {
       reject(new Error(getErrorMessage(error, 'Unable to read Bluetooth state.')));
     }
@@ -476,7 +476,7 @@ export const scanLocks = async (): Promise<ScannedLock[]> => {
     const timer = setTimeout(finish, IOS_SCAN_DURATION_MS);
 
     try {
-      startScan(
+      startScan.call(iosModule,
         device => {
           const mac = String(device?.lockMac || '');
           if (!mac) {
@@ -489,8 +489,7 @@ export const scanLocks = async (): Promise<ScannedLock[]> => {
           const initLockNative = iosModule.initLock;
           if (initLockNative && !device.isInited) {
             try {
-              initLockNative(
-                {
+              initLockNative.call(iosModule, {
                   lockMac: mac,
                   lockVersion: device.lockVersion,
                 },
@@ -562,8 +561,7 @@ export const initLock = async (macAddress: string) => {
   return withExclusiveBleCommand(
     () =>
       new Promise<{name?: string; mac: string; lockData: string}>((resolve, reject) => {
-        initLockNative(
-          {
+        initLockNative.call(iosModule, {
             lockMac: macAddress,
             lockVersion: device.lockVersion,
           },
@@ -599,8 +597,7 @@ export const controlLock = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{battery?: number; uniqueId?: number; action?: string}>((resolve, reject) => {
-        controlLockNative(
-          getIOSControlAction(action),
+        controlLockNative.call(iosModule, getIOSControlAction(action),
           lockData,
           (_lockTime, electricQuantity, uniqueId) =>
             resolve({
@@ -630,8 +627,7 @@ export const getLockTime = async (lockData: string, macAddress: string) => {
   return withExclusiveBleCommand(
     () =>
       new Promise<{lockTimestamp?: number}>((resolve, reject) => {
-        getLockTimeNative(
-          lockData,
+        getLockTimeNative.call(iosModule, lockData,
           lockTimestamp => resolve({lockTimestamp}),
           error => reject(new Error(getErrorMessage(error, 'Unable to read lock time on iOS.'))),
         );
@@ -659,8 +655,7 @@ export const setLockTime = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{timestamp?: number}>((resolve, reject) => {
-        setLockTimeNative(
-          timestamp,
+        setLockTimeNative.call(iosModule, timestamp,
           lockData,
           () => resolve({timestamp}),
           error => reject(new Error(getErrorMessage(error, 'Unable to set lock time on iOS.'))),
@@ -685,8 +680,7 @@ export const getBatteryLevel = async (lockData: string, macAddress: string) => {
   return withExclusiveBleCommand(
     () =>
       new Promise<{battery?: number}>((resolve, reject) => {
-        getBatteryLevelNative(
-          lockData,
+        getBatteryLevelNative.call(iosModule, lockData,
           electricQuantity => resolve({battery: electricQuantity}),
           error => reject(new Error(getErrorMessage(error, 'Unable to read battery level on iOS.'))),
         );
@@ -718,8 +712,7 @@ export const setAutomaticLockingPeriod = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{seconds?: number}>((resolve, reject) => {
-        setAutomaticLockingPeriodNative(
-          seconds,
+        setAutomaticLockingPeriodNative.call(iosModule, seconds,
           lockData,
           () => resolve({seconds}),
           error =>
@@ -751,8 +744,7 @@ export const setMuteMode = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{enabled?: boolean}>((resolve, reject) => {
-        setLockSoundVolumeNative(
-          getIOSSoundVolume(enable ? 'off' : 'on'),
+        setLockSoundVolumeNative.call(iosModule, getIOSSoundVolume(enable ? 'off' : 'on'),
           lockData,
           () => resolve({enabled: enable}),
           error => reject(new Error(getErrorMessage(error, 'Unable to update lock sound on iOS.'))),
@@ -777,8 +769,7 @@ export const getMuteModeState = async (lockData: string, macAddress: string) => 
   return withExclusiveBleCommand(
     () =>
       new Promise<{enabled?: boolean}>((resolve, reject) => {
-        getLockSoundVolumeNative(
-          lockData,
+        getLockSoundVolumeNative.call(iosModule, lockData,
           soundVolume => resolve({enabled: Number(soundVolume) <= 0}),
           error => reject(new Error(getErrorMessage(error, 'Unable to read lock sound state on iOS.'))),
         );
@@ -814,8 +805,7 @@ export const createCustomPasscode = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{passcode?: string}>((resolve, reject) => {
-        createCustomPasscodeNative(
-          passcode,
+        createCustomPasscodeNative.call(iosModule, passcode,
           startDate,
           endDate,
           lockData,
@@ -847,8 +837,7 @@ export const addICCard = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{cardNumber?: string}>((resolve, reject) => {
-        addCardNative(
-          [],
+        addCardNative.call(iosModule, [],
           startDate,
           endDate,
           lockData,
@@ -886,8 +875,7 @@ export const addFingerprint = async (
   return withExclusiveBleCommand(
     () =>
       new Promise<{fingerprintNumber?: string}>((resolve, reject) => {
-        addFingerprintNative(
-          [],
+        addFingerprintNative.call(iosModule, [],
           startDate,
           endDate,
           lockData,
@@ -915,8 +903,7 @@ export const resetLock = async (lockData: string, macAddress: string) => {
   return withExclusiveBleCommand(
     () =>
       new Promise<boolean>((resolve, reject) => {
-        resetLockNative(
-          lockData,
+        resetLockNative.call(iosModule, lockData,
           () => resolve(true),
           error => reject(new Error(getErrorMessage(error, 'Unable to reset lock on iOS.'))),
         );
