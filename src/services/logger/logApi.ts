@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Platform} from 'react-native';
+import {Alert, Platform} from 'react-native';
 import { apiFetch } from '../../shared/api/apiClient';
 import { API_BASE_URL } from '../../config/api';
 
@@ -30,7 +30,7 @@ export const sendLog = async (
   try {
     const token = await getToken();
 
-    await apiFetch(`${API_URL}/logs`, {
+    await fetch(`${API_URL}/logs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,18 +46,18 @@ export const sendLog = async (
       }),
     });
   } catch (error) {
-    console.log(
-      '[Logger] Unable to upload log',
-      error,
-    );
-  }
+  Alert.alert(
+    'Logger Error',
+    JSON.stringify(error)
+  );
+}
 };
 
 export const fetchLogs = async () => {
   try {
     const token = await getToken();
 
-    const response = await apiFetch(
+    const response = await fetch(
       `${API_URL}/logs`,
       {
         method: 'GET',
@@ -74,20 +74,18 @@ export const fetchLogs = async () => {
 
     return await response.json();
   } catch (error) {
-    console.error(
-      '[Logger] Fetch logs failed',
-      error,
+    Alert.alert(
+        'Logger Error',
+        JSON.stringify(error)
     );
-
-    throw error;
-  }
+    }
 };
 
 export const clearLogs = async () => {
   try {
     const token = await getToken();
 
-    await apiFetch(
+    await fetch(
       `${API_URL}/logs`,
       {
         method: 'DELETE',
@@ -102,11 +100,9 @@ export const clearLogs = async () => {
       },
     );
   } catch (error) {
-    console.error(
-      '[Logger] Clear logs failed',
-      error,
-    );
-
-    throw error;
-  }
+  Alert.alert(
+    'Logger Error',
+    JSON.stringify(error)
+  );
+}
 };
