@@ -17,6 +17,7 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Svg, {Defs, LinearGradient, Path, Rect, Stop} from 'react-native-svg';
+import Logger from '../../../../services/logger/logger';
 
 import DoorFrontIcon from '../../../../assets/Icons/door_front.svg';
 import DoorSlidingIcon from '../../../../assets/Icons/door_sliding.svg';
@@ -230,6 +231,28 @@ export default function UnlockDoorScreen() {
   }, [residentId]);
 
   useEffect(() => {
+    Logger.info('UnlockDoorScreen Mounted');
+
+    return () => {
+      Logger.info('UnlockDoorScreen Unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
+    Logger.info('Modal Visibility Changed', {
+      visible: isSelectedDeviceModalVisible,
+      selectedDevice: selectedDevice?.id,
+    });
+  }, [isSelectedDeviceModalVisible]);
+
+  useEffect(() => {
+    Logger.info('Selected Device Changed', {
+      deviceId: selectedDevice?.id,
+      deviceName: selectedDevice?.name,
+    });
+  }, [selectedDevice]);
+
+  useEffect(() => {
     if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
       return;
     }
@@ -237,49 +260,128 @@ export default function UnlockDoorScreen() {
     let cancelled = false;
 
     const loadBatteryLevel = async () => {
-      if (Platform.OS === 'ios') {
-        // Wait for modal animation to finish
-        await new Promise<void>(resolve => setTimeout(() => resolve(), 400));
-      }
+  Logger.info('[Battery] loadBatteryLevel START', {
+    deviceId: selectedDevice?.id,
+    deviceName: selectedDevice?.name,
+    platform: Platform.OS,
+    cancelled,
+  });
 
-      const fallbackBattery =
-        typeof selectedDevice?.raw?.electricQuantity === 'number'
-          ? selectedDevice.raw.electricQuantity
-          : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
-            ? selectedDevice.raw.ElectricQuantity
-            : typeof selectedDevice?.raw?.battery === 'number'
-              ? selectedDevice.raw.battery
-              : null;
+  if (Platform.OS === 'ios') {
+    Logger.info('[Battery] Waiting 400ms for modal animation');
 
-      try {
-        const ready = await ensureBluetoothReady();
-        if (!ready) {
-          return;
-        }
+    await new Promise<void>(resolve =>
+      setTimeout(() => {
+        Logger.info('[Battery] 400ms wait completed');
+        resolve();
+      }, 400),
+    );
+  }
 
-        const bleAccess = await getDeviceBleAccess(selectedDevice.id, String(residentId));
-        const result = await ttlockNative.getBatteryLevel(
-          bleAccess.lockData,
-          bleAccess.lockMac,
-        );
-        const batteryLevel = result?.battery;
+  const fallbackBattery =
+    typeof selectedDevice?.raw?.electricQuantity === 'number'
+      ? selectedDevice.raw.electricQuantity
+      : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
+        ? selectedDevice.raw.ElectricQuantity
+        : typeof selectedDevice?.raw?.battery === 'number'
+          ? selectedDevice.raw.battery
+          : null;
 
-        if (!cancelled && typeof batteryLevel === 'number') {
-          setDeviceBatteryLevels(prev => ({
-            ...prev,
-            [selectedDevice.id]: batteryLevel,
-          }));
-        }
-      } catch {
-        if (!cancelled && typeof fallbackBattery === 'number') {
-          setDeviceBatteryLevels(prev => ({
-            ...prev,
-            [selectedDevice.id]: fallbackBattery,
-          }));
-        }
-        return;
-      }
-    };
+  Logger.info('[Battery] Fallback battery', {
+    fallbackBattery,
+  });
+
+  try {
+    Logger.info('[Battery] Checking Bluetooth readiness');
+
+    const ready = await ensureBluetoothReady();
+
+    Logger.info('[Battery] Bluetooth readiness result', {
+      ready,
+    });
+
+    if (!ready) {
+      Logger.warn('[Battery] Bluetooth not ready');
+      return;
+    }
+
+    Logger.info('[Battery] Fetching BLE access');
+
+    const bleAccess = await getDeviceBleAccess(
+      selectedDevice.id,
+      String(residentId),
+    );
+
+    Logger.info('[Battery] BLE access received', {
+      deviceName: bleAccess.deviceName,
+      lockMac: bleAccess.lockMac,
+      hasLockData: !!bleAccess.lockData,
+    });
+
+    Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
+
+    const result = await ttlockNative.getBatteryLevel(
+      bleAccess.lockData,
+      bleAccess.lockMac,
+    );
+
+    Logger.info('[Battery] getBatteryLevel SUCCESS', result);
+
+    const batteryLevel = result?.battery;
+
+    Logger.info('[Battery] Parsed battery level', {
+      batteryLevel,
+      cancelled,
+    });
+
+    if (!cancelled && typeof batteryLevel === 'number') {
+      Logger.info('[Battery] Updating battery state');
+
+      setDeviceBatteryLevels(prev => ({
+        ...prev,
+        [selectedDevice.id]: batteryLevel,
+      }));
+
+      Logger.info('[Battery] Battery state updated');
+    } else {
+      Logger.info('[Battery] Battery state update skipped', {
+        cancelled,
+        batteryLevel,
+      });
+    }
+  } catch (error) {
+    Logger.exception(error);
+
+    Logger.error('[Battery] loadBatteryLevel FAILED', {
+      error,
+    });
+
+    if (!cancelled && typeof fallbackBattery === 'number') {
+      Logger.info('[Battery] Using fallback battery', {
+        fallbackBattery,
+      });
+
+      setDeviceBatteryLevels(prev => ({
+        ...prev,
+        [selectedDevice.id]: fallbackBattery,
+      }));
+
+      Logger.info('[Battery] Fallback battery applied');
+    } else {
+      Logger.warn('[Battery] No fallback battery available', {
+        cancelled,
+        fallbackBattery,
+      });
+    }
+
+    return;
+  } finally {
+    Logger.info('[Battery] loadBatteryLevel FINISH', {
+      deviceId: selectedDevice?.id,
+      cancelled,
+    });
+  }
+};
 
     if (Platform.OS === 'ios') {
       InteractionManager.runAfterInteractions(() => {
@@ -297,12 +399,44 @@ export default function UnlockDoorScreen() {
   }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
 
   const openSelectedDeviceModal = (device: ResidentAccessDevice) => {
+    Logger.info('Opening Smart Lock Modal', {
+      deviceId: device.id,
+      deviceName: device.name,
+    });
+
     setSelectedDevice(device);
+
+    Logger.info('selectedDevice updated');
+
     setIsSelectedDeviceModalVisible(true);
+
+    Logger.info('Modal visibility set to TRUE');
   };
 
   const closeSelectedDeviceModal = () => {
+    Logger.info('Close Modal Pressed');
+
+    Logger.info('Current State', {
+      selectedDeviceId: selectedDevice?.id,
+      activeControlId,
+      modalVisible: isSelectedDeviceModalVisible,
+    });
+
     setIsSelectedDeviceModalVisible(false);
+
+    Logger.info('setIsSelectedDeviceModalVisible(false) completed');
+
+    setTimeout(() => {
+      Logger.info('500ms after modal close');
+    }, 500);
+
+    setTimeout(() => {
+      Logger.info('1000ms after modal close');
+    }, 1000);
+
+    setTimeout(() => {
+      Logger.info('2000ms after modal close');
+    }, 2000);
   };
 
   const ensureBluetoothReady = async () => {
@@ -475,17 +609,30 @@ export default function UnlockDoorScreen() {
         transparent
         animationType="slide"
         visible={isSelectedDeviceModalVisible}
-        onRequestClose={closeSelectedDeviceModal}
+        onShow={() => {
+          Logger.info('Modal onShow');
+        }}
+        onRequestClose={() => {
+          Logger.info('Modal onRequestClose');
+          closeSelectedDeviceModal();
+        }}
         onDismiss={() => {
+          Logger.info('Modal onDismiss');
+
           if (!isSelectedDeviceModalVisible) {
+            Logger.info('Clearing selectedDevice');
             setSelectedDevice(null);
+            Logger.info('selectedDevice cleared');
           }
         }}>
         <View style={styles.modalOverlay}>
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
-            onPress={closeSelectedDeviceModal}
+            onPress={() => {
+              Logger.info('Modal Backdrop Pressed');
+              closeSelectedDeviceModal();
+            }}
           />
 
           <View style={styles.modalSheet}>
@@ -516,7 +663,10 @@ export default function UnlockDoorScreen() {
 
             <TouchableOpacity
               style={styles.cancelButton}
-              onPress={closeSelectedDeviceModal}>
+              onPress={() => {
+                Logger.info('Cancel Button Pressed');
+                closeSelectedDeviceModal();
+              }}>
               <Text style={styles.cancelButtonText}>{t('common.cancel', 'Cancel')}</Text>
             </TouchableOpacity>
           </View>

@@ -1,4 +1,5 @@
 import {NativeModules, Platform} from 'react-native';
+import Logger from '../../../services/logger/logger';
 
 type ControlAction = 'unlock' | 'lock';
 type IOSSoundVolume = 'on' | 'off';
@@ -71,7 +72,7 @@ type IOSScanLock = {
   lockName?: string;
   lockVersion?: string;
   isInited?: boolean;
-  lockData?:string;
+  lockData?: string;
 };
 
 type IOSTTLockApi = {
@@ -300,20 +301,70 @@ export const getTTLockUserFacingErrorMessage = (
   return message;
 };
 
-const withExclusiveBleCommand = async <T>(command: () => Promise<T>) => {
-  if (bleCommandInFlight) {
-    throw new Error(COMMAND_IN_PROGRESS_MESSAGE);
-  }
+const withExclusiveBleCommand =
+async<T>(command:()=>Promise<T>)=>{
 
-  bleCommandInFlight = true;
-  try {
-    return await command();
-  } catch (error) {
-    throw new Error(getTTLockUserFacingErrorMessage(error, 'Unable to complete the smart lock command.'));
-  } finally {
-    bleCommandInFlight = false;
-  }
-};
+    Logger.ttlock(
+        'BLE Command Requested',
+        {
+            bleCommandInFlight
+        }
+    );
+
+    if(bleCommandInFlight){
+
+        Logger.warn(
+            'BLE command rejected',
+            {
+                reason:'already running'
+            }
+        );
+
+        throw new Error(
+            COMMAND_IN_PROGRESS_MESSAGE
+        );
+
+    }
+
+    bleCommandInFlight=true;
+
+    Logger.ttlock(
+        'BLE Command Started'
+    );
+
+    try{
+
+        const result=
+            await command();
+
+        Logger.ttlock(
+            'BLE Command Success'
+        );
+
+        return result;
+
+    }catch(error){
+
+        Logger.exception(error);
+
+        throw new Error(
+            getTTLockUserFacingErrorMessage(
+                error,
+                'Unable to complete smart lock command.'
+            )
+        );
+
+    }finally{
+
+        bleCommandInFlight=false;
+
+        Logger.ttlock(
+            'BLE Command Finished'
+        );
+
+    }
+
+}
 
 const normalizeBluetoothState = (state: unknown) => {
   if (typeof state === 'boolean') {
@@ -441,28 +492,70 @@ export const requestBluetoothEnable = async (): Promise<boolean> => {
 };
 
 export const scanLocks = async (): Promise<ScannedLock[]> => {
+  Logger.ttlock('scanLocks() START', {
+    platform: Platform.OS,
+  });
+
   if (Platform.OS === 'android') {
-    return ensureAndroidModule().scanLocks();
+    try {
+      Logger.ttlock('Android scanLocks() calling native scan');
+
+      const result = await ensureAndroidModule().scanLocks();
+
+      Logger.ttlock('Android scanLocks() SUCCESS', {
+        deviceCount: result.length,
+        devices: result,
+      });
+
+      return result;
+    } catch (error) {
+      Logger.error('Android scanLocks() FAILED', error);
+      throw error;
+    }
   }
 
+  Logger.ttlock('iOS scanLocks()');
+
   const iosModule = ensureIOSModule();
+
+  Logger.ttlock('Clearing iOS scan cache');
   iosScanCache.clear();
 
   const startScan = iosModule.startScan;
+
   if (!startScan) {
-    throw new Error('startScan is not available on the iOS TTLock module.');
+    Logger.error('startScan() native method not available');
+    throw new Error(
+      'startScan is not available on the iOS TTLock module.',
+    );
   }
+
+  Logger.ttlock('startScan() native method found');
 
   return new Promise((resolve, reject) => {
     let finished = false;
 
     const finish = () => {
+      Logger.ttlock('finish() entered', {
+        finished,
+        cacheSize: iosScanCache.size,
+      });
+
       if (finished) {
+        Logger.ttlock('finish() skipped because already finished');
         return;
       }
 
       finished = true;
-      iosModule.stopScan?.();
+
+      Logger.ttlock('Calling stopScan()');
+
+      try {
+        iosModule.stopScan?.();
+        Logger.ttlock('stopScan() completed');
+      } catch (e) {
+        Logger.exception(e);
+      }
 
       const devices = Array.from(iosScanCache.values()).map(device => ({
         name: device.lockName,
@@ -470,111 +563,352 @@ export const scanLocks = async (): Promise<ScannedLock[]> => {
         isSettingMode: !Boolean(device.isInited),
       }));
 
+      Logger.ttlock('Resolving scan promise', {
+        deviceCount: devices.length,
+        devices,
+      });
+
       resolve(devices.filter(device => device.mac));
     };
 
-    const timer = setTimeout(finish, IOS_SCAN_DURATION_MS);
+    Logger.ttlock('Starting scan timeout', {
+      timeout: IOS_SCAN_DURATION_MS,
+    });
+
+    const timer = setTimeout(() => {
+      Logger.ttlock('Scan timeout fired');
+      finish();
+    }, IOS_SCAN_DURATION_MS);
 
     try {
-      startScan.call(iosModule,
+      Logger.ttlock('Calling native startScan()');
+
+      startScan.call(
+        iosModule,
+
         device => {
+          Logger.ttlock('startScan callback received', {
+            device,
+          });
+
           const mac = String(device?.lockMac || '');
+
           if (!mac) {
+            Logger.warn('Device has no MAC address', device);
             return;
           }
+
+          Logger.ttlock('Adding device to cache', {
+            mac,
+            name: device.lockName,
+            isInited: device.isInited,
+          });
+
           iosScanCache.set(mac, device);
 
-          // iOS: Initialize the lock after scanning to ensure it's ready for control
-          // This fixes the screen freeze issue where lock doesn't respond
           const initLockNative = iosModule.initLock;
-          if (initLockNative && !device.isInited) {
-            try {
-              initLockNative.call(iosModule, {
-                  lockMac: mac,
-                  lockVersion: device.lockVersion,
-                },
-                (lockData: string) => {
-                  const cached = iosScanCache.get(mac);
-                  if (cached) {
-                    iosScanCache.set(mac, {
-                      ...cached,
-                      isInited: true,
-                      lockData,
-                    });
-                  }
-                },
-                (error: unknown) => {
-                  // Don't fail the scan if init fails - user can retry
-                  console.log('[iOS TTLock] initLock failed for', mac, error);
-                },
-              );
-            } catch (initError) {
-              console.log('[iOS TTLock] initLock threw for', mac, initError);
-            }
-          }
-        },
-        error => {
-          if (finished) {
+
+          if (!initLockNative) {
+            Logger.ttlock('initLock native method unavailable');
             return;
           }
+
+          if (device.isInited) {
+            Logger.ttlock('Device already initialized', {
+              mac,
+            });
+            return;
+          }
+
+          Logger.ttlock('Calling initLock()', {
+            mac,
+            version: device.lockVersion,
+          });
+
+          try {
+            initLockNative.call(
+              iosModule,
+              {
+                lockMac: mac,
+                lockVersion: device.lockVersion,
+              },
+
+              (lockData: string) => {
+                Logger.ttlock('initLock SUCCESS', {
+                  mac,
+                  lockDataLength: lockData.length,
+                });
+
+                const cached = iosScanCache.get(mac);
+
+                if (cached) {
+                  iosScanCache.set(mac, {
+                    ...cached,
+                    isInited: true,
+                    lockData,
+                  });
+
+                  Logger.ttlock('Cache updated after initLock', {
+                    mac,
+                  });
+                } else {
+                  Logger.warn(
+                    'Cached device missing after initLock',
+                    {mac},
+                  );
+                }
+              },
+
+              (error: unknown) => {
+                Logger.error('initLock FAILED', {
+                  mac,
+                  error,
+                });
+              },
+            );
+          } catch (initError) {
+            Logger.exception(initError);
+          }
+        },
+
+        error => {
+          Logger.error('startScan ERROR callback', error);
+
+          if (finished) {
+            Logger.ttlock(
+              'Ignoring error because scan already finished',
+            );
+            return;
+          }
+
           finished = true;
+
+          Logger.ttlock('Clearing timeout due to scan error');
+
           clearTimeout(timer);
-          iosModule.stopScan?.();
-          reject(new Error(getErrorMessage(error, 'Unable to scan TTLock devices on iOS.')));
+
+          try {
+            Logger.ttlock('Calling stopScan() after error');
+            iosModule.stopScan?.();
+            Logger.ttlock('stopScan() completed after error');
+          } catch (e) {
+            Logger.exception(e);
+          }
+
+          reject(
+            new Error(
+              getErrorMessage(
+                error,
+                'Unable to scan TTLock devices on iOS.',
+              ),
+            ),
+          );
         },
       );
+
+      Logger.ttlock('Native startScan() invoked');
     } catch (error) {
+      Logger.exception(error);
+
+      Logger.ttlock(
+        'Clearing timeout because startScan threw',
+      );
+
       clearTimeout(timer);
-      reject(new Error(getErrorMessage(error, 'Unable to start TTLock scan on iOS.')));
+
+      reject(
+        new Error(
+          getErrorMessage(
+            error,
+            'Unable to start TTLock scan on iOS.',
+          ),
+        ),
+      );
     }
   });
 };
 
 export const stopScan = async (): Promise<boolean> => {
-  if (Platform.OS === 'android') {
-    return ensureAndroidModule().stopScan();
-  }
+  Logger.ttlock('stopScan() START', {
+    platform: Platform.OS,
+  });
 
-  ensureIOSModule().stopScan?.();
-  return true;
+  try {
+    if (Platform.OS === 'android') {
+      Logger.ttlock('Android stopScan() calling native');
+
+      const result = await ensureAndroidModule().stopScan();
+
+      Logger.ttlock('Android stopScan() SUCCESS', {
+        result,
+      });
+
+      return result;
+    }
+
+    Logger.ttlock('iOS stopScan() calling native');
+
+    const iosModule = ensureIOSModule();
+
+    iosModule.stopScan?.();
+
+    Logger.ttlock('iOS stopScan() native call completed');
+
+    return true;
+  } catch (error) {
+    Logger.error('stopScan() FAILED', error);
+
+    throw error;
+  } finally {
+    Logger.ttlock('stopScan() FINISH');
+  }
 };
 
 export const initLock = async (macAddress: string) => {
+  Logger.ttlock('initLock() START', {
+    platform: Platform.OS,
+    macAddress,
+  });
+
   if (Platform.OS === 'android') {
-    return withExclusiveBleCommand(() =>
-      ensureAndroidModule().initLock(macAddress),
+    try {
+      Logger.ttlock('Android initLock() calling native', {
+        macAddress,
+      });
+
+      const result = await withExclusiveBleCommand(() =>
+        ensureAndroidModule().initLock(macAddress),
+      );
+
+      Logger.ttlock('Android initLock() SUCCESS', {
+        macAddress,
+        hasLockData: !!result?.lockData,
+        lockName: result?.name,
+      });
+
+      return result;
+    } catch (error) {
+      Logger.error('Android initLock() FAILED', {
+        macAddress,
+        error,
+      });
+
+      throw error;
+    } finally {
+      Logger.ttlock('Android initLock() FINISH');
+    }
+  }
+
+  Logger.ttlock('iOS initLock()');
+
+  const iosModule = ensureIOSModule();
+
+  const device = iosScanCache.get(macAddress);
+
+  Logger.ttlock('Lookup device in cache', {
+    macAddress,
+    found: !!device,
+  });
+
+  if (!device) {
+    Logger.error('Device not found in scan cache', {
+      macAddress,
+    });
+
+    throw new Error(
+      'Lock device not found in scan cache. Please scan again with the lock nearby.',
     );
   }
 
-  const iosModule = ensureIOSModule();
-  const device = iosScanCache.get(macAddress);
-
-  if (!device) {
-    throw new Error('Lock device not found in scan cache. Please scan again with the lock nearby.');
-  }
-
   const initLockNative = iosModule.initLock;
+
   if (!initLockNative) {
-    throw new Error('initLock is not available on the iOS TTLock module.');
+    Logger.error('initLock native method missing');
+
+    throw new Error(
+      'initLock is not available on the iOS TTLock module.',
+    );
   }
+
+  Logger.ttlock('Calling withExclusiveBleCommand()', {
+    macAddress,
+  });
 
   return withExclusiveBleCommand(
     () =>
-      new Promise<{name?: string; mac: string; lockData: string}>((resolve, reject) => {
-        initLockNative.call(iosModule, {
-            lockMac: macAddress,
-            lockVersion: device.lockVersion,
-          },
-          lockData =>
-            resolve({
-              name: device.lockName,
-              mac: macAddress,
-              lockData,
-            }),
-          error => reject(new Error(getErrorMessage(error, 'Lock initialization failed on iOS.'))),
-        );
-      }),
-  );
+      new Promise<{name?: string; mac: string; lockData: string}>(
+        (resolve, reject) => {
+          Logger.ttlock('Calling native initLock()', {
+            macAddress,
+            version: device.lockVersion,
+          });
+
+          try {
+            initLockNative.call(
+              iosModule,
+              {
+                lockMac: macAddress,
+                lockVersion: device.lockVersion,
+              },
+
+              (lockData: string) => {
+                Logger.ttlock('Native initLock SUCCESS callback', {
+                  macAddress,
+                  lockDataLength: lockData.length,
+                });
+
+                resolve({
+                  name: device.lockName,
+                  mac: macAddress,
+                  lockData,
+                });
+              },
+
+              (error: unknown) => {
+                Logger.error('Native initLock ERROR callback', {
+                  macAddress,
+                  error,
+                });
+
+                reject(
+                  new Error(
+                    getErrorMessage(
+                      error,
+                      'Lock initialization failed on iOS.',
+                    ),
+                  ),
+                );
+              },
+            );
+
+            Logger.ttlock('Native initLock() invoked', {
+              macAddress,
+            });
+          } catch (error) {
+            Logger.exception(error);
+
+            reject(error);
+          }
+        },
+      ),
+  )
+    .then(result => {
+      Logger.ttlock('initLock() SUCCESS', {
+        macAddress,
+      });
+
+      return result;
+    })
+    .catch(error => {
+      Logger.exception(error);
+
+      throw error;
+    })
+    .finally(() => {
+      Logger.ttlock('initLock() FINISH', {
+        macAddress,
+      });
+    });
 };
 
 export const controlLock = async (
