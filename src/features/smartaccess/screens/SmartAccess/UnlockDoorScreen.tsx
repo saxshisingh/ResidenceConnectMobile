@@ -252,151 +252,151 @@ export default function UnlockDoorScreen() {
     });
   }, [selectedDevice]);
 
-  useEffect(() => {
-    if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
-      return;
-    }
+//   useEffect(() => {
+//     if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
+//       return;
+//     }
 
-    let cancelled = false;
+//     let cancelled = false;
 
-    const loadBatteryLevel = async () => {
-  Logger.info('[Battery] loadBatteryLevel START', {
-    deviceId: selectedDevice?.id,
-    deviceName: selectedDevice?.name,
-    platform: Platform.OS,
-    cancelled,
-  });
+//     const loadBatteryLevel = async () => {
+//   Logger.info('[Battery] loadBatteryLevel START', {
+//     deviceId: selectedDevice?.id,
+//     deviceName: selectedDevice?.name,
+//     platform: Platform.OS,
+//     cancelled,
+//   });
 
-  if (Platform.OS === 'ios') {
-    Logger.info('[Battery] Waiting 400ms for modal animation');
+//   if (Platform.OS === 'ios') {
+//     Logger.info('[Battery] Waiting 400ms for modal animation');
 
-    await new Promise<void>(resolve =>
-      setTimeout(() => {
-        Logger.info('[Battery] 400ms wait completed');
-        resolve();
-      }, 400),
-    );
-  }
+//     await new Promise<void>(resolve =>
+//       setTimeout(() => {
+//         Logger.info('[Battery] 400ms wait completed');
+//         resolve();
+//       }, 400),
+//     );
+//   }
 
-  const fallbackBattery =
-    typeof selectedDevice?.raw?.electricQuantity === 'number'
-      ? selectedDevice.raw.electricQuantity
-      : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
-        ? selectedDevice.raw.ElectricQuantity
-        : typeof selectedDevice?.raw?.battery === 'number'
-          ? selectedDevice.raw.battery
-          : null;
+//   const fallbackBattery =
+//     typeof selectedDevice?.raw?.electricQuantity === 'number'
+//       ? selectedDevice.raw.electricQuantity
+//       : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
+//         ? selectedDevice.raw.ElectricQuantity
+//         : typeof selectedDevice?.raw?.battery === 'number'
+//           ? selectedDevice.raw.battery
+//           : null;
 
-  Logger.info('[Battery] Fallback battery', {
-    fallbackBattery,
-  });
+//   Logger.info('[Battery] Fallback battery', {
+//     fallbackBattery,
+//   });
 
-  try {
-    Logger.info('[Battery] Checking Bluetooth readiness');
+//   try {
+//     Logger.info('[Battery] Checking Bluetooth readiness');
 
-    const ready = await ensureBluetoothReady();
+//     const ready = await ensureBluetoothReady();
 
-    Logger.info('[Battery] Bluetooth readiness result', {
-      ready,
-    });
+//     Logger.info('[Battery] Bluetooth readiness result', {
+//       ready,
+//     });
 
-    if (!ready) {
-      Logger.warn('[Battery] Bluetooth not ready');
-      return;
-    }
+//     if (!ready) {
+//       Logger.warn('[Battery] Bluetooth not ready');
+//       return;
+//     }
 
-    Logger.info('[Battery] Fetching BLE access');
+//     Logger.info('[Battery] Fetching BLE access');
 
-    const bleAccess = await getDeviceBleAccess(
-      selectedDevice.id,
-      String(residentId),
-    );
+//     const bleAccess = await getDeviceBleAccess(
+//       selectedDevice.id,
+//       String(residentId),
+//     );
 
-    Logger.info('[Battery] BLE access received', {
-      deviceName: bleAccess.deviceName,
-      lockMac: bleAccess.lockMac,
-      hasLockData: !!bleAccess.lockData,
-    });
+//     Logger.info('[Battery] BLE access received', {
+//       deviceName: bleAccess.deviceName,
+//       lockMac: bleAccess.lockMac,
+//       hasLockData: !!bleAccess.lockData,
+//     });
 
-    Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
+//     Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
 
-    const result = await ttlockNative.getBatteryLevel(
-      bleAccess.lockData,
-      bleAccess.lockMac,
-    );
+//     const result = await ttlockNative.getBatteryLevel(
+//       bleAccess.lockData,
+//       bleAccess.lockMac,
+//     );
 
-    Logger.info('[Battery] getBatteryLevel SUCCESS', result);
+//     Logger.info('[Battery] getBatteryLevel SUCCESS', result);
 
-    const batteryLevel = result?.battery;
+//     const batteryLevel = result?.battery;
 
-    Logger.info('[Battery] Parsed battery level', {
-      batteryLevel,
-      cancelled,
-    });
+//     Logger.info('[Battery] Parsed battery level', {
+//       batteryLevel,
+//       cancelled,
+//     });
 
-    if (!cancelled && typeof batteryLevel === 'number') {
-      Logger.info('[Battery] Updating battery state');
+//     if (!cancelled && typeof batteryLevel === 'number') {
+//       Logger.info('[Battery] Updating battery state');
 
-      setDeviceBatteryLevels(prev => ({
-        ...prev,
-        [selectedDevice.id]: batteryLevel,
-      }));
+//       setDeviceBatteryLevels(prev => ({
+//         ...prev,
+//         [selectedDevice.id]: batteryLevel,
+//       }));
 
-      Logger.info('[Battery] Battery state updated');
-    } else {
-      Logger.info('[Battery] Battery state update skipped', {
-        cancelled,
-        batteryLevel,
-      });
-    }
-  } catch (error) {
-    Logger.exception(error);
+//       Logger.info('[Battery] Battery state updated');
+//     } else {
+//       Logger.info('[Battery] Battery state update skipped', {
+//         cancelled,
+//         batteryLevel,
+//       });
+//     }
+//   } catch (error) {
+//     Logger.exception(error);
 
-    Logger.error('[Battery] loadBatteryLevel FAILED', {
-      error,
-    });
+//     Logger.error('[Battery] loadBatteryLevel FAILED', {
+//       error,
+//     });
 
-    if (!cancelled && typeof fallbackBattery === 'number') {
-      Logger.info('[Battery] Using fallback battery', {
-        fallbackBattery,
-      });
+//     if (!cancelled && typeof fallbackBattery === 'number') {
+//       Logger.info('[Battery] Using fallback battery', {
+//         fallbackBattery,
+//       });
 
-      setDeviceBatteryLevels(prev => ({
-        ...prev,
-        [selectedDevice.id]: fallbackBattery,
-      }));
+//       setDeviceBatteryLevels(prev => ({
+//         ...prev,
+//         [selectedDevice.id]: fallbackBattery,
+//       }));
 
-      Logger.info('[Battery] Fallback battery applied');
-    } else {
-      Logger.warn('[Battery] No fallback battery available', {
-        cancelled,
-        fallbackBattery,
-      });
-    }
+//       Logger.info('[Battery] Fallback battery applied');
+//     } else {
+//       Logger.warn('[Battery] No fallback battery available', {
+//         cancelled,
+//         fallbackBattery,
+//       });
+//     }
 
-    return;
-  } finally {
-    Logger.info('[Battery] loadBatteryLevel FINISH', {
-      deviceId: selectedDevice?.id,
-      cancelled,
-    });
-  }
-};
+//     return;
+//   } finally {
+//     Logger.info('[Battery] loadBatteryLevel FINISH', {
+//       deviceId: selectedDevice?.id,
+//       cancelled,
+//     });
+//   }
+// };
 
-    if (Platform.OS === 'ios') {
-      InteractionManager.runAfterInteractions(() => {
-        if (!cancelled) {
-          loadBatteryLevel();
-        }
-      });
-    } else {
-      loadBatteryLevel();
-    }
+//     if (Platform.OS === 'ios') {
+//       InteractionManager.runAfterInteractions(() => {
+//         if (!cancelled) {
+//           loadBatteryLevel();
+//         }
+//       });
+//     } else {
+//       loadBatteryLevel();
+//     }
 
-    return () => {
-      cancelled = true;
-    };
-  }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
 
   const openSelectedDeviceModal = (device: ResidentAccessDevice) => {
     Logger.info('Opening Smart Lock Modal', {
@@ -414,28 +414,32 @@ export default function UnlockDoorScreen() {
   };
 
   const closeSelectedDeviceModal = () => {
-    Logger.info('Close Modal Pressed');
+    Logger.info("Close Modal Pressed");
 
-    Logger.info('Current State', {
+    Logger.info("Current State", {
       selectedDeviceId: selectedDevice?.id,
       activeControlId,
       modalVisible: isSelectedDeviceModalVisible,
     });
 
-    setIsSelectedDeviceModalVisible(false);
+    InteractionManager.runAfterInteractions(() => {
+      Logger.info("Closing modal after interactions");
 
-    Logger.info('setIsSelectedDeviceModalVisible(false) completed');
+      setIsSelectedDeviceModalVisible(false);
+
+      Logger.info("setIsSelectedDeviceModalVisible(false) completed");
+    });
 
     setTimeout(() => {
-      Logger.info('500ms after modal close');
+      Logger.info("500ms after modal close");
     }, 500);
 
     setTimeout(() => {
-      Logger.info('1000ms after modal close');
+      Logger.info("1000ms after modal close");
     }, 1000);
 
     setTimeout(() => {
-      Logger.info('2000ms after modal close');
+      Logger.info("2000ms after modal close");
     }, 2000);
   };
 
@@ -607,45 +611,50 @@ export default function UnlockDoorScreen() {
     return (
       <Modal
         transparent
-        animationType="slide"
+        presentationStyle="overFullScreen"
+        animationType="none"
         visible={isSelectedDeviceModalVisible}
         onShow={() => {
-          Logger.info('Modal onShow');
+          Logger.info("Modal onShow");
         }}
         onRequestClose={() => {
-          Logger.info('Modal onRequestClose');
+          Logger.info("Modal onRequestClose");
+
           closeSelectedDeviceModal();
         }}
         onDismiss={() => {
-          Logger.info('Modal onDismiss');
-
-          if (!isSelectedDeviceModalVisible) {
-            Logger.info('Clearing selectedDevice');
+            Logger.info("Modal onDismiss");
             setSelectedDevice(null);
-            Logger.info('selectedDevice cleared');
-          }
         }}>
         <View
-              style={styles.modalOverlay}
-              onTouchStart={() => {
-                  Logger.info("MODAL OVERLAY TOUCH");
-              }}
-          >
+          style={styles.modalOverlay}
+          onTouchStart={() => {
+            Logger.info("MODAL OVERLAY TOUCH");
+          }}>
+
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
             onPress={() => {
-              Logger.info('Modal Backdrop Pressed');
-              closeSelectedDeviceModal();
+              Logger.info("Modal Backdrop Pressed");
+
+              InteractionManager.runAfterInteractions(() => {
+                closeSelectedDeviceModal();
+              });
             }}
           />
 
-          <View style={styles.modalSheet}>
+          <View
+            style={styles.modalSheet}
+            onTouchStart={() => {
+              Logger.info("MODAL SHEET TOUCH");
+            }}>
+
             <View style={styles.modalHandle} />
 
             <SmartLockHeroCard
               colors={colors}
-              isDark={resolvedTheme === 'dark'}
+              isDark={resolvedTheme === "dark"}
               title={selectedDevice.name}
               subtitle={
                 selectedDevice.lockId
@@ -656,12 +665,18 @@ export default function UnlockDoorScreen() {
               battery={deviceBatteryLevels[selectedDevice.id]}
               isUnlocked={isUnlocked}
               isBusy={isBusy}
-              lockedHint={t('mobile.smartAccess.unlockDoor', 'Tap lock to unlock')}
-              unlockedHint={t('mobile.smartAccess.devices.lock', 'Tap lock to lock')}
+              lockedHint={t(
+                "mobile.smartAccess.unlockDoor",
+                "Tap lock to unlock",
+              )}
+              unlockedHint={t(
+                "mobile.smartAccess.devices.lock",
+                "Tap lock to lock",
+              )}
               onToggleLock={() =>
                 handleControlDevice(
                   selectedDevice,
-                  isUnlocked ? 'lock' : 'unlock',
+                  isUnlocked ? "lock" : "unlock",
                 )
               }
             />
@@ -669,11 +684,17 @@ export default function UnlockDoorScreen() {
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => {
-                Logger.info('Cancel Button Pressed');
-                closeSelectedDeviceModal();
+                Logger.info("Cancel Button Pressed");
+
+                InteractionManager.runAfterInteractions(() => {
+                  closeSelectedDeviceModal();
+                });
               }}>
-              <Text style={styles.cancelButtonText}>{t('common.cancel', 'Cancel')}</Text>
+              <Text style={styles.cancelButtonText}>
+                {t("common.cancel", "Cancel")}
+              </Text>
             </TouchableOpacity>
+
           </View>
         </View>
       </Modal>
