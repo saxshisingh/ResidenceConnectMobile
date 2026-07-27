@@ -7,6 +7,7 @@ import {createStyles} from './SmartAccess.styles';
 import ScreenWrapper from '../../../../components/ScreenWrapper';
 import {useAppTheme} from '../../../../theme/ThemeProvider';
 import {useI18n} from '../../../../i18n';
+import Logger from '../../../../services/logger/logger';
 
 const normalizeRole = (value?: string) =>
   String(value || '')
@@ -26,18 +27,54 @@ export default function SmartAccessScreen() {
 
   const shouldOpenAdminFirst = useMemo(() => {
     const role = normalizeRole(roleRaw);
+
+    Logger.info('[SmartAccess] Role resolved', {
+      roleRaw,
+      normalizedRole: role,
+    });
+
     return role === 'admin' || role === 'superadmin';
   }, [roleRaw]);
 
   useEffect(() => {
-    navigation.replace(shouldOpenAdminFirst ? 'TTLockAdmin' : 'UnlockDoor');
+    Logger.screen('SmartAccessScreen Mounted');
+
+    return () => {
+      Logger.screen('SmartAccessScreen Unmounted');
+    };
+  }, []);
+
+  useEffect(() => {
+    Logger.info('[SmartAccess] Navigation decision', {
+      shouldOpenAdminFirst,
+      destination: shouldOpenAdminFirst
+        ? 'TTLockAdmin'
+        : 'UnlockDoor',
+    });
+
+    try {
+      navigation.replace(
+        shouldOpenAdminFirst ? 'TTLockAdmin' : 'UnlockDoor',
+      );
+
+      Logger.info('[SmartAccess] navigation.replace() called');
+    } catch (error) {
+      Logger.error('[SmartAccess] navigation.replace() failed', error);
+    }
   }, [navigation, shouldOpenAdminFirst]);
 
   return (
     <ScreenWrapper
       title={t('mobile.smartAccess.unlockDoor', 'Unlock Door')}
-      onBackPress={() => navigation.goBack()}>
-      <View style={[styles.container, {backgroundColor: colors.background}]}>
+      onBackPress={() => {
+        Logger.info('[SmartAccess] Back pressed');
+        navigation.goBack();
+      }}>
+      <View
+        style={[styles.container, {backgroundColor: colors.background}]}
+        onTouchStart={() => {
+          Logger.info('[SmartAccess] ROOT TOUCH');
+        }}>
         <View style={styles.accessStateWrap}>
           <ActivityIndicator size="small" color={colors.primary} />
           <Text style={styles.accessStateText}>

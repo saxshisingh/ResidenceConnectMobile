@@ -625,7 +625,12 @@ export default function UnlockDoorScreen() {
             Logger.info('selectedDevice cleared');
           }
         }}>
-        <View style={styles.modalOverlay}>
+        <View
+              style={styles.modalOverlay}
+              onTouchStart={() => {
+                  Logger.info("MODAL OVERLAY TOUCH");
+              }}
+          >
           <TouchableOpacity
             style={styles.modalBackdrop}
             activeOpacity={1}
@@ -678,7 +683,15 @@ export default function UnlockDoorScreen() {
   const showCenteredState = loadingDevices || !!devicesError || devices.length === 0;
 
   return (
-    <View style={styles.container}>
+    <View
+        style={styles.container}
+        onTouchStart={() => {
+          Logger.info("ROOT TOUCH");
+        }}
+        onTouchEnd={() => {
+          Logger.info("ROOT TOUCH END");
+        }}
+      >
       <Svg height="100%" width="100%" style={StyleSheet.absoluteFillObject}>
         <Defs>
           <LinearGradient id="unlockDoorBg" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -690,12 +703,26 @@ export default function UnlockDoorScreen() {
       </Svg>
 
       <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          showCenteredState && styles.scrollContentCentered,
-          {paddingBottom: Math.max(insets.bottom, 16) + 24},
-        ]}>
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[
+              styles.scrollContent,
+              showCenteredState && styles.scrollContentCentered,
+              { paddingBottom: Math.max(insets.bottom, 16) + 24 },
+          ]}
+          onTouchStart={() => {
+              Logger.info("SCROLLVIEW TOUCH");
+          }}
+          onScrollBeginDrag={() => {
+              Logger.info("SCROLL START");
+          }}
+          onMomentumScrollBegin={() => {
+              Logger.info("MOMENTUM START");
+          }}
+          onMomentumScrollEnd={() => {
+              Logger.info("MOMENTUM END");
+          }}
+          scrollEventThrottle={16}
+      >
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <BackButton onPress={() => navigation.goBack()} color={colors.textPrimary} />

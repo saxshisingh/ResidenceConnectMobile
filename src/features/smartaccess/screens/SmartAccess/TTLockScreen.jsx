@@ -458,6 +458,26 @@ export default function TTLockScreen({navigation, route}) {
   }, [routeDeviceId, lockId, mac, lockName]);
 
   useEffect(() => {
+    Logger.info("[TTLockScreen] activeAction changed", {
+      activeAction,
+    });
+  }, [activeAction]);
+
+  useEffect(() => {
+    Logger.info("[TTLockScreen] activeAction changed", {
+      activeAction,
+    });
+  }, [activeAction]);
+
+  useEffect(() => {
+    Logger.info("[TTLockScreen] infoModal changed", {
+      visible: infoModal.visible,
+      loading: infoModal.loading,
+      title: infoModal.title,
+    });
+  }, [infoModal]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const resolveKnownBatteryLevel = async () => {
@@ -2150,161 +2170,188 @@ export default function TTLockScreen({navigation, route}) {
   };
 
   return (
-    <ScreenWrapper title={smartLockCopy?.screenTitle || t('mobile.ttlock.screenTitle', 'TTLock')} onBackPress={() => navigation.goBack()}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        <View style={styles.actionsCard}>
-          <Text style={styles.sectionTitle}>{t('mobile.ttlock.lockActionsTitle', 'Lock Actions')}</Text>
+    <View
+      style={{ flex: 1 }}
+      onTouchStart={() => {
+        Logger.info("[TTLockScreen] ROOT TOUCH");
+      }}
+      onTouchEnd={() => {
+        Logger.info("[TTLockScreen] ROOT TOUCH END");
+      }}
+    >
+      <ScreenWrapper title={smartLockCopy?.screenTitle || t('mobile.ttlock.screenTitle', 'TTLock')} onBackPress={() => navigation.goBack()}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}
+        onTouchStart={() => {
+            Logger.info("[TTLockScreen] SCROLLVIEW TOUCH");
+          }}
+          onScrollBeginDrag={() => {
+            Logger.info("[TTLockScreen] SCROLL START");
+          }}
+          onMomentumScrollBegin={() => {
+            Logger.info("[TTLockScreen] MOMENTUM START");
+          }}
+          onMomentumScrollEnd={() => {
+            Logger.info("[TTLockScreen] MOMENTUM END");
+          }}
+          scrollEventThrottle={16}>
+          <View style={styles.actionsCard}>
+            <Text style={styles.sectionTitle}>{t('mobile.ttlock.lockActionsTitle', 'Lock Actions')}</Text>
 
-          <View style={styles.summaryCard}>
-            <Text style={styles.lockName}>{lockName}</Text>
-            {resolvedLockId ? (
-              <Text style={styles.lockMeta}>
-                {t('mobile.ttlock.lockNumber', 'Lock #{{id}}').replace('{{id}}', String(resolvedLockId))}
-              </Text>
-            ) : null}
-            {resolvedDeviceId ? (
-              <Text style={styles.lockMeta}>
-                {t('mobile.ttlock.deviceLabel', 'Device: {{id}}').replace('{{id}}', String(resolvedDeviceId))}
-              </Text>
-            ) : null}
-            {!resolvedDeviceId ? <Text style={styles.lockMeta}>{t('mobile.ttlock.bleOnlySession', 'BLE-only lock session')}</Text> : null}
-            {mac ? <Text style={styles.lockMeta}>{mac}</Text> : null}
-            <View style={styles.summaryWifiBadge}>
-              <IconWifi />
-            </View>
-          </View>
-
-          {actionRows.map((rowItems, rowIndex) => (
-            <View key={`row-${rowIndex}`} style={styles.row}>
-              {rowItems.map(item => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[styles.tile, activeAction && activeAction !== item.id ? styles.buttonDisabled : null]}
-                  activeOpacity={0.8}
-                  onPress={item.onPress}
-                  disabled={Boolean(activeAction)}>
-                  <View
-                    style={[
-                      styles.tileBox,
-                      activeAction && activeAction !== item.id ? styles.tileBoxDisabled : null,
-                    ]}>
-                    {activeAction === item.id ? <ActivityIndicator color={ADMIN_ACCENT} /> : item.icon()}
-                  </View>
-                  <Text
-                    style={[
-                      styles.tileLabel,
-                      activeAction && activeAction !== item.id ? styles.tileLabelDisabled : null,
-                    ]}>
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-              {rowItems.length === 1 ? <View style={styles.tilePlaceholder} /> : null}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-
-      <Modal
-        transparent
-        animationType="slide"
-        visible={!!modalType}
-        onRequestClose={() => {
-          if (!activeAction) {
-            closeModal('system-request-close');
-          }
-        }}>
-        <KeyboardAvoidingView
-          style={styles.overlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <Pressable
-            style={styles.backdrop}
-            onPress={() => {
-              if (!activeAction) {
-                closeModal('backdrop-press');
-              }
-            }}
-          />
-          <View
-            style={styles.sheet}
-            onStartShouldSetResponder={() => true}
-            onTouchEnd={() => {
-              console.log('[TTLockScreen] touch inside modal sheet');
-            }}>
-            <View style={styles.handle} />
-            <Text style={styles.modalTitle}>{renderModalTitle()}</Text>
-            <Text style={styles.modalSubtitle}>{lockName}</Text>
-            {renderModalField()}
-            {modalType !== 'cards' ? (
-              <TouchableOpacity
-                style={[styles.primaryButton, activeAction && styles.buttonDisabled]}
-                activeOpacity={0.85}
-                onPress={() => handleSubmit(modalType)}
-                disabled={Boolean(activeAction)}>
-                {activeAction ? (
-                  <ActivityIndicator color={colors.onPrimary} />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {modalType === 'add-passcode'
-                      ? t('mobile.ttlock.createPasscodeButton', 'Create Passcode')
-                      : modalType === 'add-fingerprint'
-                        ? t('mobile.ttlock.startFingerprintButton', 'Start Fingerprint')
-                      : modalType === 'assign-card'
-                        ? t('mobile.ttlock.assignCardButton', 'Assign Card')
-                      // : modalType === 'delete-card'
-                      //   ? t('mobile.ttlock.deleteCardButton', 'Delete Card')
-                      : t('confirm', 'Submit')}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ) : null}
-            <TouchableOpacity
-              style={[styles.secondaryButton, activeAction && styles.buttonDisabled]}
-              onPress={() => closeModal('cancel-button')}
-              disabled={Boolean(activeAction)}>
-              <Text style={styles.secondaryButtonText}>{t('cancel', 'Cancel')}</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-      <Modal transparent animationType="fade" visible={infoModal.visible} onRequestClose={closeInfoModal}>
-        <View style={styles.infoOverlay}>
-          <Pressable style={styles.backdrop} onPress={closeInfoModal} />
-          <View style={styles.infoSheet}>
-            <Text style={styles.infoTitle}>{infoModal.title || t('mobile.ttlock.informationTitle', 'Information')}</Text>
-            <Text style={styles.infoMessage}>{infoModal.message}</Text>
-            {infoModal.loading ? (
-              <View style={styles.infoLoaderRow}>
-                <ActivityIndicator color={ADMIN_ACCENT} />
-                <Text style={styles.infoLoaderText}>{t('mobile.ttlock.waitingForLock', 'Waiting for the lock...')}</Text>
+            <View style={styles.summaryCard}>
+              <Text style={styles.lockName}>{lockName}</Text>
+              {resolvedLockId ? (
+                <Text style={styles.lockMeta}>
+                  {t('mobile.ttlock.lockNumber', 'Lock #{{id}}').replace('{{id}}', String(resolvedLockId))}
+                </Text>
+              ) : null}
+              {resolvedDeviceId ? (
+                <Text style={styles.lockMeta}>
+                  {t('mobile.ttlock.deviceLabel', 'Device: {{id}}').replace('{{id}}', String(resolvedDeviceId))}
+                </Text>
+              ) : null}
+              {!resolvedDeviceId ? <Text style={styles.lockMeta}>{t('mobile.ttlock.bleOnlySession', 'BLE-only lock session')}</Text> : null}
+              {mac ? <Text style={styles.lockMeta}>{mac}</Text> : null}
+              <View style={styles.summaryWifiBadge}>
+                <IconWifi />
               </View>
-            ) : (
-              <TouchableOpacity style={styles.primaryButton} onPress={closeInfoModal} activeOpacity={0.85}>
-                <Text style={styles.primaryButtonText}>{t('close', 'Close')}</Text>
-              </TouchableOpacity>
-            )}
+            </View>
+
+            {actionRows.map((rowItems, rowIndex) => (
+              <View key={`row-${rowIndex}`} style={styles.row}>
+                {rowItems.map(item => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.tile, activeAction && activeAction !== item.id ? styles.buttonDisabled : null]}
+                    activeOpacity={0.8}
+                    onPress={item.onPress}
+                    disabled={Boolean(activeAction)}>
+                    <View
+                      style={[
+                        styles.tileBox,
+                        activeAction && activeAction !== item.id ? styles.tileBoxDisabled : null,
+                      ]}>
+                      {activeAction === item.id ? <ActivityIndicator color={ADMIN_ACCENT} /> : item.icon()}
+                    </View>
+                    <Text
+                      style={[
+                        styles.tileLabel,
+                        activeAction && activeAction !== item.id ? styles.tileLabelDisabled : null,
+                      ]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+                {rowItems.length === 1 ? <View style={styles.tilePlaceholder} /> : null}
+              </View>
+            ))}
           </View>
-        </View>
-      </Modal>
-      {showCardStartDatePicker ? (
-        <DateTimePicker
-          value={cardStartDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date()}
-          onChange={onCardStartDateChange}
-        />
-      ) : null}
-      {showCardEndDatePicker ? (
-        <DateTimePicker
-          value={cardEndDate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={cardStartDate}
-          onChange={onCardEndDateChange}
-        />
-      ) : null}
-    </ScreenWrapper>
+        </ScrollView>
+
+        <Modal
+          transparent
+          animationType="slide"
+          visible={!!modalType}
+          onShow={() => {
+          Logger.info("[TTLockScreen] Modal onShow");
+        }}
+        onDismiss={() => {
+          Logger.info("[TTLockScreen] Modal onDismiss");
+        }}
+        onRequestClose={() => {
+          Logger.info("[TTLockScreen] Modal onRequestClose");
+          closeModal();
+        }}>
+          <KeyboardAvoidingView
+            style={styles.overlay}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            <Pressable
+              style={styles.backdrop}
+              onPress={() => {
+                Logger.info("[TTLockScreen] Backdrop Pressed");
+                closeModal();
+              }}
+            />
+            <View
+              style={styles.sheet}
+              onStartShouldSetResponder={() => true}
+              onTouchEnd={() => {
+                console.log('[TTLockScreen] touch inside modal sheet');
+              }}>
+              <View style={styles.handle} />
+              <Text style={styles.modalTitle}>{renderModalTitle()}</Text>
+              <Text style={styles.modalSubtitle}>{lockName}</Text>
+              {renderModalField()}
+              {modalType !== 'cards' ? (
+                <TouchableOpacity
+                  style={[styles.primaryButton, activeAction && styles.buttonDisabled]}
+                  activeOpacity={0.85}
+                  onPress={() => handleSubmit(modalType)}
+                  disabled={Boolean(activeAction)}>
+                  {activeAction ? (
+                    <ActivityIndicator color={colors.onPrimary} />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>
+                      {modalType === 'add-passcode'
+                        ? t('mobile.ttlock.createPasscodeButton', 'Create Passcode')
+                        : modalType === 'add-fingerprint'
+                          ? t('mobile.ttlock.startFingerprintButton', 'Start Fingerprint')
+                        : modalType === 'assign-card'
+                          ? t('mobile.ttlock.assignCardButton', 'Assign Card')
+                        // : modalType === 'delete-card'
+                        //   ? t('mobile.ttlock.deleteCardButton', 'Delete Card')
+                        : t('confirm', 'Submit')}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
+                style={[styles.secondaryButton, activeAction && styles.buttonDisabled]}
+                onPress={() => closeModal('cancel-button')}
+                disabled={Boolean(activeAction)}>
+                <Text style={styles.secondaryButtonText}>{t('cancel', 'Cancel')}</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+        <Modal transparent animationType="fade" visible={infoModal.visible} onRequestClose={closeInfoModal}>
+          <View style={styles.infoOverlay}>
+            <Pressable style={styles.backdrop} onPress={closeInfoModal} />
+            <View style={styles.infoSheet}>
+              <Text style={styles.infoTitle}>{infoModal.title || t('mobile.ttlock.informationTitle', 'Information')}</Text>
+              <Text style={styles.infoMessage}>{infoModal.message}</Text>
+              {infoModal.loading ? (
+                <View style={styles.infoLoaderRow}>
+                  <ActivityIndicator color={ADMIN_ACCENT} />
+                  <Text style={styles.infoLoaderText}>{t('mobile.ttlock.waitingForLock', 'Waiting for the lock...')}</Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.primaryButton} onPress={closeInfoModal} activeOpacity={0.85}>
+                  <Text style={styles.primaryButtonText}>{t('close', 'Close')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+        {showCardStartDatePicker ? (
+          <DateTimePicker
+            value={cardStartDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            minimumDate={new Date()}
+            onChange={onCardStartDateChange}
+          />
+        ) : null}
+        {showCardEndDatePicker ? (
+          <DateTimePicker
+            value={cardEndDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            minimumDate={cardStartDate}
+            onChange={onCardEndDateChange}
+          />
+        ) : null}
+      </ScreenWrapper>
+    </View>
   );
 }
 
