@@ -502,9 +502,16 @@ export default function UnlockDoorScreen() {
       setActiveControlId(device.id);
 
       const ready = await ensureBluetoothReady();
-      if (!ready) {
-        return;
-      }
+
+        if (!ready) {
+          Alert.alert(
+            'Bluetooth Required',
+            'Please turn on Bluetooth to use your smart lock.',
+            [{ text: 'OK' }],
+          );
+
+          return;
+        }
 
       const performControlWithAccess = async (
         lockData: string,
