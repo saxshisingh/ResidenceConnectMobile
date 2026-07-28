@@ -13,7 +13,9 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  Linking
 } from 'react-native';
+
 import {useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Svg, {Defs, LinearGradient, Path, Rect, Stop} from 'react-native-svg';
@@ -443,34 +445,49 @@ export default function UnlockDoorScreen() {
     }, 2000);
   };
 
-  const ensureBluetoothReady = async () => {
-    const permissionsGranted = await requestBluetoothPermissions();
-    if (!permissionsGranted) {
-      Alert.alert(
-        t('mobile.smartAccess.devices.permissionTitle', 'Permission required'),
-        t(
-          'mobile.smartAccess.devices.permissionMessage',
-          'Bluetooth and location permissions are required for BLE access.',
-        ),
-      );
-      return false;
-    }
+const ensureBluetoothReady = async () => {
+  const permissionsGranted = await requestBluetoothPermissions();
 
-    const enabled = await ttlockNative.isBluetoothEnabled();
-    if (enabled) {
-      return true;
-    }
-
-    if (Platform.OS === 'android') {
-      await ttlockNative.requestBluetoothEnable();
-    }
-
+  if (!permissionsGranted) {
     Alert.alert(
-      t('mobile.smartAccess.devices.bluetoothRequiredTitle', 'Bluetooth required'),
-      getBluetoothEnableMessage(t),
+      t('mobile.smartAccess.devices.permissionTitle', 'Permission required'),
+      t(
+        'mobile.smartAccess.devices.permissionMessage',
+        'Bluetooth and location permissions are required for BLE access.',
+      ),
     );
     return false;
-  };
+  }
+
+  const enabled = await ttlockNative.isBluetoothEnabled();
+
+  if (enabled) {
+    return true;
+  }
+
+  if (Platform.OS === 'android') {
+    await ttlockNative.requestBluetoothEnable();
+    return await ttlockNative.isBluetoothEnabled();
+  }
+
+  // iOS
+  Alert.alert(
+    t('mobile.smartAccess.devices.bluetoothRequiredTitle', 'Bluetooth Required'),
+    getBluetoothEnableMessage(t),
+    [
+      {
+        text: t('common.cancel', 'Cancel'),
+        style: 'cancel',
+      },
+      {
+        text: t('common.settings', 'Settings'),
+        onPress: () => Linking.openSettings(),
+      },
+    ],
+  );
+
+  return false;
+};
 
   const handleControlDevice = async (
     device: ResidentAccessDevice,
@@ -504,11 +521,14 @@ export default function UnlockDoorScreen() {
       const ready = await ensureBluetoothReady();
 
         if (!ready) {
-          Alert.alert(
-            'Bluetooth Required',
-            'Please turn on Bluetooth to use your smart lock.',
-            [{ text: 'OK' }],
-          );
+          Logger.warn("[Battery] Bluetooth not ready");
+
+          setTimeout(() => {
+            Alert.alert(
+              "Bluetooth Off",
+              "Please turn on Bluetooth."
+            );
+          }, 0);
 
           return;
         }
