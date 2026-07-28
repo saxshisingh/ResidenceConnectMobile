@@ -400,20 +400,52 @@ export default function UnlockDoorScreen() {
     };
   }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
 
-  const openSelectedDeviceModal = (device: ResidentAccessDevice) => {
+const openSelectedDeviceModal = async (device: ResidentAccessDevice) => {
+  try {
+    Logger.info('Opening Smart Lock Request', {
+      deviceId: device.id,
+      deviceName: device.name,
+    });
+
+    const permissionsGranted = await requestBluetoothPermissions();
+
+    if (!permissionsGranted) {
+      Logger.warn('Bluetooth permissions not granted');
+      return;
+    }
+
+    const bluetoothEnabled = await ttlockNative.isBluetoothEnabled();
+
+    Logger.info('Bluetooth Status', {
+      enabled: bluetoothEnabled,
+    });
+
+    if (!bluetoothEnabled) {
+      Alert.alert(
+        'Bluetooth Required',
+        'Please turn on Bluetooth to access this smart lock.'
+      );
+      return;
+    }
+
     Logger.info('Opening Smart Lock Modal', {
       deviceId: device.id,
       deviceName: device.name,
     });
 
     setSelectedDevice(device);
-
     Logger.info('selectedDevice updated');
 
     setIsSelectedDeviceModalVisible(true);
-
     Logger.info('Modal visibility set to TRUE');
-  };
+  } catch (error) {
+    Logger.exception(error);
+    Alert.alert(
+      'Error',
+      'Unable to check Bluetooth status. Please try again.'
+    );
+  }
+};
 
   const closeSelectedDeviceModal = () => {
     Logger.info("Close Modal Pressed");
