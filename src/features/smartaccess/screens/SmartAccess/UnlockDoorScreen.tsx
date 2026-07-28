@@ -252,151 +252,151 @@ export default function UnlockDoorScreen() {
     });
   }, [selectedDevice]);
 
-//   useEffect(() => {
-//     if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
-//       return;
-//     }
+  useEffect(() => {
+    if (!selectedDevice || !residentId || !isSelectedDeviceModalVisible) {
+      return;
+    }
 
-//     let cancelled = false;
+    let cancelled = false;
 
-//     const loadBatteryLevel = async () => {
-//   Logger.info('[Battery] loadBatteryLevel START', {
-//     deviceId: selectedDevice?.id,
-//     deviceName: selectedDevice?.name,
-//     platform: Platform.OS,
-//     cancelled,
-//   });
+    const loadBatteryLevel = async () => {
+  Logger.info('[Battery] loadBatteryLevel START', {
+    deviceId: selectedDevice?.id,
+    deviceName: selectedDevice?.name,
+    platform: Platform.OS,
+    cancelled,
+  });
 
-//   if (Platform.OS === 'ios') {
-//     Logger.info('[Battery] Waiting 400ms for modal animation');
+  if (Platform.OS === 'ios') {
+    Logger.info('[Battery] Waiting 400ms for modal animation');
 
-//     await new Promise<void>(resolve =>
-//       setTimeout(() => {
-//         Logger.info('[Battery] 400ms wait completed');
-//         resolve();
-//       }, 400),
-//     );
-//   }
+    await new Promise<void>(resolve =>
+      setTimeout(() => {
+        Logger.info('[Battery] 400ms wait completed');
+        resolve();
+      }, 400),
+    );
+  }
 
-//   const fallbackBattery =
-//     typeof selectedDevice?.raw?.electricQuantity === 'number'
-//       ? selectedDevice.raw.electricQuantity
-//       : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
-//         ? selectedDevice.raw.ElectricQuantity
-//         : typeof selectedDevice?.raw?.battery === 'number'
-//           ? selectedDevice.raw.battery
-//           : null;
+  const fallbackBattery =
+    typeof selectedDevice?.raw?.electricQuantity === 'number'
+      ? selectedDevice.raw.electricQuantity
+      : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
+        ? selectedDevice.raw.ElectricQuantity
+        : typeof selectedDevice?.raw?.battery === 'number'
+          ? selectedDevice.raw.battery
+          : null;
 
-//   Logger.info('[Battery] Fallback battery', {
-//     fallbackBattery,
-//   });
+  Logger.info('[Battery] Fallback battery', {
+    fallbackBattery,
+  });
 
-//   try {
-//     Logger.info('[Battery] Checking Bluetooth readiness');
+  try {
+    Logger.info('[Battery] Checking Bluetooth readiness');
 
-//     const ready = await ensureBluetoothReady();
+    const ready = await ensureBluetoothReady();
 
-//     Logger.info('[Battery] Bluetooth readiness result', {
-//       ready,
-//     });
+    Logger.info('[Battery] Bluetooth readiness result', {
+      ready,
+    });
 
-//     if (!ready) {
-//       Logger.warn('[Battery] Bluetooth not ready');
-//       return;
-//     }
+    if (!ready) {
+      Logger.warn('[Battery] Bluetooth not ready');
+      return;
+    }
 
-//     Logger.info('[Battery] Fetching BLE access');
+    Logger.info('[Battery] Fetching BLE access');
 
-//     const bleAccess = await getDeviceBleAccess(
-//       selectedDevice.id,
-//       String(residentId),
-//     );
+    const bleAccess = await getDeviceBleAccess(
+      selectedDevice.id,
+      String(residentId),
+    );
 
-//     Logger.info('[Battery] BLE access received', {
-//       deviceName: bleAccess.deviceName,
-//       lockMac: bleAccess.lockMac,
-//       hasLockData: !!bleAccess.lockData,
-//     });
+    Logger.info('[Battery] BLE access received', {
+      deviceName: bleAccess.deviceName,
+      lockMac: bleAccess.lockMac,
+      hasLockData: !!bleAccess.lockData,
+    });
 
-//     Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
+    Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
 
-//     const result = await ttlockNative.getBatteryLevel(
-//       bleAccess.lockData,
-//       bleAccess.lockMac,
-//     );
+    const result = await ttlockNative.getBatteryLevel(
+      bleAccess.lockData,
+      bleAccess.lockMac,
+    );
 
-//     Logger.info('[Battery] getBatteryLevel SUCCESS', result);
+    Logger.info('[Battery] getBatteryLevel SUCCESS', result);
 
-//     const batteryLevel = result?.battery;
+    const batteryLevel = result?.battery;
 
-//     Logger.info('[Battery] Parsed battery level', {
-//       batteryLevel,
-//       cancelled,
-//     });
+    Logger.info('[Battery] Parsed battery level', {
+      batteryLevel,
+      cancelled,
+    });
 
-//     if (!cancelled && typeof batteryLevel === 'number') {
-//       Logger.info('[Battery] Updating battery state');
+    if (!cancelled && typeof batteryLevel === 'number') {
+      Logger.info('[Battery] Updating battery state');
 
-//       setDeviceBatteryLevels(prev => ({
-//         ...prev,
-//         [selectedDevice.id]: batteryLevel,
-//       }));
+      setDeviceBatteryLevels(prev => ({
+        ...prev,
+        [selectedDevice.id]: batteryLevel,
+      }));
 
-//       Logger.info('[Battery] Battery state updated');
-//     } else {
-//       Logger.info('[Battery] Battery state update skipped', {
-//         cancelled,
-//         batteryLevel,
-//       });
-//     }
-//   } catch (error) {
-//     Logger.exception(error);
+      Logger.info('[Battery] Battery state updated');
+    } else {
+      Logger.info('[Battery] Battery state update skipped', {
+        cancelled,
+        batteryLevel,
+      });
+    }
+  } catch (error) {
+    Logger.exception(error);
 
-//     Logger.error('[Battery] loadBatteryLevel FAILED', {
-//       error,
-//     });
+    Logger.error('[Battery] loadBatteryLevel FAILED', {
+      error,
+    });
 
-//     if (!cancelled && typeof fallbackBattery === 'number') {
-//       Logger.info('[Battery] Using fallback battery', {
-//         fallbackBattery,
-//       });
+    if (!cancelled && typeof fallbackBattery === 'number') {
+      Logger.info('[Battery] Using fallback battery', {
+        fallbackBattery,
+      });
 
-//       setDeviceBatteryLevels(prev => ({
-//         ...prev,
-//         [selectedDevice.id]: fallbackBattery,
-//       }));
+      setDeviceBatteryLevels(prev => ({
+        ...prev,
+        [selectedDevice.id]: fallbackBattery,
+      }));
 
-//       Logger.info('[Battery] Fallback battery applied');
-//     } else {
-//       Logger.warn('[Battery] No fallback battery available', {
-//         cancelled,
-//         fallbackBattery,
-//       });
-//     }
+      Logger.info('[Battery] Fallback battery applied');
+    } else {
+      Logger.warn('[Battery] No fallback battery available', {
+        cancelled,
+        fallbackBattery,
+      });
+    }
 
-//     return;
-//   } finally {
-//     Logger.info('[Battery] loadBatteryLevel FINISH', {
-//       deviceId: selectedDevice?.id,
-//       cancelled,
-//     });
-//   }
-// };
+    return;
+  } finally {
+    Logger.info('[Battery] loadBatteryLevel FINISH', {
+      deviceId: selectedDevice?.id,
+      cancelled,
+    });
+  }
+};
 
-//     if (Platform.OS === 'ios') {
-//       InteractionManager.runAfterInteractions(() => {
-//         if (!cancelled) {
-//           loadBatteryLevel();
-//         }
-//       });
-//     } else {
-//       loadBatteryLevel();
-//     }
+    if (Platform.OS === 'ios') {
+      InteractionManager.runAfterInteractions(() => {
+        if (!cancelled) {
+          loadBatteryLevel();
+        }
+      });
+    } else {
+      loadBatteryLevel();
+    }
 
-//     return () => {
-//       cancelled = true;
-//     };
-//   }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isSelectedDeviceModalVisible, selectedDevice, residentId]);
 
   const openSelectedDeviceModal = (device: ResidentAccessDevice) => {
     Logger.info('Opening Smart Lock Modal', {
