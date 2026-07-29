@@ -207,8 +207,26 @@ const getErrorMessage = (error: unknown, fallback: string) => {
     return error;
   }
 
-  if (error && typeof error === 'object' && 'message' in error) {
-    const message = String((error as {message?: unknown}).message || '').trim();
+  // Handle react-native-ttlock iOS errors
+  if (Array.isArray(error)) {
+    const [, message] = error;
+
+    if (typeof message === 'string' && message.trim()) {
+      return message;
+    }
+
+    return fallback;
+  }
+
+  if (
+    error &&
+    typeof error === 'object' &&
+    'message' in error
+  ) {
+    const message = String(
+      (error as any).message || ''
+    ).trim();
+
     if (message) {
       return message;
     }
@@ -924,22 +942,64 @@ export const controlLock = async (
 
   const iosModule = ensureIOSModule();
   const controlLockNative = iosModule.controlLock;
+
   if (!controlLockNative) {
-    throw new Error('controlLock is not available on the iOS TTLock module.');
+    throw new Error(
+      'controlLock is not available on the iOS TTLock module.',
+    );
   }
 
   return withExclusiveBleCommand(
     () =>
-      new Promise<{battery?: number; uniqueId?: number; action?: string}>((resolve, reject) => {
-        controlLockNative.call(iosModule, getIOSControlAction(action),
+      new Promise<{
+        battery?: number;
+        uniqueId?: number;
+        action?: string;
+      }>((resolve, reject) => {
+        controlLockNative.call(
+          iosModule,
+          getIOSControlAction(action),
           lockData,
-          (_lockTime, electricQuantity, uniqueId) =>
+
+          (_lockTime, electricQuantity, uniqueId) => {
+            Logger.ttlock('[iOS] controlLock SUCCESS', {
+              action,
+              battery: electricQuantity,
+              uniqueId,
+            });
+
             resolve({
               action,
               battery: electricQuantity,
               uniqueId,
-            }),
-          error => reject(new Error(getErrorMessage(error, 'BLE lock control failed on iOS.'))),
+            });
+          },
+
+          (error: unknown) => {
+            Logger.error('[TTLock iOS Control Raw Error]', {
+              raw: error,
+              type: typeof error,
+              isArray: Array.isArray(error),
+              code: Array.isArray(error) ? error[0] : null,
+              message: Array.isArray(error) ? error[1] : null,
+              json: (() => {
+                try {
+                  return JSON.stringify(error);
+                } catch {
+                  return null;
+                }
+              })(),
+            });
+
+            reject(
+              new Error(
+                getErrorMessage(
+                  error,
+                  'BLE lock control failed on iOS.',
+                ),
+              ),
+            );
+          },
         );
       }),
   );
@@ -1016,7 +1076,20 @@ export const getBatteryLevel = async (lockData: string, macAddress: string) => {
       new Promise<{battery?: number}>((resolve, reject) => {
         getBatteryLevelNative.call(iosModule, lockData,
           electricQuantity => resolve({battery: electricQuantity}),
-          error => reject(new Error(getErrorMessage(error, 'Unable to read battery level on iOS.'))),
+          error => {
+            Logger.error('[TTLock iOS Battery Raw Error]', {
+              raw: error,
+              isArray: Array.isArray(error),
+              code: Array.isArray(error) ? error[0] : null,
+              message: Array.isArray(error) ? error[1] : null,
+            });
+
+            reject(
+              new Error(
+                getErrorMessage(error, 'Unable to read battery level on iOS.')
+              )
+            );
+          },
         );
       }),
   );

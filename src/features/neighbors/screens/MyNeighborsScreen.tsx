@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
+  TextInput
 } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 
@@ -332,6 +333,7 @@ export default function MyNeighborsScreen({ navigation }: any) {
   const [selectedNeighbor, setSelectedNeighbor] = useState<Neighbor | null>(
     null,
   );
+  const [searchQuery, setSearchQuery] = useState('');
   const [avatarLoadFailed, setAvatarLoadFailed] = useState<Record<string, boolean>>({});
   const neighborLabels = useMemo(() => {
     if (language === 'ar') {
@@ -493,6 +495,28 @@ export default function MyNeighborsScreen({ navigation }: any) {
     const singleValue = getVehicleNumber(item);
     return singleValue ? [String(singleValue)] : [];
   };
+
+
+  const filteredNeighbors = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return neighbors;
+    }
+
+    return neighbors.filter(neighbor => {
+      const name = getNeighborName(neighbor).toLowerCase();
+
+      const vehicleMatch = getVehicleNumbers(neighbor).some(vehicle =>
+        vehicle.toLowerCase().includes(query),
+      );
+
+      return (
+        name.includes(query) ||
+        vehicleMatch
+      );
+    });
+  }, [neighbors, searchQuery]);
 
   const getVehicleTypes = (item: Neighbor | null) => {
     const list = normalizeList(item?.vehicleTypeList);
@@ -789,6 +813,16 @@ export default function MyNeighborsScreen({ navigation }: any) {
       onBackPress={() => navigation.goBack()}
     >
       <View style={styles.container}>
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder={t(
+            'neighbors.mobile.search',
+            'Search by name or vehicle number',
+          )}
+          placeholderTextColor={colors.textMuted}
+          style={styles.searchInput}
+        />
         {loading && (
           <View style={styles.center}>
             <ThemedLoader size="large" />
@@ -807,7 +841,7 @@ export default function MyNeighborsScreen({ navigation }: any) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContent}
           >
-            {neighbors.length === 0 ? (
+            {filteredNeighbors.length === 0 ? (
               <View style={styles.center}>
                 <EmptyState
                   title={t('neighbors.mobile.emptyTitle', 'No neighbors found')}
@@ -816,7 +850,7 @@ export default function MyNeighborsScreen({ navigation }: any) {
                 />
               </View>
             ) : (
-              neighbors.map(item => renderNeighborCard(item))
+              filteredNeighbors.map(item => renderNeighborCard(item))
             )}
           </ScrollView>
         )}
@@ -1098,6 +1132,19 @@ const createStyles = (colors: ReturnType<typeof useAppTheme>['colors']) =>
       paddingTop: 12,
       paddingBottom: 28,
       gap: 10,
+    },
+    searchInput: {
+      marginHorizontal: 16,
+      marginTop: 12,
+      marginBottom: 8,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 14,
+      paddingHorizontal: 16,
+      height: 48,
+      fontSize: 15,
+      color: colors.textPrimary,
     },
     center: {
       flex: 1,

@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import Svg, { Ellipse, Path, Rect } from 'react-native-svg';
+import Svg, { Ellipse, Path, Rect, Polygon} from 'react-native-svg';
 import { createStyles } from './LanguageScreen.styles';
 import {
   fetchLanguages,
@@ -34,6 +34,32 @@ const languageFlags: { [key: string]: string } = {
   it: '🇮🇹',
 };
 
+const AlgeriaFlag = () => (
+  <View style={{ width: 30, alignItems: 'flex-start', marginRight: 12 }}>
+    <Svg width={28} height={20} viewBox="0 0 28 20">
+      {/* Left Half */}
+      <Rect x="0" y="0" width="14" height="20" fill="#006233" />
+
+      {/* Right Half */}
+      <Rect x="14" y="0" width="14" height="20" fill="#FFFFFF" />
+
+      {/* Crescent */}
+      <Path
+        d="M16.2 4.3
+           A5.6 5.6 0 1 0 16.2 15.7
+           A4.3 4.3 0 1 1 16.2 4.3"
+        fill="#D21034"
+      />
+
+      {/* Star */}
+      <Polygon
+        points="16.7,10 17.5,11.9 19.5,12 17.9,13.2 18.5,15 16.7,13.9 14.9,15 15.5,13.2 13.9,12 15.9,11.9"
+        fill="#D21034"
+      />
+    </Svg>
+  </View>
+);
+
 const getNormalizedCode = (value: string): LanguageCode | null => {
   if (value === 'en' || value === 'fr' || value === 'ar') {
     return value;
@@ -57,16 +83,6 @@ const ProceedIcon = ({
       strokeLinejoin="round"
     />
   </Svg>
-);
-
-const AlgeriaFlag = () => (
-  <View style={{ width: 30, alignItems: 'flex-start', marginRight: 12 }}>
-    <Svg width={28} height={21} viewBox="0 0 336 280" fill="none">
-      <Rect x="0" y="0" width="112" height="280" fill="#008751" />
-      <Rect x="112" y="0" width="112" height="280" fill="#FFFFFF" />
-      <Rect x="224" y="0" width="112" height="280" fill="#008751" />
-    </Svg>
-  </View>
 );
 
 export default function LanguageScreen({ navigation }: any) {
@@ -146,7 +162,7 @@ export default function LanguageScreen({ navigation }: any) {
 
   const renderItem = ({ item }: { item: Language }) => {
     const normalizedCode = String(item.languageCode || '').toLowerCase();
-    const flag = languageFlags[item.languageCode] || '🌐';
+    const flag = languageFlags[normalizedCode] || '🌐';
 
     return (
       <TouchableOpacity
@@ -159,8 +175,12 @@ export default function LanguageScreen({ navigation }: any) {
         ) : (
           <Text style={styles.flag}>{flag}</Text>
         )}
+
         <Text style={styles.language}>{item.languageName}</Text>
-        {selected === item.languageId && <Text style={styles.check}>✓</Text>}
+
+        {selected === item.languageId && (
+          <Text style={styles.check}>✓</Text>
+        )}
       </TouchableOpacity>
     );
   };
