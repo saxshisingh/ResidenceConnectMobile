@@ -325,7 +325,12 @@ export default function UnlockDoorScreen() {
         });
 
         Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
-
+        Logger.info("BLE Access", {
+            lockMac: bleAccess.lockMac,
+            lockDataLength: bleAccess.lockData?.length,
+            lockDataPrefix: bleAccess.lockData?.substring(0, 20),
+            deviceName: bleAccess.deviceName,
+        });
         const result = await ttlockNative.getBatteryLevel(
           bleAccess.lockData,
           bleAccess.lockMac,
@@ -567,23 +572,31 @@ const ensureBluetoothReady = async () => {
         lockData: string,
         lockMac: string,
       ) => {
-        try {
-          return await ttlockNative.controlLock(lockData, lockMac, action);
-        } catch (error: any) {
-          if (!isEffectiveTimeError(error?.message)) {
-            throw error;
-          }
+        Logger.info("BLE Access", {
+          lockMac,
+          lockDataLength: lockData?.length,
+          lockDataPrefix: lockData?.substring(0, 20),
+        });
 
-          const currentTimestamp = Date.now();
-          await ttlockNative.getLockTime(lockData, lockMac);
-          await ttlockNative.setLockTime(
-            currentTimestamp,
-            lockData,
-            lockMac,
+        const devices = await ttlockNative.scanLocks();
+
+        Logger.info("iOS Scan Result", {
+          expectedMac: lockMac,
+          count: devices.length,
+          devices,
+        });
+
+        const nearby = devices.some(
+          d => d.mac?.toUpperCase() === lockMac.toUpperCase(),
+        );
+
+        if (!nearby) {
+          throw new Error(
+            "The lock is not nearby. Please move closer to the door and try again.",
           );
-
-          return ttlockNative.controlLock(lockData, lockMac, action);
         }
+
+        return ttlockNative.controlLock(lockData, lockMac, action);
       };
 
       let bleAccess = await getDeviceBleAccess(device.id, String(residentId));

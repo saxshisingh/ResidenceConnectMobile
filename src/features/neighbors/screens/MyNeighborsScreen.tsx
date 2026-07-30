@@ -14,7 +14,6 @@ import {
   FlatList
 } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
-import Logger from '../../../services/logger/logger';
 
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import ThemedLoader from '../../../components/ThemedLoader';
@@ -509,56 +508,25 @@ export default function MyNeighborsScreen({ navigation }: any) {
 
 
 const filteredNeighbors = useMemo(() => {
-  Logger.info('[Neighbor Search] Filter started', {
-    searchQuery,
-    debouncedSearch,
-    neighborsCount: neighbors.length,
-  });
 
   try {
     const query = String(debouncedSearch ?? '').trim().toLowerCase();
 
-    Logger.info('[Neighbor Search] Normalized query', {
-      query,
-    });
 
     if (!query) {
-      Logger.info('[Neighbor Search] Empty query, returning all neighbors', {
-        count: neighbors.length,
-      });
-
       return neighbors;
     }
 
     const filtered = neighbors.filter((neighbor, index) => {
       try {
-        Logger.info('[Neighbor Search] Processing neighbor', {
-          index,
-          id: neighbor?.userId,
-          raw: neighbor,
-        });
-
+      
         const name = String(getNeighborName(neighbor) ?? '').toLowerCase();
-
-        Logger.info('[Neighbor Search] Neighbor name', {
-          index,
-          name,
-        });
 
         const vehicles = getVehicleNumbers(neighbor);
 
-        Logger.info('[Neighbor Search] Vehicle numbers', {
-          index,
-          vehicles,
-        });
-
+       
         const vehicleMatch = vehicles.some((vehicle, vehicleIndex) => {
-          Logger.info('[Neighbor Search] Checking vehicle', {
-            neighborIndex: index,
-            vehicleIndex,
-            vehicle,
-            type: typeof vehicle,
-          });
+       
 
           return String(vehicle ?? '')
             .toLowerCase()
@@ -567,41 +535,15 @@ const filteredNeighbors = useMemo(() => {
 
         const nameMatch = name.includes(query);
 
-        Logger.info('[Neighbor Search] Match result', {
-          index,
-          nameMatch,
-          vehicleMatch,
-        });
-
         return nameMatch || vehicleMatch;
       } catch (error) {
-        Logger.exception(error);
-
-        Logger.error('[Neighbor Search] Error processing neighbor', {
-          index,
-          neighbor,
-          error,
-        });
-
         return false;
       }
     });
 
-    Logger.info('[Neighbor Search] Filter completed', {
-      total: neighbors.length,
-      filtered: filtered.length,
-    });
-
+   
     return filtered;
   } catch (error) {
-    Logger.exception(error);
-
-    Logger.error('[Neighbor Search] Filter crashed', {
-      error,
-      searchQuery,
-      debouncedSearch,
-    });
-
     return neighbors;
   }
 }, [neighbors, debouncedSearch]);
