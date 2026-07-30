@@ -200,7 +200,7 @@ const BLUETOOTH_DISABLED_MESSAGE =
   'Bluetooth is off. Turn it on and try again.';
 const BLUETOOTH_PERMISSION_MESSAGE =
   'Bluetooth permission is required to use this smart lock action. Please allow Bluetooth permission and try again.';
-let bleCommandInFlight = false;
+let bleQueue = Promise.resolve();
 
 const getErrorMessage = (error: unknown, fallback: string) => {
   if (typeof error === 'string' && error.trim()) {
@@ -319,70 +319,42 @@ export const getTTLockUserFacingErrorMessage = (
   return message;
 };
 
-const withExclusiveBleCommand =
-async<T>(command:()=>Promise<T>)=>{
+const withExclusiveBleCommand = async <T>(
+  command: () => Promise<T>,
+): Promise<T> => {
+  let release!: () => void;
 
-    Logger.ttlock(
-        'BLE Command Requested',
-        {
-            bleCommandInFlight
-        }
+  const previous = bleQueue;
+
+  bleQueue = new Promise<void>(resolve => {
+    release = resolve;
+  });
+
+  await previous;
+
+  Logger.ttlock('BLE Command Started');
+
+  try {
+    const result = await command();
+
+    Logger.ttlock('BLE Command Success');
+
+    return result;
+  } catch (error) {
+    Logger.exception(error);
+
+    throw new Error(
+      getTTLockUserFacingErrorMessage(
+        error,
+        'Unable to complete smart lock command.',
+      ),
     );
+  } finally {
+    Logger.ttlock('BLE Command Finished');
 
-    if(bleCommandInFlight){
-
-        Logger.warn(
-            'BLE command rejected',
-            {
-                reason:'already running'
-            }
-        );
-
-        throw new Error(
-            COMMAND_IN_PROGRESS_MESSAGE
-        );
-
-    }
-
-    bleCommandInFlight=true;
-
-    Logger.ttlock(
-        'BLE Command Started'
-    );
-
-    try{
-
-        const result=
-            await command();
-
-        Logger.ttlock(
-            'BLE Command Success'
-        );
-
-        return result;
-
-    }catch(error){
-
-        Logger.exception(error);
-
-        throw new Error(
-            getTTLockUserFacingErrorMessage(
-                error,
-                'Unable to complete smart lock command.'
-            )
-        );
-
-    }finally{
-
-        bleCommandInFlight=false;
-
-        Logger.ttlock(
-            'BLE Command Finished'
-        );
-
-    }
-
-}
+    release();
+  }
+};
 
 const normalizeBluetoothState = (state: unknown) => {
   if (typeof state === 'boolean') {
@@ -1072,27 +1044,61 @@ export const getBatteryLevel = async (lockData: string, macAddress: string) => {
   }
 
   return withExclusiveBleCommand(
-    () =>
-      new Promise<{battery?: number}>((resolve, reject) => {
-        getBatteryLevelNative.call(iosModule, lockData,
-          electricQuantity => resolve({battery: electricQuantity}),
-          error => {
-            Logger.error('[TTLock iOS Battery Raw Error]', {
-              raw: error,
-              isArray: Array.isArray(error),
-              code: Array.isArray(error) ? error[0] : null,
-              message: Array.isArray(error) ? error[1] : null,
-            });
+  () =>
+    new Promise<{ battery: number }>((resolve, reject) => {
+      Logger.info('[TTLock iOS] Calling getLockElectricQuantity');
 
-            reject(
-              new Error(
-                getErrorMessage(error, 'Unable to read battery level on iOS.')
-              )
-            );
-          },
-        );
-      }),
-  );
+      getBatteryLevelNative.call(
+        iosModule,
+        lockData,
+        (electricQuantity: number) => {
+          Logger.info('[TTLock iOS] Battery callback success', {
+            electricQuantity,
+            type: typeof electricQuantity,
+          });
+
+          resolve({
+            battery: electricQuantity,
+          });
+        },
+        (error: any) => {
+          const parsedError = {
+            raw: error,
+            type: typeof error,
+            isArray: Array.isArray(error),
+            code: Array.isArray(error)
+              ? error[0]
+              : typeof error === 'number'
+              ? error
+              : error?.code,
+            message: Array.isArray(error)
+              ? error[1]
+              : error?.message,
+            stringified: (() => {
+              try {
+                return JSON.stringify(error);
+              } catch {
+                return String(error);
+              }
+            })(),
+          };
+
+          Logger.error('[TTLock iOS Battery Raw Error]', parsedError);
+
+          const userMessage = getErrorMessage(
+            error,
+            'Unable to read battery level on iOS.',
+          );
+
+          reject(
+            new Error(
+              `[TTLock iOS] ${userMessage} | code=${parsedError.code} | raw=${parsedError.stringified}`,
+            ),
+          );
+        },
+      );
+    }),
+);
 };
 
 export const setAutomaticLockingPeriod = async (

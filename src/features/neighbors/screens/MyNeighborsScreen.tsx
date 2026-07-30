@@ -10,9 +10,11 @@ import {
   TouchableOpacity,
   useWindowDimensions,
   View,
-  TextInput
+  TextInput,
+  FlatList
 } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import Logger from '../../../services/logger/logger';
 
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import ThemedLoader from '../../../components/ThemedLoader';
@@ -334,6 +336,7 @@ export default function MyNeighborsScreen({ navigation }: any) {
     null,
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [avatarLoadFailed, setAvatarLoadFailed] = useState<Record<string, boolean>>({});
   const neighborLabels = useMemo(() => {
     if (language === 'ar') {
@@ -362,6 +365,14 @@ export default function MyNeighborsScreen({ navigation }: any) {
 
     return null;
   }, [language]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (residentId) dispatch(loadNeighbors(residentId));
@@ -497,26 +508,103 @@ export default function MyNeighborsScreen({ navigation }: any) {
   };
 
 
-  const filteredNeighbors = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+const filteredNeighbors = useMemo(() => {
+  Logger.info('[Neighbor Search] Filter started', {
+    searchQuery,
+    debouncedSearch,
+    neighborsCount: neighbors.length,
+  });
+
+  try {
+    const query = String(debouncedSearch ?? '').trim().toLowerCase();
+
+    Logger.info('[Neighbor Search] Normalized query', {
+      query,
+    });
 
     if (!query) {
+      Logger.info('[Neighbor Search] Empty query, returning all neighbors', {
+        count: neighbors.length,
+      });
+
       return neighbors;
     }
 
-    return neighbors.filter(neighbor => {
-      const name = getNeighborName(neighbor).toLowerCase();
+    const filtered = neighbors.filter((neighbor, index) => {
+      try {
+        Logger.info('[Neighbor Search] Processing neighbor', {
+          index,
+          id: neighbor?.userId,
+          raw: neighbor,
+        });
 
-      const vehicleMatch = getVehicleNumbers(neighbor).some(vehicle =>
-        vehicle.toLowerCase().includes(query),
-      );
+        const name = String(getNeighborName(neighbor) ?? '').toLowerCase();
 
-      return (
-        name.includes(query) ||
-        vehicleMatch
-      );
+        Logger.info('[Neighbor Search] Neighbor name', {
+          index,
+          name,
+        });
+
+        const vehicles = getVehicleNumbers(neighbor);
+
+        Logger.info('[Neighbor Search] Vehicle numbers', {
+          index,
+          vehicles,
+        });
+
+        const vehicleMatch = vehicles.some((vehicle, vehicleIndex) => {
+          Logger.info('[Neighbor Search] Checking vehicle', {
+            neighborIndex: index,
+            vehicleIndex,
+            vehicle,
+            type: typeof vehicle,
+          });
+
+          return String(vehicle ?? '')
+            .toLowerCase()
+            .includes(query);
+        });
+
+        const nameMatch = name.includes(query);
+
+        Logger.info('[Neighbor Search] Match result', {
+          index,
+          nameMatch,
+          vehicleMatch,
+        });
+
+        return nameMatch || vehicleMatch;
+      } catch (error) {
+        Logger.exception(error);
+
+        Logger.error('[Neighbor Search] Error processing neighbor', {
+          index,
+          neighbor,
+          error,
+        });
+
+        return false;
+      }
     });
-  }, [neighbors, searchQuery]);
+
+    Logger.info('[Neighbor Search] Filter completed', {
+      total: neighbors.length,
+      filtered: filtered.length,
+    });
+
+    return filtered;
+  } catch (error) {
+    Logger.exception(error);
+
+    Logger.error('[Neighbor Search] Filter crashed', {
+      error,
+      searchQuery,
+      debouncedSearch,
+    });
+
+    return neighbors;
+  }
+}, [neighbors, debouncedSearch]);
 
   const getVehicleTypes = (item: Neighbor | null) => {
     const list = normalizeList(item?.vehicleTypeList);
@@ -837,22 +925,26 @@ export default function MyNeighborsScreen({ navigation }: any) {
         )}
 
         {!loading && !error && (
-          <ScrollView
-            showsVerticalScrollIndicator={false}
+          <FlatList
+            data={filteredNeighbors}
+            keyExtractor={item => getNeighborKey(item)}
+            renderItem={({ item }) => renderNeighborCard(item)}
             contentContainerStyle={styles.listContent}
-          >
-            {filteredNeighbors.length === 0 ? (
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
               <View style={styles.center}>
                 <EmptyState
                   title={t('neighbors.mobile.emptyTitle', 'No neighbors found')}
-                  description={t('neighbors.mobile.emptyDesc', 'Neighbor profiles will appear here once available.')}
+                  description={t(
+                    'neighbors.mobile.emptyDesc',
+                    'Neighbor profiles will appear here once available.',
+                  )}
                   illustration={<NeighborsIcon width={120} height={120} />}
                 />
               </View>
-            ) : (
-              filteredNeighbors.map(item => renderNeighborCard(item))
-            )}
-          </ScrollView>
+            }
+          />
         )}
       </View>
 

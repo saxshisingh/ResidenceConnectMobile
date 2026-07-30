@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -150,7 +150,7 @@ export default function UnlockDoorScreen() {
   const contentWidth = Math.min(width - 32, 520);
   const user = useAppSelector(state => state.auth.user);
   const residentId = user?.data?.residentId;
-
+  const batteryRequestInProgress = useRef(false);
   const [devices, setDevices] = useState<ResidentAccessDevice[]>([]);
   const [loadingDevices, setLoadingDevices] = useState(false);
   const [devicesError, setDevicesError] = useState<string | null>(null);
@@ -262,128 +262,126 @@ export default function UnlockDoorScreen() {
     let cancelled = false;
 
     const loadBatteryLevel = async () => {
-  Logger.info('[Battery] loadBatteryLevel START', {
-    deviceId: selectedDevice?.id,
-    deviceName: selectedDevice?.name,
-    platform: Platform.OS,
-    cancelled,
-  });
+      if (batteryRequestInProgress.current) {
+        Logger.warn('[Battery] Battery request already running. Skipping.');
+        return;
+      }
 
-  if (Platform.OS === 'ios') {
-    Logger.info('[Battery] Waiting 400ms for modal animation');
+      batteryRequestInProgress.current = true;
 
-    await new Promise<void>(resolve =>
-      setTimeout(() => {
-        Logger.info('[Battery] 400ms wait completed');
-        resolve();
-      }, 400),
-    );
-  }
-
-  const fallbackBattery =
-    typeof selectedDevice?.raw?.electricQuantity === 'number'
-      ? selectedDevice.raw.electricQuantity
-      : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
-        ? selectedDevice.raw.ElectricQuantity
-        : typeof selectedDevice?.raw?.battery === 'number'
-          ? selectedDevice.raw.battery
-          : null;
-
-  Logger.info('[Battery] Fallback battery', {
-    fallbackBattery,
-  });
-
-  try {
-    Logger.info('[Battery] Checking Bluetooth readiness');
-
-    const ready = await ensureBluetoothReady();
-
-    Logger.info('[Battery] Bluetooth readiness result', {
-      ready,
-    });
-
-    if (!ready) {
-      Logger.warn('[Battery] Bluetooth not ready');
-      return;
-    }
-
-    Logger.info('[Battery] Fetching BLE access');
-
-    const bleAccess = await getDeviceBleAccess(
-      selectedDevice.id,
-      String(residentId),
-    );
-
-    Logger.info('[Battery] BLE access received', {
-      deviceName: bleAccess.deviceName,
-      lockMac: bleAccess.lockMac,
-      hasLockData: !!bleAccess.lockData,
-    });
-
-    Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
-
-    const result = await ttlockNative.getBatteryLevel(
-      bleAccess.lockData,
-      bleAccess.lockMac,
-    );
-
-    Logger.info('[Battery] getBatteryLevel SUCCESS', result);
-
-    const batteryLevel = result?.battery;
-
-    Logger.info('[Battery] Parsed battery level', {
-      batteryLevel,
-      cancelled,
-    });
-
-    if (!cancelled && typeof batteryLevel === 'number') {
-      Logger.info('[Battery] Updating battery state');
-
-      setDeviceBatteryLevels(prev => ({
-        ...prev,
-        [selectedDevice.id]: batteryLevel,
-      }));
-
-      Logger.info('[Battery] Battery state updated');
-    } else {
-      Logger.info('[Battery] Battery state update skipped', {
+      Logger.info('[Battery] loadBatteryLevel START', {
+        deviceId: selectedDevice?.id,
+        deviceName: selectedDevice?.name,
+        platform: Platform.OS,
         cancelled,
-        batteryLevel,
-      });
-    }
-  } catch (error) {
-    Logger.exception(error);
-
-    Logger.error('[Battery] loadBatteryLevel FAILED', {
-      error,
-    });
-
-    if (!cancelled && typeof fallbackBattery === 'number') {
-      Logger.info('[Battery] Using fallback battery', {
-        fallbackBattery,
       });
 
-      setDeviceBatteryLevels(prev => ({
-        ...prev,
-        [selectedDevice.id]: fallbackBattery,
-      }));
+      try {
+        // Give iOS time to finish modal animation and previous BLE callbacks.
+        if (Platform.OS === 'ios') {
+          await wait(700);
 
-      Logger.info('[Battery] Fallback battery applied');
-    } else {
-      Logger.warn('[Battery] No fallback battery available', {
-        cancelled,
-        fallbackBattery,
-      });
-    }
+          if (cancelled) {
+            return;
+          }
+        }
 
-    return;
-  } finally {
-    Logger.info('[Battery] loadBatteryLevel FINISH', {
-      deviceId: selectedDevice?.id,
-      cancelled,
-    });
-  }
-};
+        const fallbackBattery =
+          typeof selectedDevice?.raw?.electricQuantity === 'number'
+            ? selectedDevice.raw.electricQuantity
+            : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
+            ? selectedDevice.raw.ElectricQuantity
+            : typeof selectedDevice?.raw?.battery === 'number'
+            ? selectedDevice.raw.battery
+            : null;
+
+        Logger.info('[Battery] Fallback battery', {
+          fallbackBattery,
+        });
+
+        Logger.info('[Battery] Checking Bluetooth readiness');
+
+        const ready = await ensureBluetoothReady();
+
+        if (!ready || cancelled) {
+          return;
+        }
+
+        Logger.info('[Battery] Fetching BLE access');
+
+        const bleAccess = await getDeviceBleAccess(
+          selectedDevice!.id,
+          String(residentId),
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        Logger.info('[Battery] BLE access received', {
+          deviceName: bleAccess.deviceName,
+          lockMac: bleAccess.lockMac,
+          hasLockData: !!bleAccess.lockData,
+        });
+
+        Logger.info('[Battery] Calling ttlockNative.getBatteryLevel');
+
+        const result = await ttlockNative.getBatteryLevel(
+          bleAccess.lockData,
+          bleAccess.lockMac,
+        );
+
+        if (cancelled) {
+          return;
+        }
+
+        Logger.info('[Battery] getBatteryLevel SUCCESS', result);
+
+        const battery = result?.battery;
+
+        if (typeof battery === 'number') {
+          setDeviceBatteryLevels(prev => ({
+            ...prev,
+            [selectedDevice!.id]: battery,
+          }));
+        } else if (typeof fallbackBattery === 'number') {
+          setDeviceBatteryLevels(prev => ({
+            ...prev,
+            [selectedDevice!.id]: fallbackBattery,
+          }));
+        }
+      } catch (error: any) {
+        Logger.exception(error);
+
+        Logger.error('[Battery] loadBatteryLevel FAILED', {
+          message: error?.message,
+          error,
+        });
+
+        const fallbackBattery =
+          typeof selectedDevice?.raw?.electricQuantity === 'number'
+            ? selectedDevice.raw.electricQuantity
+            : typeof selectedDevice?.raw?.ElectricQuantity === 'number'
+            ? selectedDevice.raw.ElectricQuantity
+            : typeof selectedDevice?.raw?.battery === 'number'
+            ? selectedDevice.raw.battery
+            : null;
+
+        if (!cancelled && typeof fallbackBattery === 'number') {
+          setDeviceBatteryLevels(prev => ({
+            ...prev,
+            [selectedDevice!.id]: fallbackBattery,
+          }));
+        }
+      } finally {
+        batteryRequestInProgress.current = false;
+
+        Logger.info('[Battery] loadBatteryLevel FINISH', {
+          deviceId: selectedDevice?.id,
+          cancelled,
+        });
+      }
+    };
 
     if (Platform.OS === 'ios') {
       InteractionManager.runAfterInteractions(() => {

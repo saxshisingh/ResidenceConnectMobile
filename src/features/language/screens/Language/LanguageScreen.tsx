@@ -7,8 +7,10 @@ import {
   FlatList,
   ActivityIndicator,
   Alert,
+  Image,
 } from 'react-native';
-import Svg, { Ellipse, Path, Rect, Polygon} from 'react-native-svg';
+import Svg, { Ellipse, Path } from 'react-native-svg';
+
 import { createStyles } from './LanguageScreen.styles';
 import {
   fetchLanguages,
@@ -18,52 +20,15 @@ import {
 import { LanguageCode, useI18n } from '../../../../i18n';
 import { useAppTheme } from '../../../../theme/ThemeProvider';
 
-const languageFlags: { [key: string]: string } = {
-  en: '🇬🇧',
-  fr: '🇫🇷',
-  ar: '🇩🇿',
-  vi: '🇻🇳',
-  ja: '🇯🇵',
-  pt: '🇵🇹',
-  zh: '🇨🇳',
-  ko: '🇰🇷',
-  ni: '🇳🇮',
-  ru: '🇷🇺',
-  es: '🇪🇸',
-  de: '🇩🇪',
-  it: '🇮🇹',
-};
-
-const AlgeriaFlag = () => (
-  <View style={{ width: 30, alignItems: 'flex-start', marginRight: 12 }}>
-    <Svg width={28} height={20} viewBox="0 0 28 20">
-      {/* Left Half */}
-      <Rect x="0" y="0" width="14" height="20" fill="#006233" />
-
-      {/* Right Half */}
-      <Rect x="14" y="0" width="14" height="20" fill="#FFFFFF" />
-
-      {/* Crescent */}
-      <Path
-        d="M16.2 4.3
-           A5.6 5.6 0 1 0 16.2 15.7
-           A4.3 4.3 0 1 1 16.2 4.3"
-        fill="#D21034"
-      />
-
-      {/* Star */}
-      <Polygon
-        points="16.7,10 17.5,11.9 19.5,12 17.9,13.2 18.5,15 16.7,13.9 14.9,15 15.5,13.2 13.9,12 15.9,11.9"
-        fill="#D21034"
-      />
-    </Svg>
-  </View>
-);
+import EnglishFlag from '../../../../assets/flags/united-kingdom.png';
+import FrenchFlag from '../../../../assets/flags/france.png';
+import AlgeriaFlag from '../../../../assets/flags/algeria.png';
 
 const getNormalizedCode = (value: string): LanguageCode | null => {
   if (value === 'en' || value === 'fr' || value === 'ar') {
     return value;
   }
+
   return null;
 };
 
@@ -89,8 +54,9 @@ export default function LanguageScreen({ navigation }: any) {
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { language, setLanguage, t } = useI18n();
+
   const [languages, setLanguages] = useState<Language[]>([]);
-  const [selected, setSelected] = useState<string>('');
+  const [selected, setSelected] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,16 +74,21 @@ export default function LanguageScreen({ navigation }: any) {
     try {
       setLoading(true);
       setError(null);
+
       const data = await fetchLanguages();
+
       setLanguages(data);
 
       const current = data.find(
-        lang => lang.languageCode.toLowerCase() === language.toLowerCase(),
+        lang =>
+          lang.languageCode.toLowerCase() === language.toLowerCase(),
       );
+
       if (current) {
         setSelected(current.languageId);
       } else {
         const english = data.find(lang => lang.languageCode === 'en');
+
         if (english) {
           setSelected(english.languageId);
         } else if (data.length > 0) {
@@ -126,7 +97,11 @@ export default function LanguageScreen({ navigation }: any) {
       }
     } catch (err: any) {
       setError(err.message);
-      Alert.alert(t('common.error', 'Error'), err.message);
+
+      Alert.alert(
+        t('common.error', 'Error'),
+        err.message,
+      );
     } finally {
       setLoading(false);
     }
@@ -136,33 +111,49 @@ export default function LanguageScreen({ navigation }: any) {
     if (!selected) {
       Alert.alert(
         t('common.error', 'Error'),
-        t('common.mobile.language.validation.selectLanguage', 'Please select a language'),
+        t(
+          'common.mobile.language.validation.selectLanguage',
+          'Please select a language',
+        ),
       );
       return;
     }
 
     try {
       setSubmitting(true);
+
       await selectLanguage(selected);
 
       const localCode = getNormalizedCode(
         String(selectedLanguage?.languageCode || '').toLowerCase(),
       );
+
       if (localCode) {
         await setLanguage(localCode);
       }
 
       navigation.replace('MainTabs');
     } catch (err: any) {
-      Alert.alert(t('common.error', 'Error'), err.message);
+      Alert.alert(
+        t('common.error', 'Error'),
+        err.message,
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderItem = ({ item }: { item: Language }) => {
+    const renderItem = ({ item }: { item: Language }) => {
     const normalizedCode = String(item.languageCode || '').toLowerCase();
-    const flag = languageFlags[normalizedCode] || '🌐';
+
+    const flagSource =
+      normalizedCode === 'en'
+        ? EnglishFlag
+        : normalizedCode === 'fr'
+        ? FrenchFlag
+        : normalizedCode === 'ar'
+        ? AlgeriaFlag
+        : null;
 
     return (
       <TouchableOpacity
@@ -170,13 +161,20 @@ export default function LanguageScreen({ navigation }: any) {
         onPress={() => setSelected(item.languageId)}
         disabled={submitting}
       >
-        {normalizedCode === 'ar' ? (
-          <AlgeriaFlag />
-        ) : (
-          <Text style={styles.flag}>{flag}</Text>
-        )}
+        <Image
+          source={flagSource ?? EnglishFlag}
+          resizeMode="contain"
+          style={{
+            width: 30,
+            height: 22,
+            marginRight: 12,
+            borderRadius: 3,
+          }}
+        />
 
-        <Text style={styles.language}>{item.languageName}</Text>
+        <Text style={styles.language}>
+          {item.languageName}
+        </Text>
 
         {selected === item.languageId && (
           <Text style={styles.check}>✓</Text>
@@ -194,17 +192,33 @@ export default function LanguageScreen({ navigation }: any) {
       <View style={styles.content}>
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator
+              size="large"
+              color={colors.primary}
+            />
+
             <Text style={styles.loadingText}>
-              {t('common.mobile.language.loading', 'Loading languages...')}
+              {t(
+                'common.mobile.language.loading',
+                'Loading languages...',
+              )}
             </Text>
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryBtn} onPress={loadLanguages}>
+            <Text style={styles.errorText}>
+              {error}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.retryBtn}
+              onPress={loadLanguages}
+            >
               <Text style={styles.retryText}>
-                {t('common.mobile.common.retry', 'Retry')}
+                {t(
+                  'common.mobile.common.retry',
+                  'Retry',
+                )}
               </Text>
             </TouchableOpacity>
           </View>
@@ -220,19 +234,34 @@ export default function LanguageScreen({ navigation }: any) {
             <TouchableOpacity
               style={[
                 styles.proceedBtn,
-                submitting && styles.proceedBtnDisabled,
+                submitting &&
+                  styles.proceedBtnDisabled,
               ]}
               onPress={handleProceed}
               disabled={submitting}
             >
               {submitting ? (
-                <ActivityIndicator size="small" color={colors.onPrimary} />
+                <ActivityIndicator
+                  size="small"
+                  color={colors.onPrimary}
+                />
               ) : (
-                <View style={styles.proceedContent}>
-                  <Text style={styles.proceedText}>
-                    {t('common.mobile.language.proceed', 'Proceed')}
+                <View
+                  style={styles.proceedContent}
+                >
+                  <Text
+                    style={styles.proceedText}
+                  >
+                    {t(
+                      'common.mobile.language.proceed',
+                      'Proceed',
+                    )}
                   </Text>
-                  <ProceedIcon color={colors.onPrimary} size={18} />
+
+                  <ProceedIcon
+                    color={colors.onPrimary}
+                    size={18}
+                  />
                 </View>
               )}
             </TouchableOpacity>
@@ -240,8 +269,19 @@ export default function LanguageScreen({ navigation }: any) {
         )}
       </View>
 
-      <View style={{ position: 'absolute', bottom: -80, right: -190, zIndex: 1 }}>
-        <Svg width={320} height={260} viewBox="0 0 320 260">
+      <View
+        style={{
+          position: 'absolute',
+          bottom: -80,
+          right: -190,
+          zIndex: 1,
+        }}
+      >
+        <Svg
+          width={320}
+          height={260}
+          viewBox="0 0 320 260"
+        >
           <Ellipse
             cx="240"
             cy="200"
@@ -253,8 +293,19 @@ export default function LanguageScreen({ navigation }: any) {
         </Svg>
       </View>
 
-      <View style={{ position: 'absolute', bottom: -170, right: -10, zIndex: 2 }}>
-        <Svg width={300} height={240} viewBox="0 0 300 240">
+      <View
+        style={{
+          position: 'absolute',
+          bottom: -170,
+          right: -10,
+          zIndex: 2,
+        }}
+      >
+        <Svg
+          width={300}
+          height={240}
+          viewBox="0 0 300 240"
+        >
           <Ellipse
             cx="220"
             cy="180"
