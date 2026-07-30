@@ -161,6 +161,7 @@ export default function UnlockDoorScreen() {
     useState(false);
   const [deviceLockStates, setDeviceLockStates] = useState<Record<string, boolean>>({});
   const [deviceBatteryLevels, setDeviceBatteryLevels] = useState<Record<string, number>>({});
+  const [checkingNearbyDeviceId, setCheckingNearbyDeviceId] = useState<string | null>(null);
 
   const getControlErrorMessage = (error: unknown, fallback: string) => {
     if (ttlockNative.isTTLockCommandInProgressError(error)) {
@@ -405,70 +406,53 @@ export default function UnlockDoorScreen() {
 
 const openSelectedDeviceModal = async (device: ResidentAccessDevice) => {
   try {
-    Logger.info('Opening Smart Lock Request', {
-      deviceId: device.id,
-      deviceName: device.name,
-    });
+    setCheckingNearbyDeviceId(device.id);
 
     const permissionsGranted = await requestBluetoothPermissions();
 
     if (!permissionsGranted) {
-      Logger.warn('Bluetooth permissions not granted');
       return;
     }
 
     const bluetoothEnabled = await ttlockNative.isBluetoothEnabled();
 
-    Logger.info('Bluetooth Status', {
-      enabled: bluetoothEnabled,
-    });
-
     if (!bluetoothEnabled) {
       Alert.alert(
-        'Bluetooth Required',
-        'Please turn on Bluetooth to access this smart lock.'
+        "Bluetooth Required",
+        "Please turn on Bluetooth to access this smart lock."
       );
       return;
     }
 
-
     const bleAccess = await getDeviceBleAccess(
-        device.id,
-        String(residentId),
+      device.id,
+      String(residentId),
     );
 
     const devices = await ttlockNative.scanLocks();
 
     const nearby = devices.some(
-        d =>
-            d.mac?.trim().toUpperCase() ===
-            bleAccess.lockMac.trim().toUpperCase(),
+      d =>
+        d.mac?.trim().toUpperCase() ===
+        bleAccess.lockMac.trim().toUpperCase(),
     );
 
     if (!nearby) {
-        Alert.alert(
-            "Lock Not Found",
-            "The lock is not nearby. Please move closer to the door and try again.",
-        );
-        return;
+      Alert.alert(
+        "Lock Not Found",
+        "The lock is not nearby. Please move closer to the door and try again.",
+      );
+      return;
     }
 
-    Logger.info('Opening Smart Lock Modal', {
-      deviceId: device.id,
-      deviceName: device.name,
-    });
-
     setSelectedDevice(device);
-    Logger.info('selectedDevice updated');
-
     setIsSelectedDeviceModalVisible(true);
-    Logger.info('Modal visibility set to TRUE');
+
   } catch (error) {
     Logger.exception(error);
-    Alert.alert(
-      'Error',
-      'Unable to check Bluetooth status. Please try again.'
-    );
+    Alert.alert("Error", "Unable to check nearby lock.");
+  } finally {
+    setCheckingNearbyDeviceId(null);
   }
 };
 
@@ -950,7 +934,9 @@ const ensureBluetoothReady = async () => {
               ]}>
               {devices.map(device => {
                 const IconComponent = getAccessIcon(device.name);
-                const isBusy = activeControlId === device.id;
+                const isBusy =
+                  activeControlId === device.id ||
+                  checkingNearbyDeviceId === device.id;
 
                 return (
                     <TouchableOpacity
