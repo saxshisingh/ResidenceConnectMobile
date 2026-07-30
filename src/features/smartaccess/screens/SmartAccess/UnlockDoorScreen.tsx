@@ -587,16 +587,27 @@ const ensureBluetoothReady = async () => {
         });
 
         const nearby = devices.some(
-          d => d.mac?.toUpperCase() === lockMac.toUpperCase(),
+          d => d.mac?.trim().toUpperCase() === lockMac.trim().toUpperCase(),
         );
 
+        Logger.info("Before nearby check", {
+          nearby,
+          expectedMac: lockMac,
+          devices,
+        });
+        // Lock not found nearby -> stop here
         if (!nearby) {
-          throw new Error(
-            "The lock is not nearby. Please move closer to the door and try again.",
+          Alert.alert(
+            "Lock Not Found",
+            "The lock is not nearby. Please move closer to the door and try again."
           );
+
+          // Do NOT call any TTLock functionality
+          return;
         }
 
-        return ttlockNative.controlLock(lockData, lockMac, action);
+        // Lock found -> proceed with TTLock command
+        return await ttlockNative.controlLock(lockData, lockMac, action);
       };
 
       let bleAccess = await getDeviceBleAccess(device.id, String(residentId));
