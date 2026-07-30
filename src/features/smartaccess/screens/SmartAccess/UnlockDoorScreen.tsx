@@ -431,6 +431,28 @@ const openSelectedDeviceModal = async (device: ResidentAccessDevice) => {
       return;
     }
 
+
+    const bleAccess = await getDeviceBleAccess(
+        device.id,
+        String(residentId),
+    );
+
+    const devices = await ttlockNative.scanLocks();
+
+    const nearby = devices.some(
+        d =>
+            d.mac?.trim().toUpperCase() ===
+            bleAccess.lockMac.trim().toUpperCase(),
+    );
+
+    if (!nearby) {
+        Alert.alert(
+            "Lock Not Found",
+            "The lock is not nearby. Please move closer to the door and try again.",
+        );
+        return;
+    }
+
     Logger.info('Opening Smart Lock Modal', {
       deviceId: device.id,
       deviceName: device.name,
