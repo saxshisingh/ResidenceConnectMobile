@@ -271,6 +271,9 @@
 					"-ObjC",
 					"-lc++",
 				);
+				DEVELOPMENT_TEAM = U7WJ5JNRV7;
+				CODE_SIGN_STYLE = Manual;
+				PROVISIONING_PROFILE_SPECIFIER = RC;
 				PRODUCT_BUNDLE_IDENTIFIER = com.residenceconnect.myapp;
 				PRODUCT_NAME = MyGate;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -298,6 +301,9 @@
 					"-ObjC",
 					"-lc++",
 				);
+				DEVELOPMENT_TEAM = U7WJ5JNRV7;
+				CODE_SIGN_STYLE = Manual;
+				PROVISIONING_PROFILE_SPECIFIER = RC;
 				PRODUCT_BUNDLE_IDENTIFIER = com.residenceconnect.myapp;
 				PRODUCT_NAME = MyGate;
 				SWIFT_VERSION = 5.0;
@@ -334,7 +340,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -407,7 +413,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
