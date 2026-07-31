@@ -657,10 +657,16 @@ const ensureBluetoothReady = async () => {
           ? `\n${t('common.mobile.ttlock.battery', 'Battery')}: ${result.battery}%`
           : '';
 
-      Alert.alert(
-        t('mobile.smartAccess.devices.controlSuccess', '{{action}} successfully').replace('{{action}}', actionLabel),
-        `${bleAccess.deviceName || device.name}${batterySuffix}`,
-      );
+      Logger.info('[TTLock] Control Success', {
+        action,
+        actionLabel,
+        deviceId: device.id,
+        deviceName: bleAccess.deviceName || device.name,
+        battery: result?.battery,
+        batterySuffix,
+        lockMac: bleAccess.lockMac,
+        timestamp: new Date().toISOString(),
+      });
       setDeviceLockStates(prev => ({
         ...prev,
         [device.id]: action === 'unlock',
@@ -673,15 +679,22 @@ const ensureBluetoothReady = async () => {
         }));
       }
     } catch (error: any) {
-      Alert.alert(
-        action === 'unlock'
-          ? t('mobile.smartAccess.devices.unlockFailed', 'Unlock failed')
-          : t('mobile.smartAccess.devices.lockFailed', 'Lock failed'),
-        getControlErrorMessage(
-          error,
-          t('mobile.smartAccess.devices.controlFailed', 'Unable to control this lock over BLE.'),
+      const errorMessage = getControlErrorMessage(
+        error,
+        t(
+          'mobile.smartAccess.devices.controlFailed',
+          'Unable to control this lock over BLE.',
         ),
       );
+
+      Logger.error('[TTLock] Control Failed', {
+        action,
+        deviceId: device.id,
+        deviceName: device.name,
+        message: errorMessage,
+        rawError: error,
+        timestamp: new Date().toISOString(),
+      });
     } finally {
       setActiveControlId(null);
     }
