@@ -44,10 +44,6 @@ import MaintenanceRequestSuccessScreen from '../../features/maintenance/screens/
 import MaintenanceRequestDetailScreen from '../../features/maintenance/screens/Maintenance/MaintenanceRequestDetailScreen';
 import TechnicianDetailScreen from '../../features/maintenance/screens/Maintenance/TechnicianDetailScreen';
 import SecurityScreen from '../../features/security/screens/Security/SecurityScreen';
-import LocationSharingScreen from '../../features/location/screens/Location/LocationSharingScreen';
-import LocationMapViewScreen from '../../features/location/screens/Location/LocationMapViewScreen';
-import LocationSharedWithScreen from '../../features/location/screens/Location/LocationSharedWithScreen';
-import ShareSettingsScreen from '../../features/location/screens/Location/ShareSettingsScreen';
 import CallLogsScreen from '../../features/calllogs/screens/CallLogs/CallLogsScreen';
 import SmartAccessScreen from '../../features/smartaccess/screens/SmartAccess/SmartAccessScreen';
 import UnlockDoorScreen from '../../features/smartaccess/screens/SmartAccess/UnlockDoorScreen';
@@ -159,10 +155,6 @@ export default function AppNavigator() {
         <Stack.Screen name="CreatePost" component={CreatePostScreen} />
         <Stack.Screen name="MyBills" component={MyBills} />
         <Stack.Screen name="Security" component={SecurityScreen} />
-        <Stack.Screen name="LocationSharing" component={LocationSharingScreen} />
-        <Stack.Screen name="LocationMapView" component={LocationMapViewScreen} />
-        <Stack.Screen name="LocationSharedWith" component={LocationSharedWithScreen} />
-        <Stack.Screen name="ShareSettings" component={ShareSettingsScreen} />
         <Stack.Screen name="CallLogs" component={CallLogsScreen} />
         <Stack.Screen name="SmartAccess" component={SmartAccessScreen} />
         <Stack.Screen name="SmartAccessHistory" component={SmartAccessHistoryScreen} />

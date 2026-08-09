@@ -280,7 +280,7 @@ export default function UnlockDoorScreen() {
       try {
         // Give iOS time to finish modal animation and previous BLE callbacks.
         if (Platform.OS === 'ios') {
-          await wait(700);
+          await wait(200);
 
           if (cancelled) {
             return;
@@ -424,12 +424,12 @@ const openSelectedDeviceModal = async (device: ResidentAccessDevice) => {
       return;
     }
 
-    const bleAccess = await getDeviceBleAccess(
+const bleAccess = await getDeviceBleAccess(
       device.id,
       String(residentId),
     );
 
-    const devices = await ttlockNative.scanLocks();
+    const devices = await ttlockNative.scanLocks(bleAccess.lockMac);
 
     const nearby = devices.some(
       d =>
@@ -584,7 +584,7 @@ const ensureBluetoothReady = async () => {
           lockDataPrefix: lockData?.substring(0, 20),
         });
 
-        const devices = await ttlockNative.scanLocks();
+const devices = await ttlockNative.scanLocks(lockMac);
 
         Logger.info("iOS Scan Result", {
           expectedMac: lockMac,

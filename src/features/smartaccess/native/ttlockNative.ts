@@ -481,9 +481,10 @@ export const requestBluetoothEnable = async (): Promise<boolean> => {
   return false;
 };
 
-export const scanLocks = async (): Promise<ScannedLock[]> => {
+export const scanLocks = async (targetMac?: string): Promise<ScannedLock[]> => {
   Logger.ttlock('scanLocks() START', {
     platform: Platform.OS,
+    targetMac,
   });
 
   if (Platform.OS === 'android') {
@@ -588,13 +589,31 @@ export const scanLocks = async (): Promise<ScannedLock[]> => {
             return;
           }
 
-          Logger.ttlock('Adding device to cache', {
+Logger.ttlock('Adding device to cache', {
             mac,
             name: device.lockName,
             isInited: device.isInited,
           });
 
           iosScanCache.set(mac, device);
+
+          // If we are scanning for a specific target lock and found it,
+          // finish the scan early instead of waiting the full duration.
+          if (targetMac) {
+            const normalizedTarget = String(targetMac)
+              .trim()
+              .toUpperCase();
+            const normalizedFound = mac.trim().toUpperCase();
+
+            if (normalizedTarget === normalizedFound) {
+              Logger.ttlock('Target lock found, finishing scan early', {
+                mac,
+              });
+              clearTimeout(timer);
+              finish();
+              return;
+            }
+          }
 
           const initLockNative = iosModule.initLock;
 

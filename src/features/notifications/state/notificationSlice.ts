@@ -82,11 +82,16 @@ const notificationSlice = createSlice({
         console.error('Fetch failed:', action.error.message);
       })
       .addCase(fetchNotificationDetail.fulfilled, (state, action) => {
+        const notification = action.payload;
+        if (!notification) {
+          return;
+        }
+
         const index = state.notifications.findIndex(
-          n => n.id === action.payload.id
+          n => n.id === notification.id
         );
         if (index !== -1) {
-          state.notifications[index] = action.payload;
+          state.notifications[index] = notification;
           state.unreadCount = state.notifications.filter(n => !n.isSeen).length;
           state.hasUnread = state.unreadCount > 0;
         }
