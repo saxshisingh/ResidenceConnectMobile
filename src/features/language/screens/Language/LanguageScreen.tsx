@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import Svg, { Ellipse, Path } from 'react-native-svg';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStyles } from './LanguageScreen.styles';
 import {
   fetchLanguages,
@@ -81,26 +81,39 @@ export default function LanguageScreen({ navigation }: any) {
 
       const current = data.find(
         lang =>
-          lang.languageCode.toLowerCase() === language.toLowerCase(),
+          String(lang.languageCode || '').trim().toLowerCase() ===
+          String(language || '').trim().toLowerCase(),
       );
 
       if (current) {
         setSelected(current.languageId);
-      } else {
-        const english = data.find(lang => lang.languageCode === 'en');
+        return;
+      }
 
-        if (english) {
-          setSelected(english.languageId);
-        } else if (data.length > 0) {
-          setSelected(data[0].languageId);
-        }
+      const english = data.find(
+        lang =>
+          String(lang.languageCode || '').trim().toLowerCase() === 'en',
+      );
+
+      if (english) {
+        setSelected(english.languageId);
+        return;
+      }
+
+      if (data.length > 0) {
+        setSelected(data[0].languageId);
       }
     } catch (err: any) {
-      setError(err.message);
+      console.error('LOAD LANGUAGES ERROR:', err);
+
+      const message =
+        err?.message || 'Unable to load languages';
+
+      setError(message);
 
       Alert.alert(
         t('common.error', 'Error'),
-        err.message,
+        message,
       );
     } finally {
       setLoading(false);
@@ -119,30 +132,65 @@ export default function LanguageScreen({ navigation }: any) {
       return;
     }
 
+    const selectedItem = languages.find(
+      item => item.languageId === selected,
+    );
+
+    if (!selectedItem) {
+      Alert.alert(
+        t('common.error', 'Error'),
+        'Selected language could not be found.',
+      );
+      return;
+    }
+
+    const localCode = getNormalizedCode(
+      String(selectedItem.languageCode || '')
+        .trim()
+        .toLowerCase(),
+    );
+
+    if (!localCode) {
+      Alert.alert(
+        t('common.error', 'Error'),
+        'Selected language is not supported.',
+      );
+      return;
+    }
+
     try {
       setSubmitting(true);
 
-      await selectLanguage(selected);
+      // 1. Update backend
+      await selectLanguage(selected, localCode);
 
-      const localCode = getNormalizedCode(
-        String(selectedLanguage?.languageCode || '').toLowerCase(),
+      // 2. Update local app language
+      await setLanguage(localCode);
+
+      // 3. Persist the language ID explicitly
+      await AsyncStorage.setItem(
+        'selectedLanguageId',
+        selected,
       );
 
-      if (localCode) {
-        await setLanguage(localCode);
-      }
+      // 4. Persist the language code explicitly
+      await AsyncStorage.setItem(
+        'appLanguageCode',
+        localCode,
+      );
 
       navigation.replace('MainTabs');
     } catch (err: any) {
+      console.error('LANGUAGE PROCEED ERROR:', err);
+
       Alert.alert(
         t('common.error', 'Error'),
-        err.message,
+        err?.message || 'Unable to change language.',
       );
     } finally {
       setSubmitting(false);
     }
   };
-
     const renderItem = ({ item }: { item: Language }) => {
     const normalizedCode = String(item.languageCode || '').toLowerCase();
 
@@ -158,7 +206,11 @@ export default function LanguageScreen({ navigation }: any) {
     return (
       <TouchableOpacity
         style={styles.row}
-        onPress={() => setSelected(item.languageId)}
+        onPress={() => {
+          if (!submitting) {
+            setSelected(item.languageId);
+          }
+        }}
         disabled={submitting}
       >
         <Image
