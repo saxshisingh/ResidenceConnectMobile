@@ -145,8 +145,8 @@ android {
         applicationId "com.ResidenceConnect.myapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "1.0.16"
+        versionCode 17
+        versionName "1.2.2"
     }
     signingConfigs {
         debug {

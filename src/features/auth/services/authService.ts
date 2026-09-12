@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import {apiFetch} from '../../../shared/api/apiClient';
 import {API_BASE_URL} from '../../../config/api';
 
@@ -42,6 +41,13 @@ interface RefreshApiResponse {
   data: RefreshTokenResponse;
 }
 
+export interface RestoredSession {
+  token: string;
+  refreshToken: string;
+  isFirstLogin: boolean;
+  user: any;
+}
+
 /* ============================================================
  * STORAGE KEYS
  * ============================================================ */
@@ -50,10 +56,11 @@ export const AUTH_STORAGE_KEYS = {
   token: 'authToken',
   refreshToken: 'refreshToken',
   isFirstLogin: 'isFirstLogin',
-  username: 'authUsername',
-  password: 'Password',
   rememberMe: 'authRememberMe',
+  username: 'authUsername',
+  password: 'authPassword',
 } as const;
+
 
 /* ============================================================
  * ERROR HELPER
@@ -185,52 +192,29 @@ export const loginUser = async (
       await response.json();
 
     /*
-     * IMPORTANT:
-     * Store BOTH access token and refresh token.
-     */
-
-    await AsyncStorage.setItem(
-      AUTH_STORAGE_KEYS.token,
-      data.token,
-    );
-
-    await AsyncStorage.setItem(
-      AUTH_STORAGE_KEYS.refreshToken,
-      data.refreshToken,
-    );
-
-    await AsyncStorage.setItem(
-      AUTH_STORAGE_KEYS.isFirstLogin,
-      JSON.stringify(data.isFirstLogin),
-    );
-
-    await AsyncStorage.setItem(
-      AUTH_STORAGE_KEYS.rememberMe,
-      JSON.stringify(rememberMe),
-    );
-
-    /*
-     * Store credentials only when Remember Me
-     * is enabled.
-     */
-
-    if (rememberMe) {
-      await AsyncStorage.multiSet([
-        [
-          AUTH_STORAGE_KEYS.username,
-          username,
-        ],
-        [
-          AUTH_STORAGE_KEYS.password,
-          password,
-        ],
-      ]);
-    } else {
-      await AsyncStorage.multiRemove([
-        AUTH_STORAGE_KEYS.username,
-        AUTH_STORAGE_KEYS.password,
-      ]);
-    }
+    * Store authentication tokens.
+    *
+    * Access token and refresh token are required
+    * for session management.
+    */
+    await AsyncStorage.multiSet([
+      [
+        AUTH_STORAGE_KEYS.token,
+        data.token,
+      ],
+      [
+        AUTH_STORAGE_KEYS.refreshToken,
+        data.refreshToken,
+      ],
+      [
+        AUTH_STORAGE_KEYS.isFirstLogin,
+        JSON.stringify(data.isFirstLogin),
+      ],
+      [
+        AUTH_STORAGE_KEYS.rememberMe,
+        JSON.stringify(rememberMe),
+      ],
+    ]);
 
     console.log('LOGIN SUCCESS');
 
@@ -243,6 +227,145 @@ export const loginUser = async (
     );
   }
 };
+
+export const restoreSession =
+  async (): Promise<RestoredSession | null> => {
+    try {
+      const values = await AsyncStorage.multiGet([
+        AUTH_STORAGE_KEYS.token,
+        AUTH_STORAGE_KEYS.refreshToken,
+        AUTH_STORAGE_KEYS.isFirstLogin,
+        AUTH_STORAGE_KEYS.rememberMe,
+      ]);
+
+      const storage = Object.fromEntries(values);
+
+      const token =
+        storage[AUTH_STORAGE_KEYS.token];
+
+      const refreshToken =
+        storage[AUTH_STORAGE_KEYS.refreshToken];
+
+      const rememberMe =
+        storage[AUTH_STORAGE_KEYS.rememberMe] ===
+        'true';
+
+      /*
+       * Only restore the session when
+       * the user explicitly selected
+       * Remember Me.
+       */
+      if (!rememberMe) {
+        return null;
+      }
+
+      /*
+       * A refresh token is required
+       * to restore a persistent session.
+       */
+      if (!refreshToken) {
+        return null;
+      }
+
+      /*
+       * If there is no access token,
+       * try restoring it using the
+       * refresh token.
+       */
+      if (!token) {
+        await refreshAccessToken();
+      }
+
+      /*
+       * Fetch the current authenticated user.
+       *
+       * If apiFetch already handles token
+       * refresh automatically, this will
+       * normally succeed directly.
+       */
+      let user;
+
+      try {
+        user = await fetchUserProfile();
+      } catch (error) {
+        /*
+         * Retry once after explicitly
+         * refreshing the access token.
+         */
+        console.log(
+          'Session validation failed. Attempting token refresh...',
+        );
+
+        await refreshAccessToken();
+
+        user = await fetchUserProfile();
+      }
+
+      /*
+       * Read the latest tokens because
+       * the access token may have been
+       * refreshed during the process.
+       */
+      const latestToken =
+        await getAuthToken();
+
+      const latestRefreshToken =
+        await getRefreshToken();
+
+      if (
+        !latestToken ||
+        !latestRefreshToken
+      ) {
+        throw new Error(
+          'Session restoration failed',
+        );
+      }
+
+      return {
+        token: latestToken,
+        refreshToken: latestRefreshToken,
+        isFirstLogin:
+          storage[
+            AUTH_STORAGE_KEYS.isFirstLogin
+          ] === 'true',
+        user,
+      };
+    } catch (error) {
+      console.warn(
+        'SESSION RESTORE FAILED:',
+        error,
+      );
+
+      /*
+       * The stored session is no longer valid.
+       */
+      await AsyncStorage.multiRemove([
+        AUTH_STORAGE_KEYS.token,
+        AUTH_STORAGE_KEYS.refreshToken,
+        AUTH_STORAGE_KEYS.isFirstLogin,
+        AUTH_STORAGE_KEYS.rememberMe,
+        AUTH_STORAGE_KEYS.username,
+        AUTH_STORAGE_KEYS.password,
+        'user',
+      ]);
+
+      return null;
+    }
+  };
+
+export const clearAuthSession =
+  async (): Promise<void> => {
+    await AsyncStorage.multiRemove([
+      AUTH_STORAGE_KEYS.token,
+      AUTH_STORAGE_KEYS.refreshToken,
+      AUTH_STORAGE_KEYS.isFirstLogin,
+      AUTH_STORAGE_KEYS.rememberMe,
+      AUTH_STORAGE_KEYS.username,
+      AUTH_STORAGE_KEYS.password,
+      'user',
+    ]);
+  };
+
 
 /* ============================================================
  * REFRESH TOKEN
@@ -364,6 +487,7 @@ export const forgotPassword = async (
         },
       );
 
+      console.log("responsee forget password", response);
       if (response.ok) {
         break;
       }
@@ -519,56 +643,43 @@ export const getIsFirstLogin =
  * 4. Clear only local language cache.
  * ============================================================ */
 
-export const logout = async (): Promise<void> => {
-  const token =
-    await AsyncStorage.getItem(
-      AUTH_STORAGE_KEYS.token,
-    );
+export const logout =
+  async (): Promise<void> => {
+    const token =
+      await getAuthToken();
 
-  try {
-    if (token) {
-      await fetch(`${API_URL}/logout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+    try {
+      if (token) {
+        await fetch(
+          `${API_URL}/logout`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type':
+                'application/json',
+              Authorization:
+                `Bearer ${token}`,
+            },
+          },
+        );
+      }
+    } catch (error) {
+      console.warn(
+        'LOGOUT API ERROR:',
+        error,
+      );
+    } finally {
+      await clearAuthSession();
+
+      /*
+       * Remove local-only cached data.
+       */
+      await AsyncStorage.multiRemove([
+        'selectedLanguageId',
+        'appLanguageCode',
+      ]);
     }
-  } catch (error) {
-    /*
-     * Even if the server is unreachable,
-     * we still clear the local session.
-     */
-    console.warn(
-      'LOGOUT API ERROR:',
-      error,
-    );
-  } finally {
-    await AsyncStorage.multiRemove([
-      AUTH_STORAGE_KEYS.token,
-      AUTH_STORAGE_KEYS.refreshToken,
-      AUTH_STORAGE_KEYS.isFirstLogin,
-      AUTH_STORAGE_KEYS.username,
-      AUTH_STORAGE_KEYS.password,
-      AUTH_STORAGE_KEYS.rememberMe,
-
-      /*
-       * Local language cache only.
-       *
-       * The actual selected language remains
-       * in the database.
-       */
-      'selectedLanguageId',
-      'appLanguageCode',
-
-      /*
-       * Cached user profile.
-       */
-      'user',
-    ]);
-  }
-};
+  };
 
 /* ============================================================
  * FETCH CURRENT USER PROFILE

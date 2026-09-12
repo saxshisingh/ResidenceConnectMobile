@@ -445,52 +445,153 @@ export default function MyNeighborsScreen({ navigation }: any) {
     );
 
   const normalizeList = (value: unknown): string[] => {
-    if (Array.isArray(value)) {
-      return value
-        .map(item => String(item ?? '').trim())
-        .filter(item => item && item !== '-1');
-    }
-
-    if (typeof value === 'string') {
-      return value
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item && item !== '-1');
-    }
-
-    return [];
-  };
-
-  const extractListFromObjects = (value: unknown, keys: string[]) => {
-    if (!Array.isArray(value)) return [];
-
+  if (Array.isArray(value)) {
     return value
-      .map(item => {
-        if (item === null || item === undefined) return '';
-        if (typeof item !== 'object') return String(item).trim();
+      .map(item => String(item ?? '').trim())
+      .filter(item => item && item !== '-1');
+  }
 
-        for (const key of keys) {
-          const candidate = (item as any)?.[key];
-          if (candidate !== null && candidate !== undefined) {
-            const normalized = String(candidate).trim();
-            if (normalized && normalized !== '-1') return normalized;
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item && item !== '-1');
+  }
+
+  return [];
+};
+
+const extractListFromObjects = (
+  value: unknown,
+  keys: string[],
+): string[] => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map(item => {
+      if (item === null || item === undefined) {
+        return '';
+      }
+
+      if (typeof item !== 'object') {
+        return String(item).trim();
+      }
+
+      for (const key of keys) {
+        const candidate = (item as any)?.[key];
+
+        if (
+          candidate !== null &&
+          candidate !== undefined
+        ) {
+          const normalized = String(candidate).trim();
+
+          if (
+            normalized &&
+            normalized !== '-1'
+          ) {
+            return normalized;
           }
         }
+      }
 
-        return '';
-      })
-      .filter(item => item && item !== '-1');
-  };
+      return '';
+    })
+    .filter(
+      item => item && item !== '-1',
+    );
+};
 
-  const getVehicleNumbers = (item: Neighbor | null) => {
-    const list = normalizeList(item?.vehicleNumbersList);
-    if (list.length > 0) return list;
+/*
+ * =========================================
+ * SINGLE VEHICLE VALUES
+ * =========================================
+ */
 
-    const csvList = normalizeList(item?.vehicleNumbers);
-    if (csvList.length > 0) return csvList;
+const getVehicleNumber = (
+  item: Neighbor | null,
+) =>
+  pickFirstValue(item, [
+    'vehicleNumber',
+    'vehicleNo',
+    'vehicleRegistrationNumber',
+    'vehicleNumberPlate',
+    'registrationNumber',
+    'plateNumber',
+  ]);
 
-    const objectList = extractListFromObjects(
-      item?.vehicles || item?.vehicleDetails || item?.residentVehicles || item?.neighbourVehicles,
+const getVehicleType = (
+  item: Neighbor | null,
+) =>
+  pickFirstValue(item, [
+    'vehicleType',
+    'typeOfVehicle',
+  ]);
+
+const getParkingSlot = (
+  item: Neighbor | null,
+) =>
+  pickFirstValue(item, [
+    'parkingSlot',
+    'parkingSlotNumber',
+    'slotNumber',
+    'parkingNumber',
+    'assignedParkingSlot',
+  ]);
+
+const getParkingType = (
+  item: Neighbor | null,
+) =>
+  pickFirstValue(item, [
+    'parkingType',
+    'assignmentType',
+  ]);
+
+/*
+ * =========================================
+ * VEHICLE NUMBERS
+ * =========================================
+ *
+ * This function is allowed to return [].
+ *
+ * A neighbour WITHOUT a vehicle is still
+ * a valid neighbour.
+ */
+
+const getVehicleNumbers = (
+  item: Neighbor | null,
+): string[] => {
+  if (!item) {
+    return [];
+  }
+
+  // 1. Array vehicle numbers
+  const list = normalizeList(
+    item.vehicleNumbersList,
+  );
+
+  if (list.length > 0) {
+    return list;
+  }
+
+  // 2. CSV vehicle numbers
+  const csvList = normalizeList(
+    item.vehicleNumbers,
+  );
+
+  if (csvList.length > 0) {
+    return csvList;
+  }
+
+  // 3. Vehicle objects
+  const objectList =
+    extractListFromObjects(
+      item.vehicles ||
+        item.vehicleDetails ||
+        item.residentVehicles ||
+        item.neighbourVehicles,
       [
         'vehicleNumber',
         'vehicleNo',
@@ -500,89 +601,223 @@ export default function MyNeighborsScreen({ navigation }: any) {
         'plateNumber',
       ],
     );
-    if (objectList.length > 0) return objectList;
 
-    const singleValue = getVehicleNumber(item);
-    return singleValue ? [String(singleValue)] : [];
-  };
+  if (objectList.length > 0) {
+    return objectList;
+  }
 
+  // 4. Single vehicle number
+  const singleValue =
+    getVehicleNumber(item);
+
+  if (
+    singleValue !== null &&
+    singleValue !== undefined &&
+    String(singleValue).trim() !== ''
+  ) {
+    return [String(singleValue).trim()];
+  }
+
+  // No vehicle is perfectly valid.
+  return [];
+};
+
+/*
+ * =========================================
+ * VEHICLE TYPES
+ * =========================================
+ */
+
+const getVehicleTypes = (
+  item: Neighbor | null,
+): string[] => {
+  if (!item) {
+    return [];
+  }
+
+  const list = normalizeList(
+    item.vehicleTypeList,
+  );
+
+  if (list.length > 0) {
+    return list;
+  }
+
+  const csvList = normalizeList(
+    item.vehicleTypes,
+  );
+
+  if (csvList.length > 0) {
+    return csvList;
+  }
+
+  const objectList =
+    extractListFromObjects(
+      item.vehicles ||
+        item.vehicleDetails ||
+        item.residentVehicles ||
+        item.neighbourVehicles,
+      [
+        'vehicleType',
+        'typeOfVehicle',
+        'vehicleCategory',
+        'category',
+        'type',
+      ],
+    );
+
+  if (objectList.length > 0) {
+    return objectList;
+  }
+
+  const singleValue =
+    getVehicleType(item);
+
+  return singleValue
+    ? [String(singleValue)]
+    : [];
+};
+
+/*
+ * =========================================
+ * PARKING SLOTS
+ * =========================================
+ */
+
+const getParkingSlots = (
+  item: Neighbor | null,
+): string[] => {
+  if (!item) {
+    return [];
+  }
+
+  const list = normalizeList(
+    item.parkingSlotsList,
+  );
+
+  if (list.length > 0) {
+    return list;
+  }
+
+  const csvList = normalizeList(
+    item.parkingSlots,
+  );
+
+  if (csvList.length > 0) {
+    return csvList;
+  }
+
+  const objectList =
+    extractListFromObjects(
+      item.parkingDetails ||
+        item.parkings,
+      [
+        'parkingSlot',
+        'parkingSlotNumber',
+        'slotNumber',
+        'parkingNumber',
+        'assignedParkingSlot',
+      ],
+    );
+
+  if (objectList.length > 0) {
+    return objectList;
+  }
+
+  const singleValue =
+    getParkingSlot(item);
+
+  if (
+    singleValue !== null &&
+    singleValue !== undefined &&
+    String(singleValue).trim() !== '' &&
+    String(singleValue).trim() !== '-1'
+  ) {
+    return [String(singleValue).trim()];
+  }
+
+  return [];
+};
+
+/*
+ * =========================================
+ * SEARCH
+ * =========================================
+ *
+ * Name matching is completely independent
+ * from vehicle information.
+ *
+ * Therefore:
+ *
+ * John + vehicle      -> found
+ * John + no vehicle   -> found
+ * vehicle number      -> found
+ */
 
 const filteredNeighbors = useMemo(() => {
+  const query = String(
+    debouncedSearch ?? '',
+  )
+    .trim()
+    .toLowerCase();
 
-  try {
-    const query = String(debouncedSearch ?? '').trim().toLowerCase();
-
-
-    if (!query) {
-      return neighbors;
-    }
-
-    const filtered = neighbors.filter((neighbor, index) => {
-      try {
-      
-        const name = String(getNeighborName(neighbor) ?? '').toLowerCase();
-
-        const vehicles = getVehicleNumbers(neighbor);
-
-       
-        const vehicleMatch = vehicles.some((vehicle, vehicleIndex) => {
-       
-
-          return String(vehicle ?? '')
-            .toLowerCase()
-            .includes(query);
-        });
-
-        const nameMatch = name.includes(query);
-
-        return nameMatch || vehicleMatch;
-      } catch (error) {
-        return false;
-      }
-    });
-
-   
-    return filtered;
-  } catch (error) {
+  // No search -> show ALL neighbours.
+  if (!query) {
     return neighbors;
   }
-}, [neighbors, debouncedSearch]);
 
-  const getVehicleTypes = (item: Neighbor | null) => {
-    const list = normalizeList(item?.vehicleTypeList);
-    if (list.length > 0) return list;
+  return neighbors.filter(
+    (neighbor: Neighbor) => {
+      /*
+       * -----------------------------------------
+       * NAME SEARCH
+       * -----------------------------------------
+       *
+       * This MUST work regardless of whether
+       * the neighbour owns a vehicle.
+       */
 
-    const csvList = normalizeList(item?.vehicleTypes);
-    if (csvList.length > 0) return csvList;
+      const name = String(
+        getNeighborName(neighbor) ?? '',
+      )
+        .trim()
+        .toLowerCase();
 
-    const objectList = extractListFromObjects(
-      item?.vehicles || item?.vehicleDetails || item?.residentVehicles || item?.neighbourVehicles,
-      ['vehicleType', 'typeOfVehicle', 'vehicleCategory', 'category', 'type'],
-    );
-    if (objectList.length > 0) return objectList;
+      const nameMatch =
+        name.length > 0 &&
+        name.includes(query);
 
-    const singleValue = getVehicleType(item);
-    return singleValue ? [String(singleValue)] : [];
-  };
+      /*
+       * -----------------------------------------
+       * VEHICLE SEARCH
+       * -----------------------------------------
+       *
+       * Only check vehicles separately.
+       * An empty vehicle list is completely valid.
+       */
 
-  const getParkingSlots = (item: Neighbor | null) => {
-    const list = normalizeList(item?.parkingSlotsList);
-    if (list.length > 0) return list;
+      let vehicleMatch = false;
 
-    const csvList = normalizeList(item?.parkingSlots);
-    if (csvList.length > 0) return csvList;
+      if (!nameMatch) {
+        const vehicles =
+          getVehicleNumbers(neighbor);
 
-    const objectList = extractListFromObjects(
-      item?.parkingDetails || item?.parkings,
-      ['parkingSlot', 'parkingSlotNumber', 'slotNumber', 'parkingNumber', 'assignedParkingSlot'],
-    );
-    if (objectList.length > 0) return objectList;
+        vehicleMatch =
+          vehicles.some(vehicle =>
+            String(vehicle ?? '')
+              .trim()
+              .toLowerCase()
+              .includes(query),
+          );
+      }
 
-    const singleValue = getParkingSlot(item);
-    return singleValue && String(singleValue).trim() !== '-1'
-      ? [String(singleValue)]
-      : [];
-  };
+      return nameMatch || vehicleMatch;
+    },
+  );
+}, [
+  neighbors,
+  debouncedSearch,
+]);
 
   const getDisplayList = (values: string[]) => (values.length > 0 ? values : ['0']);
 
@@ -611,31 +846,6 @@ const filteredNeighbors = useMemo(() => {
       Array.isArray(item?.neighbourVehicles) ? item.neighbourVehicles.length : 0,
     );
   };
-
-  const getVehicleNumber = (item: Neighbor | null) =>
-    pickFirstValue(item, [
-      'vehicleNumber',
-      'vehicleNo',
-      'vehicleRegistrationNumber',
-      'vehicleNumberPlate',
-      'registrationNumber',
-      'plateNumber',
-    ]);
-
-  const getVehicleType = (item: Neighbor | null) =>
-    pickFirstValue(item, ['vehicleType', 'typeOfVehicle']);
-
-  const getParkingSlot = (item: Neighbor | null) =>
-    pickFirstValue(item, [
-      'parkingSlot',
-      'parkingSlotNumber',
-      'slotNumber',
-      'parkingNumber',
-      'assignedParkingSlot',
-    ]);
-
-  const getParkingType = (item: Neighbor | null) =>
-    pickFirstValue(item, ['parkingType', 'assignmentType']);
 
   const getInitials = (name: string) => {
     const parts = name.split(' ');

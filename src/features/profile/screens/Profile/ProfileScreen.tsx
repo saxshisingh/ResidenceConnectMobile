@@ -33,6 +33,7 @@ import { fetchParkingSlots } from '../../../parking/state/parkingSlice';
 import { fetchVehicles } from '../../../vehicle/state/vehicleSlice';
 import { fetchFamilyMembers } from '../../../member/state/familySlice';
 import { navigationRef } from '../../../../navigation/navigationRef';
+import { useAuth } from '../../../auth/context/AuthProvider';
 
 // ─── helpers ─────────────────────────────────
 const getInitials = (f?: string, l?: string) =>
@@ -92,7 +93,7 @@ export default function ProfileScreen({ navigation }: any) {
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(width - 32, 520);
   const [profileImageLoadFailed, setProfileImageLoadFailed] = React.useState(false);
-
+  const {signOut} = useAuth();
   const user    = useSelector((state: any) => state.auth.user);
   const loading = useSelector((state: any) => state.auth.loading);
   const parkingSlots = useSelector((state: any) => state.parking?.slots ?? []);
@@ -128,27 +129,19 @@ export default function ProfileScreen({ navigation }: any) {
     }, [dispatch, residentId]),
   );
 
-  const handleLogout = () => {
-    Alert.alert(
-      t('profile.mobile.logoutTitle', 'Logout'),
-      t('profile.mobile.logoutConfirm', 'Are you sure you want to logout?'),
-      [
-        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
-        {
-          text: t('profile.mobile.logoutTitle', 'Logout'),
-          style: 'destructive',
-          onPress: () => {
-            dispatch(logout());
-            if (navigationRef.isReady()) {
-              navigationRef.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
-            }
-          },
-        },
-      ],
-    );
+  const handleLogout = async () => {
+    try {
+      await signOut();
+
+      /*
+      * AppNavigator automatically switches
+      * to the unauthenticated navigator.
+      *
+      * Do NOT navigate or reset to Login here.
+      */
+    } catch (error) {
+      console.error('LOGOUT ERROR:', error);
+    }
   };
 
   if (loading || !user?.data) {

@@ -1,105 +1,317 @@
-import { StyleSheet } from "react-native";
+import {
+  StyleSheet,
+} from 'react-native';
 
+const COLORS = {
+  teal: '#579F91',
+  tealDark: '#438579',
+  tealLight: '#A7C7C1',
 
-const TOP_CIRCLE_SIZE = 360;
-const TOP_RADIUS = TOP_CIRCLE_SIZE / 2;
+  white: '#FFFFFF',
 
+  text: '#18201E',
+  secondary: '#74817E',
 
+  track: '#E5EEEC',
 
-const styles = StyleSheet.create({
+  shadow: '#285E55',
+};
+
+export default StyleSheet.create({
+
+  /*
+   * =========================================
+   * ROOT
+   * =========================================
+   */
+
   container: {
     flex: 1,
-    backgroundColor: "#FFFDF7",
-    overflow: "hidden", 
+
+    backgroundColor:
+      COLORS.white,
+
+    overflow: 'hidden',
   },
 
+  /*
+   * =========================================
+   * TOP DECORATION
+   * =========================================
+   */
 
+  topShape: {
+    position: 'absolute',
 
-  topCircle1: {
-    position: "absolute",
-    width: TOP_CIRCLE_SIZE,
-    height: TOP_CIRCLE_SIZE,
-    top: -220,
-    left: -220,
-    borderRadius: TOP_RADIUS,
-    backgroundColor: "#F6C63680",
-    zIndex: 1,
+    backgroundColor:
+      COLORS.teal,
+
+    borderBottomLeftRadius: 500,
+
+    borderBottomRightRadius: 500,
   },
 
-  topCircle2: {
-    position: "absolute",
-    width: TOP_CIRCLE_SIZE,
-    height: TOP_CIRCLE_SIZE,
-    top: -260,
-    left: -60,
-    borderRadius: TOP_RADIUS,
-    backgroundColor: "#F6C636",
-    zIndex: 1,
+  topShapeLight: {
+    position: 'absolute',
+
+    backgroundColor:
+      COLORS.tealLight,
+
+    opacity: 0.65,
+
+    borderBottomRightRadius: 400,
   },
 
-  topCircle3: {
-    position: "absolute",
-    width: TOP_CIRCLE_SIZE,
-    height: TOP_CIRCLE_SIZE,
-    top: -300,
-    left: 140,
-    borderRadius: TOP_RADIUS,
-    backgroundColor: "#F6C63696",
-    zIndex: 1,
+  /*
+   * =========================================
+   * BOTTOM DECORATION
+   * =========================================
+   */
+
+  bottomShape: {
+    position: 'absolute',
+
+    backgroundColor:
+      COLORS.teal,
+
+    borderTopLeftRadius: 500,
+
+    borderTopRightRadius: 500,
   },
 
+  bottomShapeLight: {
+    position: 'absolute',
 
-  content: {
+    backgroundColor:
+      COLORS.tealLight,
+
+    opacity: 0.65,
+
+    borderTopLeftRadius: 400,
+  },
+
+  /*
+   * =========================================
+   * CENTER
+   * =========================================
+   */
+
+  centerContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+
+    alignItems: 'center',
+
+    justifyContent: 'center',
+
+    paddingHorizontal: 24,
+
+    paddingBottom: '9%',
+  },
+
+  /*
+   * =========================================
+   * LOGO
+   * =========================================
+   */
+
+  logoSection: {
+    alignItems: 'center',
+
+    justifyContent: 'center',
+
+    position: 'relative',
+  },
+
+  logo: {
+    alignSelf: 'center',
+
     zIndex: 2,
   },
 
-  image: {
-    width: 400,
-    height: 400,
-    marginBottom: 32,
+  logoGlow: {
+    position: 'absolute',
+
+    backgroundColor:
+      COLORS.tealLight,
+
+    opacity: 0.25,
+
+    zIndex: 0,
+
+    /*
+     * The blur-like effect is
+     * created using opacity + scale.
+     */
+    shadowColor:
+      COLORS.teal,
+
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+
+    shadowOpacity: 0.35,
+
+    shadowRadius: 30,
+
+    elevation: 10,
   },
 
-  button: {
-    backgroundColor: "#F6C636",
-    paddingVertical: 14,
-    paddingHorizontal: 72,
-    borderRadius: 30,
-    elevation: 4,
+  /*
+   * =========================================
+   * BRAND
+   * =========================================
+   */
+
+  brandSection: {
+    alignItems: 'center',
+
+    marginTop: 8,
   },
 
-  buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1F2937",
+  brandName: {
+    fontSize: 27,
+
+    lineHeight: 34,
+
+    fontWeight: '700',
+
+    color: COLORS.text,
+
+    letterSpacing: 0.2,
+
+    textAlign: 'center',
   },
 
-  
+  brandSubtitle: {
+    fontSize: 13,
 
-  bottomCircle2: {
- position: "absolute",
-  width: 300,          
-  height: 220,
-  bottom: -120,       
-  right: -230,        
-  backgroundColor: "rgba(246, 198, 54, 0.59)",
-  borderRadius: 150,
-  zIndex: 0, 
+    lineHeight: 20,
+
+    fontWeight: '400',
+
+    color: COLORS.secondary,
+
+    letterSpacing: 0.3,
+
+    textAlign: 'center',
+
+    marginTop: 3,
   },
 
-bottomCircle1: {
-  position: "absolute",
-  width: 320,          
-  height: 300,         
-  bottom: -260,       
-  left: 100,
-  backgroundColor: "#F6C636",
-  borderRadius: 160,   
-  zIndex: 1,
-},
+  /*
+   * =========================================
+   * LOADING
+   * =========================================
+   */
+
+  loadingSection: {
+    position: 'absolute',
+
+    left: 42,
+
+    right: 42,
+
+    bottom: '10%',
+  },
+
+  loadingHeader: {
+    flexDirection: 'row',
+
+    alignItems: 'center',
+
+    justifyContent: 'space-between',
+
+    marginBottom: 10,
+  },
+
+  loadingText: {
+    fontSize: 12,
+
+    fontWeight: '500',
+
+    color: COLORS.secondary,
+
+    letterSpacing: 0.15,
+  },
+
+  loadingPercent: {
+    fontSize: 11,
+
+    fontWeight: '600',
+
+    color: COLORS.tealDark,
+
+    letterSpacing: 0.2,
+  },
+
+  progressTrack: {
+    width: '100%',
+
+    height: 4,
+
+    borderRadius: 4,
+
+    backgroundColor:
+      COLORS.track,
+
+    overflow: 'hidden',
+  },
+
+  progressBar: {
+    height: '100%',
+
+    borderRadius: 4,
+
+    backgroundColor:
+      COLORS.teal,
+  },
+
+  /*
+   * =========================================
+   * FOOTER
+   * =========================================
+   */
+
+  footer: {
+    position: 'absolute',
+
+    left: 0,
+
+    right: 0,
+
+    bottom: 22,
+
+    alignItems: 'center',
+  },
+
+  footerLine: {
+    width: 28,
+
+    height: 2,
+
+    borderRadius: 2,
+
+    backgroundColor:
+      COLORS.teal,
+
+    opacity: 0.7,
+
+    marginBottom: 7,
+  },
+
+  footerText: {
+    fontSize: 8,
+
+    fontWeight: '600',
+
+    color: COLORS.teal,
+
+    letterSpacing: 1.4,
+
+    textAlign: 'center',
+
+    opacity: 0.8,
+  },
 
 });
-
-export default styles;
