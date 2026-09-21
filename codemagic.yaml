@@ -474,6 +474,48 @@ workflows:
 
           agvtool new-version -all "$BUILD_NUMBER"
 
+      - name: Direct Xcode Archive Diagnostic
+        script: |
+          set -o pipefail
+
+          cd ios
+
+          echo "======================================"
+          echo "DIRECT XCODE ARCHIVE"
+          echo "======================================"
+
+          xcodebuild \
+            -workspace "MyGate.xcworkspace" \
+            -scheme "MyGate" \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath "$CM_BUILD_DIR/MyGate.xcarchive" \
+            DEVELOPMENT_TEAM=U7WJ5JNRV7 \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_STYLE=Manual \
+            archive \
+            2>&1 | tee ../archive.log
+
+          STATUS=${PIPESTATUS[0]}
+
+          echo ""
+          echo "======================================"
+          echo "ACTUAL XCODE ERRORS"
+          echo "======================================"
+
+          grep -nEi \
+            "error:|fatal error:|BUILD FAILED|CodeSign|Provisioning|No profiles|Signing|SwiftCompile|CompileSwift|PhaseScriptExecution|Command PhaseScriptExecution failed|No such module|unable to resolve module" \
+            ../archive.log || true
+
+          echo ""
+          echo "======================================"
+          echo "LAST 250 LINES"
+          echo "======================================"
+
+          tail -n 250 ../archive.log || true
+
+          exit "$STATUS"
+          
       # =========================================================
       # 18. Build IPA
       # =========================================================
