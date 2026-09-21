@@ -15,6 +15,11 @@ platform :ios, '15.1'
 
 prepare_react_native_project!
 
+# React Native Firebase
+# Firebase is built as static frameworks to work correctly
+# with React Native Firebase and Swift Firebase imports.
+use_frameworks! :linkage => :static
+
 target 'MyGate' do
 
   config = use_native_modules!
@@ -37,9 +42,13 @@ target 'MyGate' do
 
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |build_config|
+
         build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+
         build_config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+
         build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
+
       end
     end
 

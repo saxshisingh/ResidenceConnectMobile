@@ -12,7 +12,9 @@ export default function ParkingEntry({ navigation }: any) {
 
   useFocusEffect(
     useCallback(() => {
-      const residentId = user?.data?.residentId;
+      const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
       if (!residentId) {
         navigation.replace('ParkingDetails');
         return;

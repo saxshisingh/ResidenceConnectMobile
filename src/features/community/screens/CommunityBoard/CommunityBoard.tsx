@@ -515,7 +515,7 @@ export default function CommunityBoard() {
   };
 
   const handleAddComment = async () => {
-    const userId = user?.data?.userId;
+    const userId = user?.userId ?? user?.data?.userId;
     const val = trimValue(commentText);
     if (!selectedPost?.postId || !val) return;
     if (!hasMinLength(val, 2) || !hasMaxLength(val, 500)) {
@@ -529,7 +529,7 @@ export default function CommunityBoard() {
   };
 
   const handleLike = (postId: string) => {
-    const userId = user?.data?.userId;
+    const userId = user?.userId ?? user?.data?.userId;
     if (!userId) { Alert.alert(t('common.error', 'Error'), t('community.mobile.board.userIdMissing', 'User ID is missing')); return; }
     dispatch(toggleLike({ postId, userId }));
   };

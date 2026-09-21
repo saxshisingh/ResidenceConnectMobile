@@ -98,40 +98,99 @@ import {
   useAuth,
 } from '../../features/auth/context/AuthProvider';
 
-const Stack = createNativeStackNavigator();
+const Stack =
+  createNativeStackNavigator();
 
 export default function AppNavigator() {
+  /* ============================================================
+   * THEME
+   * ============================================================ */
+
   const {
     resolvedTheme,
     colors,
   } = useAppTheme();
 
-  const authUser = useAppSelector(
-    state => state.auth.user,
-  );
+  /* ============================================================
+   * REDUX AUTH STATE
+   * ============================================================ */
 
-  const isFirstLogin = useAppSelector(
-    state => state.auth.isFirstLogin,
-  );
+  const authUser =
+    useAppSelector(
+      state => state.auth.user,
+    );
+
+  const isFirstLogin =
+    useAppSelector(
+      state => state.auth.isFirstLogin,
+    );
+
+  /* ============================================================
+   * LANGUAGE
+   * ============================================================ */
 
   const {
     language,
     setLanguage,
   } = useI18n();
 
+  /* ============================================================
+   * AUTH CONTEXT
+   * ============================================================ */
+
   const {
     status,
   } = useAuth();
+
+  /* ============================================================
+   * DEBUG AUTH STATE
+   * ============================================================ */
 
   console.log(
     '[AppNavigator] AUTH STATUS:',
     status,
   );
 
+  console.log(
+    '[AppNavigator] AUTH STATE:',
+    {
+      status,
+      isFirstLogin,
+      hasAuthUser: Boolean(authUser),
+      userId:
+        authUser?.userId ??
+        null,
+      residentId:
+        authUser?.residentId ??
+        null,
+      languageCode:
+        authUser?.languageCode ??
+        null,
+    },
+  );
+
+  /* ============================================================
+   * APPLY USER LANGUAGE
+   * ============================================================ */
+
+  /**
+   * IMPORTANT:
+   *
+   * fetchUserProfile() now returns `json.data`
+   * directly.
+   *
+   * Therefore:
+   *
+   * authUser.languageCode
+   *
+   * NOT:
+   *
+   * authUser.data.languageCode
+   */
   useEffect(() => {
     const nextLanguage =
       normalizeSupportedLanguageCode(
-        authUser?.data?.languageCode,
+        authUser?.languageCode,
       );
 
     if (
@@ -144,55 +203,78 @@ export default function AppNavigator() {
     setLanguage(nextLanguage).catch(
       error => {
         console.warn(
-          'Unable to apply user language preference:',
+          '[AppNavigator] Unable to apply user language preference:',
           error,
         );
       },
     );
   }, [
-    authUser?.data?.languageCode,
+    authUser?.languageCode,
     language,
     setLanguage,
   ]);
+
+  /* ============================================================
+   * NAVIGATION THEME
+   * ============================================================ */
 
   const navigationTheme =
     resolvedTheme === 'dark'
       ? {
           ...DarkTheme,
+
           colors: {
             ...DarkTheme.colors,
-            background: colors.background,
+            background:
+              colors.background,
             card: colors.surface,
-            text: colors.textPrimary,
-            border: colors.border,
-            primary: colors.primary,
+            text:
+              colors.textPrimary,
+            border:
+              colors.border,
+            primary:
+              colors.primary,
           },
         }
       : {
           ...DefaultTheme,
+
           colors: {
             ...DefaultTheme.colors,
-            background: colors.background,
+            background:
+              colors.background,
             card: colors.surface,
-            text: colors.textPrimary,
-            border: colors.border,
-            primary: colors.primary,
+            text:
+              colors.textPrimary,
+            border:
+              colors.border,
+            primary:
+              colors.primary,
           },
         };
 
-  /*
-   * =========================================
+  /* ============================================================
    * AUTHENTICATION LOADING
-   * =========================================
+   * ============================================================ */
+
+  /**
+   * SplashScreen is displayed ONLY while AuthProvider
+   * is determining the authentication state.
    *
-   * SplashScreen is only a visual loading screen.
-   *
-   * It is NOT registered as a navigation route.
-   * It must NOT call navigation.replace().
+   * Once status becomes AUTHENTICATED or
+   * UNAUTHENTICATED, SplashScreen is removed.
    */
   if (status === 'LOADING') {
+    console.log(
+      '[AppNavigator] Rendering SplashScreen',
+    );
+
     return <SplashScreen />;
   }
+
+  /* ============================================================
+   * NAVIGATION CONTAINER
+   * ============================================================ */
 
   return (
     <NavigationContainer
@@ -207,29 +289,16 @@ export default function AppNavigator() {
           gestureEnabled: false,
         }}>
 
-        {/* =========================================
-            UNAUTHENTICATED FLOW
-           ========================================= */}
+        {/* ======================================================
+         * UNAUTHENTICATED FLOW
+         * ====================================================== */}
 
         {status === 'UNAUTHENTICATED' && (
           <>
-
-            {/* =====================================
-                DEFAULT SCREEN AFTER LOGOUT
-                ===================================== */}
-
             <Stack.Screen
               name="Login"
               component={LoginScreen}
             />
-
-            {/* =====================================
-                REGISTRATION / ONBOARDING
-
-                These are NOT the default screen.
-                They must be reached explicitly from
-                the registration flow.
-                ===================================== */}
 
             <Stack.Screen
               name="StepOne"
@@ -246,10 +315,6 @@ export default function AppNavigator() {
               component={DetailsStepThree}
             />
 
-            {/* =====================================
-                OTHER UNAUTHENTICATED SCREENS
-                ===================================== */}
-
             <Stack.Screen
               name="ForgotPassword"
               component={ForgotPasswordScreen}
@@ -259,36 +324,50 @@ export default function AppNavigator() {
               name="Language"
               component={LanguageScreen}
             />
-
           </>
         )}
 
-        {/* =========================================
-            AUTHENTICATED FLOW
-           ========================================= */}
+        {/* ======================================================
+         * AUTHENTICATED FLOW
+         * ====================================================== */}
 
         {status === 'AUTHENTICATED' && (
           <>
-
-            {/* =====================================
-                FIRST LOGIN
-                ===================================== */}
+            {/* --------------------------------------------------
+             * DEFAULT AUTHENTICATED SCREEN
+             * -------------------------------------------------- */}
 
             {isFirstLogin ? (
-              <Stack.Screen
-                name="ConfirmPassword"
-                component={ConfirmPasswordScreen}
-              />
+              <>
+                {console.log(
+                  '[AppNavigator] First login detected -> ConfirmPassword',
+                )}
+
+                <Stack.Screen
+                  name="ConfirmPassword"
+                  component={
+                    ConfirmPasswordScreen
+                  }
+                />
+              </>
             ) : (
-              <Stack.Screen
-                name="MainTabs"
-                component={MainTabNavigator}
-              />
+              <>
+                {console.log(
+                  '[AppNavigator] Normal login -> MainTabs',
+                )}
+
+                <Stack.Screen
+                  name="MainTabs"
+                  component={
+                    MainTabNavigator
+                  }
+                />
+              </>
             )}
 
-            {/* =====================================
-                COMMON AUTHENTICATED SCREENS
-               ===================================== */}
+            {/* --------------------------------------------------
+             * COMMON AUTHENTICATED SCREENS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Language"
@@ -307,7 +386,9 @@ export default function AppNavigator() {
 
             <Stack.Screen
               name="ProfileSettings"
-              component={ProfileSettingsScreen}
+              component={
+                ProfileSettingsScreen
+              }
             />
 
             <Stack.Screen
@@ -315,14 +396,13 @@ export default function AppNavigator() {
               component={PoliciesScreen}
             />
 
+            {/* --------------------------------------------------
+             * PARKING
+             * -------------------------------------------------- */}
+
             <Stack.Screen
               name="AddParkingInfo"
               component={ParkingInfo}
-            />
-
-            <Stack.Screen
-              name="VehicleInfo"
-              component={VehicleInfo}
             />
 
             <Stack.Screen
@@ -330,10 +410,23 @@ export default function AppNavigator() {
               component={ParkingStack}
             />
 
+            {/* --------------------------------------------------
+             * VEHICLES
+             * -------------------------------------------------- */}
+
+            <Stack.Screen
+              name="VehicleInfo"
+              component={VehicleInfo}
+            />
+
             <Stack.Screen
               name="Vehicle"
               component={VehicleStack}
             />
+
+            {/* --------------------------------------------------
+             * FAMILY
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Familydetial"
@@ -342,139 +435,226 @@ export default function AppNavigator() {
 
             <Stack.Screen
               name="AddEditFamilydetial"
-              component={AddEditFamilyMember}
+              component={
+                AddEditFamilyMember
+              }
             />
+
+            {/* --------------------------------------------------
+             * DOCUMENTS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Documents"
-              component={DocumentsListScreen}
+              component={
+                DocumentsListScreen
+              }
             />
 
             <Stack.Screen
               name="DocumentViewer"
-              component={DocumentViewerScreen}
+              component={
+                DocumentViewerScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * ALERTS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="AlertSystem"
-              component={AlertSystemScreen}
+              component={
+                AlertSystemScreen
+              }
             />
 
             <Stack.Screen
               name="AlertMyBlock"
-              component={AlertBlockScreen}
+              component={
+                AlertBlockScreen
+              }
             />
 
             <Stack.Screen
               name="AllAlerts"
-              component={AllAlertsScreen}
+              component={
+                AllAlertsScreen
+              }
             />
 
             <Stack.Screen
               name="AlertDetail"
-              component={AlertDetailScreen}
+              component={
+                AlertDetailScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * NOTIFICATIONS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Notification"
-              component={NotificationsScreen}
+              component={
+                NotificationsScreen
+              }
             />
 
             <Stack.Screen
               name="NotificationDetail"
-              component={NotificationDetailScreen}
+              component={
+                NotificationDetailScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * COMMUNITY
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Community"
-              component={CommunityBoard}
+              component={
+                CommunityBoard
+              }
             />
 
             <Stack.Screen
               name="CreatePost"
-              component={CreatePostScreen}
+              component={
+                CreatePostScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * BILLS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="MyBills"
               component={MyBills}
             />
 
+            {/* --------------------------------------------------
+             * SECURITY
+             * -------------------------------------------------- */}
+
             <Stack.Screen
               name="Security"
               component={SecurityScreen}
             />
+
+            {/* --------------------------------------------------
+             * CALL LOGS
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="CallLogs"
               component={CallLogsScreen}
             />
 
+            {/* --------------------------------------------------
+             * SMART ACCESS
+             * -------------------------------------------------- */}
+
             <Stack.Screen
               name="SmartAccess"
-              component={SmartAccessScreen}
+              component={
+                SmartAccessScreen
+              }
             />
 
             <Stack.Screen
               name="SmartAccessHistory"
-              component={SmartAccessHistoryScreen}
+              component={
+                SmartAccessHistoryScreen
+              }
             />
 
             <Stack.Screen
               name="UnlockDoor"
-              component={UnlockDoorScreen}
+              component={
+                UnlockDoorScreen
+              }
             />
 
             <Stack.Screen
               name="TTLockAdmin"
-              component={TTLockAdminScreen}
+              component={
+                TTLockAdminScreen
+              }
             />
 
             <Stack.Screen
               name="TTLockScreen"
-              component={TTLockScreen}
+              component={
+                TTLockScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * CHAT
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="ChatDetail"
-              component={ChatDetailScreen}
+              component={
+                ChatDetailScreen
+              }
             />
+
+            {/* --------------------------------------------------
+             * MAINTENANCE
+             * -------------------------------------------------- */}
 
             <Stack.Screen
               name="Maintenance"
-              component={MaintenanceHistoryScreen}
+              component={
+                MaintenanceHistoryScreen
+              }
             />
 
             <Stack.Screen
               name="MaintenanceHistory"
-              component={MaintenanceHistoryScreen}
+              component={
+                MaintenanceHistoryScreen
+              }
             />
 
             <Stack.Screen
               name="MaintenanceRaiseCategory"
-              component={MaintenanceScreen}
+              component={
+                MaintenanceScreen
+              }
             />
 
             <Stack.Screen
               name="MaintenanceRaiseRequest"
-              component={MaintenanceRaiseRequestScreen}
+              component={
+                MaintenanceRaiseRequestScreen
+              }
             />
 
             <Stack.Screen
               name="MaintenanceRequestSuccess"
-              component={MaintenanceRequestSuccessScreen}
+              component={
+                MaintenanceRequestSuccessScreen
+              }
             />
 
             <Stack.Screen
               name="MaintenanceRequestDetail"
-              component={MaintenanceRequestDetailScreen}
+              component={
+                MaintenanceRequestDetailScreen
+              }
             />
 
             <Stack.Screen
               name="TechnicianDetail"
-              component={TechnicianDetailScreen}
+              component={
+                TechnicianDetailScreen
+              }
             />
-
           </>
         )}
 

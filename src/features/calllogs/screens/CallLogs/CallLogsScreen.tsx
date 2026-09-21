@@ -344,7 +344,7 @@ export default function CallLogsScreen({ navigation }: any) {
   const { colors } = useAppTheme();
   const { t } = useI18n();
   const styles = useMemo(() => createScreenStyles(colors), [colors]);
-  const userId = user?.data?.userId;
+  const userId = user?.userId ?? user?.data?.userId;
 
   const [callLogs, setCallLogs] = useState<SecurityCallLog[]>([]);
   const [loading, setLoading] = useState(false);

@@ -162,7 +162,9 @@ export default function EditProfileScreen({ navigation }: any) {
 
   const user = useAppSelector(state => state.auth.user);
   const { profile, loading, success, error } = useAppSelector(state => state.editProfile);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
 
   const getInitials = (f?: string, l?: string) =>
     `${f?.[0] ?? ''}${l?.[0] ?? ''}`.toUpperCase() || 'U';

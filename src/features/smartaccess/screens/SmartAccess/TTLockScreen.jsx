@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, {Circle, Path, Rect} from 'react-native-svg';
-
+import Logger from '../../../../services/logger/logger';
 import ScreenWrapper from '../../../../components/ScreenWrapper';
 import {useAppSelector} from '../../../../redux/hooks';
 import {useI18n} from '../../../../i18n';
@@ -276,28 +276,81 @@ export default function TTLockScreen({navigation, route}) {
     if (language === 'ar') {
       return {
         screenTitle: 'القفل الذكي',
+
         lockUnavailableTitle: 'القفل غير متاح',
+
         lockUnavailableMessage:
           'القفل الذكي ليس قريبًا أو فُقد اتصال البلوتوث. اقترب من القفل ثم حاول مرة أخرى.',
+
+        readOnlyModeMessage:
+          'القفل الفعلي غير قابل للوصول حاليًا. يمكنك عرض معلومات القفل، ولكن تم تعطيل عمليات القفل.',
+
+        checkingAvailabilityTitle: 'جارٍ التحقق من القفل الذكي',
+
+        checkingAvailabilityMessage:
+          'جارٍ الاتصال بالقفل...',
+
         lockNeedsInitializationMessage:
           'يبدو أن هذا القفل تمت إعادة تهيئته أو إزالته. يرجى إعادة تهيئة جهازك مرة أخرى.',
+
         commandInProgressTitle: 'يرجى الانتظار',
-        commandInProgressMessage: 'يرجى إعادة التهيئة أو المحاولة مرة أخرى بعد لحظة.',
+
+        commandInProgressMessage:
+          'يرجى إعادة التهيئة أو المحاولة مرة أخرى بعد لحظة.',
       };
     }
+
     if (language === 'fr') {
       return {
         screenTitle: 'Serrure intelligente',
+
         lockUnavailableTitle: 'Serrure indisponible',
+
         lockUnavailableMessage:
-          "La serrure intelligente n'est pas a proximite ou la connexion Bluetooth a ete perdue. Rapprochez-vous de la serrure et reessayez.",
+          "La serrure intelligente n'est pas à proximité ou la connexion Bluetooth a été perdue. Rapprochez-vous de la serrure et réessayez.",
+
+        readOnlyModeMessage:
+          "La serrure physique n'est actuellement pas accessible. Vous pouvez consulter les informations de la serrure, mais les opérations de verrouillage sont désactivées.",
+
+        checkingAvailabilityTitle: 'Vérification de la serrure intelligente',
+
+        checkingAvailabilityMessage:
+          'Connexion à la serrure...',
+
         lockNeedsInitializationMessage:
-          "Cette serrure semble avoir ete reinitialisee ou supprimee. Veuillez initialiser votre appareil a nouveau.",
+          'Cette serrure semble avoir été réinitialisée ou supprimée. Veuillez initialiser votre appareil à nouveau.',
+
         commandInProgressTitle: 'Veuillez patienter',
-        commandInProgressMessage: 'Veuillez reinitialiser ou reessayer dans un instant.',
+
+        commandInProgressMessage:
+          'Veuillez réinitialiser ou réessayer dans un instant.',
       };
     }
-    return null;
+
+    return {
+      screenTitle: 'Smart Lock',
+
+      lockUnavailableTitle: 'Lock Unavailable',
+
+      lockUnavailableMessage:
+        'The smart lock is not nearby or the Bluetooth connection was lost. Move closer to the lock and try again.',
+
+      readOnlyModeMessage:
+        'The physical lock is currently not reachable. You can view the lock information, but lock operations are disabled.',
+
+      checkingAvailabilityTitle: 'Checking Smart Lock',
+
+      checkingAvailabilityMessage:
+        'Connecting to the lock...',
+
+      lockNeedsInitializationMessage:
+        'This lock appears to have been reinitialized or removed. Please initialize your device again.',
+
+      commandInProgressTitle: 'Please Wait',
+
+      commandInProgressMessage:
+        'Please reinitialize or try again in a moment.',
+    };
   }, [language]);
 
   const user = useAppSelector(state => state.auth.user);
@@ -361,6 +414,19 @@ export default function TTLockScreen({navigation, route}) {
   const [showCardStartDatePicker, setShowCardStartDatePicker] = useState(false);
   const [showCardEndDatePicker, setShowCardEndDatePicker] = useState(false);
   const [knownBatteryLevel, setKnownBatteryLevel] = useState(null);
+
+  /*
+  * Lock availability gate.
+  *
+  * The screen must not render its actions until the physical
+  * TTLock has successfully responded over BLE.
+  */
+  const [lockAvailability, setLockAvailability] = useState({
+    checking: true,
+    available: false,
+    error: null,
+  });
+
   const [infoModal, setInfoModal] = useState({
     visible: false,
     title: '',
@@ -989,6 +1055,130 @@ export default function TTLockScreen({navigation, route}) {
     setBleAccess(result);
     return result;
   };
+
+
+  const checkLockAvailability = async () => {
+    try {
+      console.log('[TTLockScreen] Checking lock availability...');
+
+      const access = await ensureBleAccess();
+
+      if (!access?.lockData || !access?.lockMac) {
+        console.log(
+          '[TTLockScreen] BLE access data unavailable. Showing read-only mode.',
+        );
+
+        setLockAvailability({
+          checking: false,
+          available: false,
+          error: new Error('BLE access data unavailable'),
+        });
+
+        return false;
+      }
+
+      console.log(
+        '[TTLockScreen] Testing physical lock connection...',
+        {
+          deviceId: resolvedDeviceId,
+          lockId: resolvedLockId,
+          mac: access.lockMac,
+        },
+      );
+
+      const lockTime = await ttlockNative.getLockTime(
+        access.lockData,
+        access.lockMac,
+      );
+
+      console.log('[TTLockScreen] Lock is AVAILABLE:', {
+        lockTime,
+      });
+
+      setLockAvailability({
+        checking: false,
+        available: true,
+        error: null,
+      });
+
+      return true;
+    } catch (error) {
+      console.log(
+        '[TTLockScreen] Lock unavailable. Showing read-only mode.',
+        error?.message || error,
+      );
+
+      /*
+      * IMPORTANT:
+      * Do not keep checking forever.
+      *
+      * The lock information can still be displayed even when
+      * the physical BLE lock cannot currently be reached.
+      */
+      setLockAvailability({
+        checking: false,
+        available: false,
+        error,
+      });
+
+      return false;
+    }
+  };
+
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkAvailability = async () => {
+      if (cancelled) {
+        return;
+      }
+
+      console.log(
+        '[TTLockScreen] Starting initial lock availability check...',
+      );
+
+      setLockAvailability({
+        checking: true,
+        available: false,
+        error: null,
+      });
+
+      const available = await checkLockAvailability();
+
+      if (cancelled) {
+        return;
+      }
+
+      if (available) {
+        console.log(
+          '[TTLockScreen] Lock is available. Enabling lock actions.',
+        );
+
+        setLockAvailability({
+          checking: false,
+          available: true,
+          error: null,
+        });
+      } else {
+        console.log(
+          '[TTLockScreen] Lock is unavailable. Enabling read-only mode.',
+        );
+
+        setLockAvailability({
+          checking: false,
+          available: false,
+          error: null,
+        });
+      }
+    };
+
+    checkAvailability();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadResidentOptions = async targetResidentId => {
     setResidentOptionsLoading(true);
@@ -2169,190 +2359,477 @@ export default function TTLockScreen({navigation, route}) {
     return null;
   };
 
-  return (
-    <View
-      style={{ flex: 1 }}
-      onTouchStart={() => {
-        Logger.info("[TTLockScreen] ROOT TOUCH");
-      }}
-      onTouchEnd={() => {
-        Logger.info("[TTLockScreen] ROOT TOUCH END");
-      }}
-    >
-      <ScreenWrapper title={smartLockCopy?.screenTitle || t('mobile.ttlock.screenTitle', 'TTLock')} onBackPress={() => navigation.goBack()}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}
-        onTouchStart={() => {
-            Logger.info("[TTLockScreen] SCROLLVIEW TOUCH");
+return (
+  <View
+    style={{flex: 1}}
+    onTouchStart={() => {
+      Logger.info('[TTLockScreen] ROOT TOUCH');
+    }}
+    onTouchEnd={() => {
+      Logger.info('[TTLockScreen] ROOT TOUCH END');
+    }}>
+
+    {/* ============================================================
+        INITIAL LOCK AVAILABILITY CHECK
+        Only show loader while checking is actually in progress.
+       ============================================================ */}
+    {lockAvailability.checking ? (
+      <View
+        style={[
+          styles.lockCheckingContainer,
+          {
+            backgroundColor:
+              colors.background || colors.surface,
+          },
+        ]}>
+        <View style={styles.lockCheckingCard}>
+          <View style={styles.lockCheckingLoader}>
+            <ActivityIndicator
+              size="large"
+              color={ADMIN_ACCENT}
+            />
+          </View>
+
+          <Text style={styles.lockCheckingTitle}>
+            {t(
+              'mobile.ttlock.checkingAvailabilityTitle',
+              'Checking Smart Lock',
+            )}
+          </Text>
+
+          <Text style={styles.lockCheckingMessage}>
+            {t(
+              'mobile.ttlock.checkingAvailabilityMessage',
+              'Connecting to the lock...',
+            )}
+          </Text>
+
+          <Text style={styles.lockCheckingHint}>
+            {t(
+              'mobile.ttlock.waitingForLock',
+              'Please wait...',
+            )}
+          </Text>
+        </View>
+      </View>
+    ) : (
+      /* ============================================================
+         CHECK FINISHED
+         - available === true  -> normal interactive screen
+         - available === false -> read-only screen
+         ============================================================ */
+      <ScreenWrapper
+        title={
+          smartLockCopy?.screenTitle ||
+          t('mobile.ttlock.screenTitle', 'TTLock')
+        }
+        onBackPress={() => navigation.goBack()}>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.content}
+          onTouchStart={() => {
+            Logger.info('[TTLockScreen] SCROLLVIEW TOUCH');
           }}
           onScrollBeginDrag={() => {
-            Logger.info("[TTLockScreen] SCROLL START");
+            Logger.info('[TTLockScreen] SCROLL START');
           }}
           onMomentumScrollBegin={() => {
-            Logger.info("[TTLockScreen] MOMENTUM START");
+            Logger.info('[TTLockScreen] MOMENTUM START');
           }}
           onMomentumScrollEnd={() => {
-            Logger.info("[TTLockScreen] MOMENTUM END");
+            Logger.info('[TTLockScreen] MOMENTUM END');
           }}
           scrollEventThrottle={16}>
-          <View style={styles.actionsCard}>
-            <Text style={styles.sectionTitle}>{t('mobile.ttlock.lockActionsTitle', 'Lock Actions')}</Text>
 
+          {/* ======================================================
+              READ-ONLY BANNER
+             ====================================================== */}
+          {!lockAvailability.available ? (
+            <View style={styles.readOnlyBanner}>
+              <Text style={styles.readOnlyBannerTitle}>
+                {t(
+                  'mobile.ttlock.lockUnavailableTitle',
+                  'Smart Lock Unavailable',
+                )}
+              </Text>
+
+              <Text style={styles.readOnlyBannerText}>
+                {t(
+                  'mobile.ttlock.readOnlyModeMessage',
+                  'The physical lock is currently not reachable. You can view the lock information, but lock operations are disabled.',
+                )}
+              </Text>
+            </View>
+          ) : null}
+
+          <View style={styles.actionsCard}>
+            <Text style={styles.sectionTitle}>
+              {t(
+                'mobile.ttlock.lockActionsTitle',
+                'Lock Actions',
+              )}
+            </Text>
+
+            {/* ====================================================
+                LOCK SUMMARY
+               ==================================================== */}
             <View style={styles.summaryCard}>
-              <Text style={styles.lockName}>{lockName}</Text>
+              <Text style={styles.lockName}>
+                {lockName}
+              </Text>
+
               {resolvedLockId ? (
                 <Text style={styles.lockMeta}>
-                  {t('mobile.ttlock.lockNumber', 'Lock #{{id}}').replace('{{id}}', String(resolvedLockId))}
+                  {t(
+                    'mobile.ttlock.lockNumber',
+                    'Lock #{{id}}',
+                  ).replace(
+                    '{{id}}',
+                    String(resolvedLockId),
+                  )}
                 </Text>
               ) : null}
+
               {resolvedDeviceId ? (
                 <Text style={styles.lockMeta}>
-                  {t('mobile.ttlock.deviceLabel', 'Device: {{id}}').replace('{{id}}', String(resolvedDeviceId))}
+                  {t(
+                    'mobile.ttlock.deviceLabel',
+                    'Device: {{id}}',
+                  ).replace(
+                    '{{id}}',
+                    String(resolvedDeviceId),
+                  )}
                 </Text>
               ) : null}
-              {!resolvedDeviceId ? <Text style={styles.lockMeta}>{t('mobile.ttlock.bleOnlySession', 'BLE-only lock session')}</Text> : null}
-              {mac ? <Text style={styles.lockMeta}>{mac}</Text> : null}
+
+              {!resolvedDeviceId ? (
+                <Text style={styles.lockMeta}>
+                  {t(
+                    'mobile.ttlock.bleOnlySession',
+                    'BLE-only lock session',
+                  )}
+                </Text>
+              ) : null}
+
+              {mac ? (
+                <Text style={styles.lockMeta}>
+                  {mac}
+                </Text>
+              ) : null}
+
               <View style={styles.summaryWifiBadge}>
                 <IconWifi />
               </View>
             </View>
 
+            {/* ====================================================
+                ACTIONS
+                Disable ALL actions in read-only mode.
+               ==================================================== */}
             {actionRows.map((rowItems, rowIndex) => (
-              <View key={`row-${rowIndex}`} style={styles.row}>
-                {rowItems.map(item => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[styles.tile, activeAction && activeAction !== item.id ? styles.buttonDisabled : null]}
-                    activeOpacity={0.8}
-                    onPress={item.onPress}
-                    disabled={Boolean(activeAction)}>
-                    <View
+              <View
+                key={`row-${rowIndex}`}
+                style={styles.row}>
+
+                {rowItems.map(item => {
+                  const actionDisabled =
+                    !lockAvailability.available ||
+                    Boolean(activeAction);
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
                       style={[
-                        styles.tileBox,
-                        activeAction && activeAction !== item.id ? styles.tileBoxDisabled : null,
-                      ]}>
-                      {activeAction === item.id ? <ActivityIndicator color={ADMIN_ACCENT} /> : item.icon()}
-                    </View>
-                    <Text
-                      style={[
-                        styles.tileLabel,
-                        activeAction && activeAction !== item.id ? styles.tileLabelDisabled : null,
-                      ]}>
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-                {rowItems.length === 1 ? <View style={styles.tilePlaceholder} /> : null}
+                        styles.tile,
+
+                        actionDisabled
+                          ? styles.buttonDisabled
+                          : null,
+
+                        activeAction &&
+                        activeAction !== item.id
+                          ? styles.buttonDisabled
+                          : null,
+                      ]}
+                      activeOpacity={0.8}
+                      onPress={item.onPress}
+                      disabled={actionDisabled}>
+
+                      <View
+                        style={[
+                          styles.tileBox,
+
+                          actionDisabled
+                            ? styles.tileBoxDisabled
+                            : null,
+
+                          activeAction &&
+                          activeAction !== item.id
+                            ? styles.tileBoxDisabled
+                            : null,
+                        ]}>
+
+                        {activeAction === item.id ? (
+                          <ActivityIndicator
+                            color={ADMIN_ACCENT}
+                          />
+                        ) : (
+                          item.icon()
+                        )}
+                      </View>
+
+                      <Text
+                        style={[
+                          styles.tileLabel,
+
+                          actionDisabled
+                            ? styles.tileLabelDisabled
+                            : null,
+
+                          activeAction &&
+                          activeAction !== item.id
+                            ? styles.tileLabelDisabled
+                            : null,
+                        ]}>
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                {rowItems.length === 1 ? (
+                  <View style={styles.tilePlaceholder} />
+                ) : null}
               </View>
             ))}
           </View>
         </ScrollView>
 
+        {/* ==========================================================
+            ACTION MODAL
+           ========================================================== */}
         <Modal
           transparent
           animationType="slide"
           visible={!!modalType}
           onShow={() => {
-          Logger.info("[TTLockScreen] Modal onShow");
-        }}
-        onDismiss={() => {
-          Logger.info("[TTLockScreen] Modal onDismiss");
-        }}
-        onRequestClose={() => {
-          Logger.info("[TTLockScreen] Modal onRequestClose");
-          closeModal();
-        }}>
+            Logger.info('[TTLockScreen] Modal onShow');
+          }}
+          onDismiss={() => {
+            Logger.info('[TTLockScreen] Modal onDismiss');
+          }}
+          onRequestClose={() => {
+            Logger.info('[TTLockScreen] Modal onRequestClose');
+            closeModal();
+          }}>
+
           <KeyboardAvoidingView
             style={styles.overlay}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+            behavior={
+              Platform.OS === 'ios'
+                ? 'padding'
+                : undefined
+            }>
+
             <Pressable
               style={styles.backdrop}
               onPress={() => {
-                Logger.info("[TTLockScreen] Backdrop Pressed");
+                Logger.info(
+                  '[TTLockScreen] Backdrop Pressed',
+                );
                 closeModal();
               }}
             />
+
             <View
               style={styles.sheet}
               onStartShouldSetResponder={() => true}
               onTouchEnd={() => {
-                console.log('[TTLockScreen] touch inside modal sheet');
+                console.log(
+                  '[TTLockScreen] touch inside modal sheet',
+                );
               }}>
+
               <View style={styles.handle} />
-              <Text style={styles.modalTitle}>{renderModalTitle()}</Text>
-              <Text style={styles.modalSubtitle}>{lockName}</Text>
+
+              <Text style={styles.modalTitle}>
+                {renderModalTitle()}
+              </Text>
+
+              <Text style={styles.modalSubtitle}>
+                {lockName}
+              </Text>
+
               {renderModalField()}
+
               {modalType !== 'cards' ? (
                 <TouchableOpacity
-                  style={[styles.primaryButton, activeAction && styles.buttonDisabled]}
+                  style={[
+                    styles.primaryButton,
+                    activeAction
+                      ? styles.buttonDisabled
+                      : null,
+                  ]}
                   activeOpacity={0.85}
-                  onPress={() => handleSubmit(modalType)}
+                  onPress={() =>
+                    handleSubmit(modalType)
+                  }
                   disabled={Boolean(activeAction)}>
+
                   {activeAction ? (
-                    <ActivityIndicator color={colors.onPrimary} />
+                    <ActivityIndicator
+                      color={colors.onPrimary}
+                    />
                   ) : (
-                    <Text style={styles.primaryButtonText}>
+                    <Text
+                      style={
+                        styles.primaryButtonText
+                      }>
                       {modalType === 'add-passcode'
-                        ? t('mobile.ttlock.createPasscodeButton', 'Create Passcode')
+                        ? t(
+                            'mobile.ttlock.createPasscodeButton',
+                            'Create Passcode',
+                          )
                         : modalType === 'add-fingerprint'
-                          ? t('mobile.ttlock.startFingerprintButton', 'Start Fingerprint')
+                        ? t(
+                            'mobile.ttlock.startFingerprintButton',
+                            'Start Fingerprint',
+                          )
                         : modalType === 'assign-card'
-                          ? t('mobile.ttlock.assignCardButton', 'Assign Card')
-                        // : modalType === 'delete-card'
-                        //   ? t('mobile.ttlock.deleteCardButton', 'Delete Card')
-                        : t('confirm', 'Submit')}
+                        ? t(
+                            'mobile.ttlock.assignCardButton',
+                            'Assign Card',
+                          )
+                        : t(
+                            'confirm',
+                            'Submit',
+                          )}
                     </Text>
                   )}
                 </TouchableOpacity>
               ) : null}
+
               <TouchableOpacity
-                style={[styles.secondaryButton, activeAction && styles.buttonDisabled]}
-                onPress={() => closeModal('cancel-button')}
+                style={[
+                  styles.secondaryButton,
+                  activeAction
+                    ? styles.buttonDisabled
+                    : null,
+                ]}
+                onPress={() =>
+                  closeModal('cancel-button')
+                }
                 disabled={Boolean(activeAction)}>
-                <Text style={styles.secondaryButtonText}>{t('cancel', 'Cancel')}</Text>
+
+                <Text
+                  style={
+                    styles.secondaryButtonText
+                  }>
+                  {t('cancel', 'Cancel')}
+                </Text>
               </TouchableOpacity>
             </View>
           </KeyboardAvoidingView>
         </Modal>
-        <Modal transparent animationType="fade" visible={infoModal.visible} onRequestClose={closeInfoModal}>
+
+        {/* ==========================================================
+            INFORMATION MODAL
+           ========================================================== */}
+        <Modal
+          transparent
+          animationType="fade"
+          visible={infoModal.visible}
+          onRequestClose={closeInfoModal}>
+
           <View style={styles.infoOverlay}>
-            <Pressable style={styles.backdrop} onPress={closeInfoModal} />
+            <Pressable
+              style={styles.backdrop}
+              onPress={closeInfoModal}
+            />
+
             <View style={styles.infoSheet}>
-              <Text style={styles.infoTitle}>{infoModal.title || t('mobile.ttlock.informationTitle', 'Information')}</Text>
-              <Text style={styles.infoMessage}>{infoModal.message}</Text>
+              <Text style={styles.infoTitle}>
+                {infoModal.title ||
+                  t(
+                    'mobile.ttlock.informationTitle',
+                    'Information',
+                  )}
+              </Text>
+
+              <Text style={styles.infoMessage}>
+                {infoModal.message}
+              </Text>
+
               {infoModal.loading ? (
                 <View style={styles.infoLoaderRow}>
-                  <ActivityIndicator color={ADMIN_ACCENT} />
-                  <Text style={styles.infoLoaderText}>{t('mobile.ttlock.waitingForLock', 'Waiting for the lock...')}</Text>
+                  <ActivityIndicator
+                    color={ADMIN_ACCENT}
+                  />
+
+                  <Text
+                    style={styles.infoLoaderText}>
+                    {t(
+                      'mobile.ttlock.waitingForLock',
+                      'Waiting for the lock...',
+                    )}
+                  </Text>
                 </View>
               ) : (
-                <TouchableOpacity style={styles.primaryButton} onPress={closeInfoModal} activeOpacity={0.85}>
-                  <Text style={styles.primaryButtonText}>{t('close', 'Close')}</Text>
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={closeInfoModal}
+                  activeOpacity={0.85}>
+
+                  <Text
+                    style={
+                      styles.primaryButtonText
+                    }>
+                    {t('close', 'Close')}
+                  </Text>
                 </TouchableOpacity>
               )}
             </View>
           </View>
         </Modal>
+
+        {/* ==========================================================
+            CARD START DATE
+           ========================================================== */}
         {showCardStartDatePicker ? (
           <DateTimePicker
             value={cardStartDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={
+              Platform.OS === 'ios'
+                ? 'spinner'
+                : 'default'
+            }
             minimumDate={new Date()}
             onChange={onCardStartDateChange}
           />
         ) : null}
+
+        {/* ==========================================================
+            CARD END DATE
+           ========================================================== */}
         {showCardEndDatePicker ? (
           <DateTimePicker
             value={cardEndDate}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={
+              Platform.OS === 'ios'
+                ? 'spinner'
+                : 'default'
+            }
             minimumDate={cardStartDate}
             onChange={onCardEndDateChange}
           />
         ) : null}
       </ScreenWrapper>
-    </View>
-  );
+    )}
+  </View>
+);
 }
 
 const createStyles = (colors, isDark) =>
@@ -2362,6 +2839,58 @@ const createStyles = (colors, isDark) =>
       paddingBottom: 32,
       gap: 16,
     },
+    lockCheckingContainer: {
+  flex: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 24,
+},
+
+lockCheckingCard: {
+  width: '100%',
+  maxWidth: 380,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: colors.surface,
+  borderRadius: 24,
+  borderWidth: 1,
+  borderColor: 'rgba(93,175,164,0.24)',
+  paddingHorizontal: 24,
+  paddingVertical: 32,
+},
+
+lockCheckingLoader: {
+  width: 72,
+  height: 72,
+  borderRadius: 36,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: ADMIN_ACCENT_SOFT,
+  marginBottom: 20,
+},
+
+lockCheckingTitle: {
+  fontSize: 18,
+  fontWeight: '800',
+  color: colors.textPrimary,
+  textAlign: 'center',
+  marginBottom: 8,
+},
+
+lockCheckingMessage: {
+  fontSize: 14,
+  lineHeight: 21,
+  color: colors.textSecondary,
+  textAlign: 'center',
+},
+
+lockCheckingHint: {
+  fontSize: 12,
+  lineHeight: 18,
+  color: colors.textMuted,
+  textAlign: 'center',
+  marginTop: 14,
+},
     actionsCard: {
       backgroundColor: colors.surface,
       borderRadius: 24,
@@ -2475,6 +3004,30 @@ const createStyles = (colors, isDark) =>
       gap: 12,
       marginBottom: 16,
     },
+    readOnlyBanner: {
+  marginHorizontal: 16,
+  marginBottom: 16,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: 'rgba(220, 160, 70, 0.35)',
+  backgroundColor: 'rgba(220, 160, 70, 0.08)',
+},
+
+readOnlyBannerTitle: {
+  fontSize: 14,
+  fontWeight: '800',
+  color: colors.textPrimary,
+  marginBottom: 5,
+},
+
+readOnlyBannerText: {
+  fontSize: 13,
+  lineHeight: 20,
+  color: colors.textSecondary,
+  textAlign: 'left',
+},
     recordRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',

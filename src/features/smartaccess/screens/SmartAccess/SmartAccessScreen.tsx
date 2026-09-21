@@ -33,7 +33,7 @@ export default function SmartAccessScreen() {
       normalizedRole: role,
     });
 
-    return role === 'admin' || role === 'superadmin';
+    return role === 'administrator' || role === 'superadmin';
   }, [roleRaw]);
 
   useEffect(() => {

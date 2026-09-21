@@ -325,15 +325,15 @@ export default function TTLockAdminScreen({navigation}: any) {
       }));
       setDevices(formattedDevices);
       setBluetoothModalVisible(true);
-      if (formattedDevices.length === 0) {
-        Alert.alert(
-          t('mobile.ttlock.admin.noLocksFoundTitle', 'No locks found'),
-          t(
-            'mobile.ttlock.admin.noLocksFoundMessage',
-            'No TTLock devices were found nearby. Keep the lock awake and try again.',
-          ),
-        );
-      }
+      // if (formattedDevices.length === 0) {
+      //   Alert.alert(
+      //     t('mobile.ttlock.admin.noLocksFoundTitle', 'No locks found'),
+      //     t(
+      //       'mobile.ttlock.admin.noLocksFoundMessage',
+      //       'No TTLock devices were found nearby. Keep the lock awake and try again.',
+      //     ),
+      //   );
+      // }
     } catch (error: any) {
       Alert.alert(
         t('mobile.ttlock.admin.scanFailedTitle', 'Scan failed'),

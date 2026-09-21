@@ -1,10 +1,52 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /usr/local/Cellar/android-sdk/24.3.3/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ============================================================
+# ResidenceConnect - R8 / ProGuard
+# ============================================================
 
-# Add any project specific keep options here:
+# Keep generic type information and annotations used by
+# reflection / Retrofit / Gson.
+-keepattributes Signature
+-keepattributes InnerClasses
+-keepattributes EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations
+-keepattributes RuntimeInvisibleAnnotations
+-keepattributes AnnotationDefault
+
+# ============================================================
+# react-native-config
+# ============================================================
+
+-keepclassmembers class **.BuildConfig {
+    public static <fields>;
+}
+
+# ============================================================
+# Gson
+# ============================================================
+
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# ============================================================
+# Retrofit
+# ============================================================
+
+-if interface *
+-keep,allowobfuscation,allowshrinking,allowoptimization interface <1>
+
+# ============================================================
+# JNI / Native methods
+# ============================================================
+
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
+
+# ============================================================
+# TTLock
+# ============================================================
+
+# Start WITHOUT broad TTLock keep rules.
+#
+# If the release build shows a TTLock runtime problem,
+# add only the specific TTLock classes/members required.

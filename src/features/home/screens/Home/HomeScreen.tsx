@@ -127,7 +127,10 @@ export default function HomeScreen() {
   const loading = useSelector((state: any) => state.auth.loading);
   const { unreadCount } = useAppSelector(state => state.notifications || { unreadCount: 0 });
   const maintenanceHistory = useAppSelector(state => state.maintenance.history);
-  const residentId = user?.data?.residentId;
+  const residentId =
+    user?.residentId ??
+    user?.data?.residentId ??
+    null;
 
   const appState = useRef(AppState.currentState);
 
@@ -181,7 +184,10 @@ export default function HomeScreen() {
     return () => { cancelled = true; };
   }, [dispatch, residentId]);
 
-  const userData = user?.data;
+  const userData =
+    user?.data ??
+    user ??
+    null;
   const firstName = userData?.firstName || '';
   const lastName = userData?.lastName || '';
   const residenceName = userData?.residenceName || '';

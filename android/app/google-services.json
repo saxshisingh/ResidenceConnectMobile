@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "895727375572",
+    "project_id": "residenceconnect-b559d",
+    "storage_bucket": "residenceconnect-b559d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895727375572:android:d59e2299351dc93fbcd741",
+        "android_client_info": {
+          "package_name": "com.ResidenceConnect.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1BD58DmFSZfl_h6DgreqSuw2QwNsfl1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:895727375572:android:5adb399b8d7a06ccbcd741",
+        "android_client_info": {
+          "package_name": "com.residenceconnect.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1BD58DmFSZfl_h6DgreqSuw2QwNsfl1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

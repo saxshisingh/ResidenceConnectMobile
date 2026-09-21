@@ -95,7 +95,9 @@ export default function SmartAccessHistoryScreen() {
   const {t} = useI18n();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const user = useAppSelector(state => state.auth.user);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
 
   const [logs, setLogs] = useState<ResidentAccessLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);

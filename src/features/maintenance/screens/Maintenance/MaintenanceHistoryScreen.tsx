@@ -56,7 +56,9 @@ const MaintenanceHistoryScreen = ({ navigation }: any) => {
   const error = useAppSelector(state => state.maintenance.historyError);
 
   const fetchHistory = useCallback(async () => {
-    const residentId = user?.data?.residentId;
+    const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
     if (!residentId) {
       return;
     }

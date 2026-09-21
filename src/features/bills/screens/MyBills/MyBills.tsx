@@ -49,7 +49,9 @@ const MyBills = ({ navigation }: any) => {
 
   const user = useAppSelector(state => state.auth.user);
   const { list, loading } = useAppSelector(state => state.bills);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+  const residentId = userData?.residentId ?? null;
   const safeBills = Array.isArray(list) ? list.filter(Boolean) : [];
   const utilityBills = useMemo(
     () => safeBills.filter(bill => isUtilityBill(bill?.billType)),

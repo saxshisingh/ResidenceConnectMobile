@@ -23,6 +23,17 @@ import {
 
 import type {AppDispatch} from '../../../redux/store';
 
+import {
+  registerDeviceToken,
+  registerForPushNotifications,
+} from '../../../services/notificationService';
+
+import {
+  getMessaging,
+  onMessage,
+  onTokenRefresh,
+} from '@react-native-firebase/messaging';
+
 type AuthStatus =
   | 'LOADING'
   | 'AUTHENTICATED'
@@ -44,9 +55,7 @@ interface AuthContextType {
 }
 
 const AuthContext =
-  createContext<AuthContextType | null>(
-    null,
-  );
+  createContext<AuthContextType | null>(null);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -64,180 +73,608 @@ export const AuthProvider = ({
   const [user, setUser] =
     useState<any>(null);
 
-  /*
-   * Restore a previously persisted
-   * authentication session.
+  /* ============================================================
+   * RESOLVE AUTHENTICATED USER ID
+   * ============================================================ */
+
+  /**
+   * IMPORTANT:
+   *
+   * userId and residentId are different IDs.
+   *
+   * userId:
+   *   Authenticated application user ID.
+   *
+   * residentId:
+   *   Resident domain/entity ID.
+   *
+   * FCM/device registration must use userId.
+   */
+  const getUserId = useCallback(
+    (userData: any): string | null => {
+      if (!userData) {
+        return null;
+      }
+
+      const userId =
+        userData.userId ??
+        userData.id ??
+        null;
+
+      if (!userId) {
+        return null;
+      }
+
+      return String(userId);
+    },
+    [],
+  );
+
+  /* ============================================================
+   * SETUP PUSH NOTIFICATIONS
+   * ============================================================ */
+
+  /**
+   * Register the device for push notifications.
+   *
+   * FCM errors must NEVER prevent authentication.
+   */
+  const setupPushNotifications =
+    useCallback(
+      async (
+        userData: any,
+      ): Promise<void> => {
+        try {
+          const userId =
+            getUserId(userData);
+
+          console.log(
+            '[FCM] User profile:',
+            JSON.stringify(
+              {
+                userId:
+                  userData?.userId ??
+                  userData?.id ??
+                  null,
+
+                residentId:
+                  userData?.residentId ??
+                  null,
+
+                roleName:
+                  userData?.roleName ??
+                  null,
+              },
+              null,
+              2,
+            ),
+          );
+
+          console.log(
+            '[FCM] Resolved user ID:',
+            userId,
+          );
+
+          if (!userId) {
+            console.warn(
+              '[FCM] Unable to resolve user ID for device registration',
+            );
+
+            return;
+          }
+
+          await registerForPushNotifications(
+            userId,
+          );
+
+          console.log(
+            '[FCM] Device registration completed for user:',
+            userId,
+          );
+        } catch (error) {
+          console.warn(
+            '[FCM] Device token registration failed:',
+            error,
+          );
+        }
+      },
+      [getUserId],
+    );
+
+  /* ============================================================
+   * INITIALIZE AUTH
+   * ============================================================ */
+
+  /**
+   * Restore previously persisted authentication.
    */
   const initializeAuth =
-    useCallback(async (): Promise<void> => {
-        console.log('[AUTH] initializeAuth START');
-
-        try {
-        setStatus('LOADING');
-
-        console.log('[AUTH] calling restoreSession...');
-
-        const session =
-            await restoreSession();
-
+    useCallback(
+      async (): Promise<void> => {
         console.log(
-            '[AUTH] restoreSession FINISHED:',
-            session ? 'SESSION FOUND' : 'NO SESSION',
+          '[AUTH] initializeAuth START',
         );
 
-        if (!session) {
+        try {
+          setStatus('LOADING');
+
+          console.log(
+            '[AUTH] calling restoreSession...',
+          );
+
+          const session =
+            await restoreSession();
+
+          console.log(
+            '[AUTH] restoreSession FINISHED:',
+            session
+              ? 'SESSION FOUND'
+              : 'NO SESSION',
+          );
+
+          /* ------------------------------------------------------
+           * No session
+           * ------------------------------------------------------ */
+
+          if (!session) {
             console.log(
-            '[AUTH] Setting status -> UNAUTHENTICATED',
+              '[AUTH] Setting status -> UNAUTHENTICATED',
             );
 
             setUser(null);
+
             dispatch(logout());
-            setStatus('UNAUTHENTICATED');
+
+            setStatus(
+              'UNAUTHENTICATED',
+            );
 
             return;
-        }
+          }
 
-        console.log(
-            '[AUTH] Setting status -> AUTHENTICATED',
-        );
+          /* ------------------------------------------------------
+           * Session found
+           * ------------------------------------------------------ */
 
-        setUser(session.user);
+          console.log(
+            '[AUTH] Restored user:',
+            JSON.stringify(
+              session.user,
+              null,
+              2,
+            ),
+          );
 
-        dispatch(
+          const restoredUserId =
+            getUserId(session.user);
+
+          console.log(
+            '[AUTH] Restored user ID:',
+            restoredUserId,
+          );
+
+          setUser(session.user);
+
+          dispatch(
             restoreAuthSession({
-            token: session.token,
-            isFirstLogin: session.isFirstLogin,
-            user: session.user,
-            }),
-        );
+              token: session.token,
 
-        setStatus('AUTHENTICATED');
+              isFirstLogin:
+                session.isFirstLogin,
+
+              user: session.user,
+            }),
+          );
+
+          /* ------------------------------------------------------
+           * Register FCM device
+           * ------------------------------------------------------ */
+
+          await setupPushNotifications(
+            session.user,
+          );
+
+          setStatus(
+            'AUTHENTICATED',
+          );
+
+          console.log(
+            '[AUTH] initializeAuth SUCCESS',
+          );
         } catch (error) {
-        console.error(
+          console.error(
             '[AUTH] INITIALIZATION ERROR:',
             error,
-        );
+          );
 
-        setUser(null);
-        dispatch(logout());
-        setStatus('UNAUTHENTICATED');
+          setUser(null);
+
+          dispatch(logout());
+
+          setStatus(
+            'UNAUTHENTICATED',
+          );
         }
-    }, [dispatch]);
+      },
+      [
+        dispatch,
+        getUserId,
+        setupPushNotifications,
+      ],
+    );
 
-  /*
+  /* ============================================================
+   * INITIAL AUTH EFFECT
+   * ============================================================ */
+
+  /**
    * Restore authentication once when
-   * the application starts.
+   * application starts.
    */
   useEffect(() => {
     void initializeAuth();
   }, [initializeAuth]);
 
-  /*
-   * Login flow.
-   *
-   * IMPORTANT:
-   * Do not call restoreSession() here.
-   *
-   * restoreSession() is specifically
-   * for restoring persistent sessions
-   * after an application restart.
-   *
-   * A user who selects rememberMe=false
-   * must still be able to log in.
-   */
-  const login =
-    async (
-      username: string,
-      password: string,
-      rememberMe: boolean,
-    ): Promise<void> => {
-      try {
-        setStatus('LOADING');
+  /* ============================================================
+   * FCM TOKEN REFRESH LISTENER
+   * ============================================================ */
 
-        const loginResponse =
-          await loginUser(
-            username,
-            password,
-            rememberMe,
-          );
+  useEffect(() => {
+    if (status !== 'AUTHENTICATED') {
+      return;
+    }
 
-        /*
-         * Fetch the authenticated user's
-         * profile directly after login.
-         */
-        const currentUser =
-          await fetchUserProfile();
+    let unsubscribe:
+      | (() => void)
+      | undefined;
 
-        setUser(currentUser);
+    try {
+      const messaging =
+        getMessaging();
 
-        dispatch(
-          restoreAuthSession({
-            token:
-              loginResponse.token,
-            isFirstLogin:
-              loginResponse.isFirstLogin,
-            user:
-              currentUser,
-          }),
+      console.log(
+        '[FCM] Setting up token refresh listener',
+      );
+
+      unsubscribe =
+        onTokenRefresh(
+          messaging,
+          async newToken => {
+            try {
+              console.log(
+                '[FCM] Token refreshed',
+              );
+
+              const registered =
+                await registerDeviceToken(
+                  newToken,
+                );
+
+              if (registered) {
+                console.log(
+                  '[FCM] Refreshed token registered with backend',
+                );
+              } else {
+                console.warn(
+                  '[FCM] Refreshed token registration failed',
+                );
+              }
+            } catch (error) {
+              console.warn(
+                '[FCM] Error registering refreshed token:',
+                error,
+              );
+            }
+          },
         );
+    } catch (error) {
+      console.warn(
+        '[FCM] Unable to initialize token refresh listener:',
+        error,
+      );
+    }
 
-        /*
-         * AppNavigator automatically
-         * switches to the authenticated
-         * navigator.
-         */
-        setStatus(
-          'AUTHENTICATED',
-        );
-      } catch (error) {
-        console.error(
-          'LOGIN INITIALIZATION ERROR:',
-          error,
-        );
-
-        setUser(null);
-
-        dispatch(logout());
-
-        setStatus(
-          'UNAUTHENTICATED',
-        );
-
-        throw error;
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
     };
+  }, [status]);
 
-  /*
-   * Explicit user logout.
-   */
+  /* ============================================================
+   * FOREGROUND FCM MESSAGE LISTENER
+   * ============================================================ */
+
+  useEffect(() => {
+    if (status !== 'AUTHENTICATED') {
+      return;
+    }
+
+    let unsubscribe:
+      | (() => void)
+      | undefined;
+
+    try {
+      const messaging =
+        getMessaging();
+
+      console.log(
+        '[FCM] Setting up foreground message listener',
+      );
+
+      unsubscribe =
+        onMessage(
+          messaging,
+          async remoteMessage => {
+            console.log(
+              '[FCM] Foreground notification received:',
+              remoteMessage,
+            );
+
+            const notificationId =
+              remoteMessage.data
+                ?.notificationId;
+
+            const type =
+              remoteMessage.data?.type;
+
+            const title =
+              remoteMessage
+                .notification?.title ??
+              'Notification';
+
+            const body =
+              remoteMessage
+                .notification?.body ??
+              '';
+
+            console.log(
+              '[FCM] Title:',
+              title,
+            );
+
+            console.log(
+              '[FCM] Body:',
+              body,
+            );
+
+            console.log(
+              '[FCM] Notification ID:',
+              notificationId,
+            );
+
+            console.log(
+              '[FCM] Type:',
+              type,
+            );
+          },
+        );
+    } catch (error) {
+      console.warn(
+        '[FCM] Unable to initialize foreground message listener:',
+        error,
+      );
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [status]);
+
+  /* ============================================================
+   * LOGIN
+   * ============================================================ */
+
+  const login = async (
+    username: string,
+    password: string,
+    rememberMe: boolean,
+  ): Promise<void> => {
+    try {
+      setStatus('LOADING');
+
+      console.log(
+        '[AUTH] Starting login...',
+      );
+
+      /* --------------------------------------------------------
+       * Login
+       *
+       * loginUser() now returns:
+       *
+       * {
+       *   accessToken,
+       *   refreshToken,
+       *   isFirstLogin
+       * }
+       * -------------------------------------------------------- */
+
+      const loginResponse =
+        await loginUser(
+          username,
+          password,
+          rememberMe,
+        );
+
+      console.log(
+        '[AUTH] Login successful',
+      );
+
+      console.log(
+        '[AUTH] Access token received:',
+        Boolean(
+          loginResponse.accessToken,
+        ),
+      );
+
+      console.log(
+        '[AUTH] Refresh token received:',
+        Boolean(
+          loginResponse.refreshToken,
+        ),
+      );
+
+      console.log(
+        '[AUTH] Is first login:',
+        loginResponse.isFirstLogin,
+      );
+
+      /* --------------------------------------------------------
+       * Fetch current user
+       * -------------------------------------------------------- */
+
+      console.log(
+        '[AUTH] Login completed. Fetching user profile...',
+      );
+
+      const currentUser =
+        await fetchUserProfile();
+
+      console.log(
+        '[AUTH] Current user:',
+        JSON.stringify(
+          currentUser,
+          null,
+          2,
+        ),
+      );
+
+      /* --------------------------------------------------------
+       * Resolve user ID
+       * -------------------------------------------------------- */
+
+      const userId =
+        getUserId(currentUser);
+
+      console.log(
+        '[AUTH] Resolved user ID:',
+        userId,
+      );
+
+      if (!userId) {
+        console.warn(
+          '[AUTH] User profile does not contain userId',
+        );
+      }
+
+      /* --------------------------------------------------------
+       * Store user in React state
+       * -------------------------------------------------------- */
+
+      setUser(currentUser);
+
+      /* --------------------------------------------------------
+       * Store auth state in Redux
+       * -------------------------------------------------------- */
+
+      dispatch(
+        restoreAuthSession({
+          /**
+           * IMPORTANT:
+           *
+           * authSlice still expects `token`,
+           * but that value is now the access token.
+           */
+          token:
+            loginResponse.accessToken,
+
+          isFirstLogin:
+            loginResponse.isFirstLogin,
+
+          user: currentUser,
+        }),
+      );
+
+      /* --------------------------------------------------------
+       * Register device for FCM
+       *
+       * This must never block authentication.
+       * -------------------------------------------------------- */
+
+      await setupPushNotifications(
+        currentUser,
+      );
+
+      /* --------------------------------------------------------
+       * Authentication complete
+       * -------------------------------------------------------- */
+
+      setStatus(
+        'AUTHENTICATED',
+      );
+
+      console.log(
+        '[AUTH] LOGIN INITIALIZATION SUCCESS',
+      );
+    } catch (error) {
+      console.error(
+        '[AUTH] LOGIN INITIALIZATION ERROR:',
+        error,
+      );
+
+      setUser(null);
+
+      dispatch(logout());
+
+      setStatus(
+        'UNAUTHENTICATED',
+      );
+
+      throw error;
+    }
+  };
+
+  /* ============================================================
+   * LOGOUT
+   * ============================================================ */
+
   const signOut =
     async (): Promise<void> => {
       try {
+        console.log(
+          '[AUTH] Signing out...',
+        );
+
+        /**
+         * logoutUser():
+         *
+         * 1. Sends refresh token to backend.
+         * 2. Backend revokes refresh token.
+         * 3. Local access/refresh tokens are removed.
+         */
         await logoutUser();
+
+        console.log(
+          '[AUTH] Logout completed',
+        );
       } catch (error) {
         console.warn(
-          'BACKEND LOGOUT ERROR:',
+          '[AUTH] BACKEND LOGOUT ERROR:',
           error,
         );
       } finally {
-        /*
-         * Always clear local application
-         * authentication state.
+        /**
+         * Always clear local state.
          */
         setUser(null);
 
         dispatch(logout());
 
-        /*
-         * AppNavigator automatically
-         * switches to the unauthenticated
-         * navigator.
-         */
         setStatus(
           'UNAUTHENTICATED',
         );
+
+        console.log(
+          '[AUTH] User is now unauthenticated',
+        );
       }
     };
+
+  /* ============================================================
+   * PROVIDER
+   * ============================================================ */
 
   return (
     <AuthContext.Provider
@@ -252,6 +689,10 @@ export const AuthProvider = ({
     </AuthContext.Provider>
   );
 };
+
+/* ==============================================================
+ * USE AUTH
+ * ============================================================ */
 
 export const useAuth =
   (): AuthContextType => {

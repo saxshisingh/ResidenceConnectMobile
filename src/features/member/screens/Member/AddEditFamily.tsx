@@ -144,7 +144,9 @@ export default function AddEditFamily({ navigation, route }: any) {
 
   const handleSubmit = async () => {
     setSubmitAttempted(true);
-    const residentId = user?.data?.residentId;
+    const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
     const actorId    = user?.data?.userId || residentId;
     const familyMemberId = familyData?.familyMemberId || familyData?.memberId || familyData?.id;
 

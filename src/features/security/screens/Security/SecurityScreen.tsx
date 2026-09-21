@@ -27,13 +27,20 @@ export default function SecurityScreen() {
   const loading = useAppSelector(state => state.security.loading);
   const [startingCall, setStartingCall] = useState(false);
 
-  const residenceId = user?.data?.residenceId;
-  const blockId = user?.data?.blockId;
-  const calledByUserId = user?.data?.userId;
+  // Auth profile is stored directly in Redux.
+  // Keep fallback support for the old { data: {...} } structure.
+  const userData = user?.data ?? user ?? null;
+
+  const residenceId = userData?.residenceId ?? null;
+
+  const blockId = userData?.blockId ?? null;
+
+  const calledByUserId = userData?.userId ?? null;
+
   const rawFromNumber =
-    user?.data?.mobileNumber ||
-    user?.data?.mobile ||
-    user?.data?.phoneNumber ||
+    userData?.mobileNumber ||
+    userData?.mobile ||
+    userData?.phoneNumber ||
     '';
 
   const securityCopy = useMemo(() => {

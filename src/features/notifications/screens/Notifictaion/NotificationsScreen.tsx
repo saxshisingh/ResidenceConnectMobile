@@ -38,7 +38,9 @@ export default function NotificationsScreen() {
   useFocusEffect(
     useCallback(() => {
       const load = async () => {
-        const residentId = user?.data?.residentId;
+        const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
         if (residentId) {
           dispatch(fetchNotifications(residentId));
         } else {
@@ -59,7 +61,9 @@ export default function NotificationsScreen() {
   };
 
   const handleNotificationPress = (item: any) => {
-    const residentId = user?.data?.residentId;
+    const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
     if (!residentId) return;
     navigation.navigate('NotificationDetail', {
       notificationId: item.id,

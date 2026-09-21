@@ -330,7 +330,9 @@ export default function MyNeighborsScreen({ navigation }: any) {
     state => state.neighbors,
   );
   const user = useAppSelector(state => state.auth.user);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
   const [selectedNeighbor, setSelectedNeighbor] = useState<Neighbor | null>(
     null,
   );

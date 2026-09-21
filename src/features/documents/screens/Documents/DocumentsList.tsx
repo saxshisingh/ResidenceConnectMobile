@@ -71,7 +71,9 @@ export default function DocumentsListScreen({ navigation }: any) {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { width } = useWindowDimensions();
   const contentWidth = Math.min(width - 32, 520);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
 
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<ResidentFileDto[]>([]);

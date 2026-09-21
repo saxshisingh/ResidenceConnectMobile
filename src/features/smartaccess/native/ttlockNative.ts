@@ -340,15 +340,31 @@ const withExclusiveBleCommand = async <T>(
     Logger.ttlock('BLE Command Success');
 
     return result;
-  } catch (error) {
-    Logger.exception(error);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : String(error);
 
-    throw new Error(
-      getTTLockUserFacingErrorMessage(
-        error,
-        'Unable to complete smart lock command.',
-      ),
-    );
+    const normalizedMessage = errorMessage.toLowerCase();
+
+    const isConnectionError =
+      normalizedMessage.includes('lock connect time out') ||
+      normalizedMessage.includes('connection is disconnected') ||
+      normalizedMessage.includes('disconnected') ||
+      normalizedMessage.includes('timeout');
+
+    if (isConnectionError) {
+      Logger.ttlock(
+        `BLE Command unavailable: ${errorMessage}`,
+      );
+    } else {
+      Logger.exception(error);
+    }
+
+    // Keep the original TTLock error so the caller
+    // can decide whether to retry or show an error.
+    throw error;
   } finally {
     Logger.ttlock('BLE Command Finished');
 

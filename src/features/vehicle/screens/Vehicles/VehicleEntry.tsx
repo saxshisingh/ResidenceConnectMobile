@@ -9,7 +9,9 @@ import ThemedLoader from '../../../../components/ThemedLoader';
 export default function VehicleEntry({ navigation }: any) {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state: any) => state.auth.user);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
 
 
   useFocusEffect(

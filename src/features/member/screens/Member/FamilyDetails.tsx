@@ -64,7 +64,9 @@ export default function FamilyDetails({navigation}: any) {
 
   const user = useAppSelector((state: any) => state.auth.user);
   const {items, loading} = useAppSelector((state: any) => state.familyMembers);
-  const residentId = user?.data?.residentId;
+  const userData = user?.data ?? user ?? null;
+
+const residentId = userData?.residentId ?? null;
   const actorId = user?.data?.userId || residentId;
   const familyCopy = useMemo(() => {
     if (language === 'ar') {

@@ -19,34 +19,75 @@ import ScreenWrapper from '../../../../components/ScreenWrapper';
 import KeyboardSafeScrollView from '../../../../components/KeyboardSafeScrollView';
 import { createStyles } from './CommunityBoard.styles';
 import { useAppDispatch, useAppSelector } from '../../../../redux/hooks';
-import { createCommunityPost, fetchPosts } from '../../state/communitySlice';
+import {
+  createCommunityPost,
+  fetchPosts,
+} from '../../state/communitySlice';
 import { fetchLanguages } from '../../../language/services/languageService';
 import { useI18n } from '../../../../i18n';
 import { useAppTheme } from '../../../../theme/ThemeProvider';
-import { hasMaxLength, trimValue } from '../../../../shared/validation/formValidation';
+import {
+  hasMaxLength,
+  trimValue,
+} from '../../../../shared/validation/formValidation';
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 const ImageIcon = ({ color }: { color: string }) => (
   <Svg width={18} height={18} viewBox="0 0 24 24" fill="none">
-    <Path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z" stroke={color} strokeWidth={1.8} strokeLinejoin="round" />
-    <Path d="M8.5 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" fill={color} />
-    <Path d="M21 15l-5-5L5 21" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+    <Path
+      d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2z"
+      stroke={color}
+      strokeWidth={1.8}
+      strokeLinejoin="round"
+    />
+    <Path
+      d="M8.5 10a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
+      fill={color}
+    />
+    <Path
+      d="M21 15l-5-5L5 21"
+      stroke={color}
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
 
 const PublishIcon = () => (
   <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
-    <Path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path
+      d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+      stroke="#fff"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </Svg>
 );
 
 // ─── Type options ─────────────────────────────────────────────────────────────
 
 const POST_TYPES = [
-  { value: 'Announcement', icon: '📢', color: '#7C3AED', bg: '#EDE9FE' },
-  { value: 'Event',        icon: '🗓', color: '#0284C7', bg: '#E0F2FE' },
-  { value: 'Maintenance',  icon: '🔧', color: '#D97706', bg: '#FEF3C7' },
+  {
+    value: 'Announcement',
+    icon: '📢',
+    color: '#7C3AED',
+    bg: '#EDE9FE',
+  },
+  {
+    value: 'Event',
+    icon: '🗓',
+    color: '#0284C7',
+    bg: '#E0F2FE',
+  },
+  {
+    value: 'Maintenance',
+    icon: '🔧',
+    color: '#D97706',
+    bg: '#FEF3C7',
+  },
 ] as const;
 
 // ─── Field wrapper ────────────────────────────────────────────────────────────
@@ -60,14 +101,22 @@ const Field = ({
   required?: boolean;
   children: React.ReactNode;
 }) => {
-  const {colors} = useAppTheme();
+  const { colors } = useAppTheme();
 
   return (
     <View style={localStyles.fieldWrapper}>
-      <Text style={[localStyles.fieldLabel, {color: colors.textSecondary}]}>
+      <Text
+        style={[
+          localStyles.fieldLabel,
+          { color: colors.textSecondary },
+        ]}
+      >
         {label}
-        {required && <Text style={{color: '#EF4444'}}> *</Text>}
+        {required && (
+          <Text style={{ color: '#EF4444' }}> *</Text>
+        )}
       </Text>
+
       {children}
     </View>
   );
@@ -78,30 +127,59 @@ const Field = ({
 export default function CreatePostScreen({ navigation }: any) {
   const { colors, resolvedTheme } = useAppTheme();
   const isDark = resolvedTheme === 'dark';
+
   const styles = React.useMemo(
     () => createStyles(colors, isDark),
     [colors, isDark],
   );
+
   const dispatch = useAppDispatch();
+
   const user = useAppSelector(state => state.auth.user);
+
+  /**
+   * Auth user is now stored as the direct profile object.
+   *
+   * Supports both:
+   *   user = { ...profile }
+   *
+   * and the old:
+   *   user = { data: { ...profile } }
+   */
+  const userData = user?.data ?? user ?? null;
+
   const { language, t } = useI18n();
+
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+
   const contentWidth = Math.min(width - 32, 520);
 
-  const [title, setTitle]       = useState('');
-  const [content, setContent]   = useState('');
-  const [image, setImage]       = useState<any>(null);
-  const [postType, setPostType] = useState<'Announcement' | 'Event' | 'Maintenance'>('Announcement');
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [image, setImage] = useState<any>(null);
+
+  const [postType, setPostType] = useState<
+    'Announcement' | 'Event' | 'Maintenance'
+  >('Announcement');
+
   const [submitting, setSubmitting] = useState(false);
 
+  // ─── Media ─────────────────────────────────────────────────────────────────
+
   const handleMediaResult = (response: any) => {
-    if (response?.didCancel) return;
+    if (response?.didCancel) {
+      return;
+    }
 
     if (response?.errorCode) {
       Alert.alert(
         t('common.error', 'Error'),
-        response.errorMessage || t('community.mobile.createPost.imageError', 'Unable to open image picker.'),
+        response.errorMessage ||
+          t(
+            'community.mobile.createPost.imageError',
+            'Unable to open image picker.',
+          ),
       );
       return;
     }
@@ -117,17 +195,36 @@ export default function CreatePostScreen({ navigation }: any) {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            title: t('community.mobile.createPost.cameraPermissionTitle', 'Camera Permission'),
-            message: t('community.mobile.createPost.cameraPermissionMessage', 'App needs camera access to take a photo.'),
-            buttonPositive: t('common.mobile.common.gotIt', 'Got it'),
+            title: t(
+              'community.mobile.createPost.cameraPermissionTitle',
+              'Camera Permission',
+            ),
+            message: t(
+              'community.mobile.createPost.cameraPermissionMessage',
+              'App needs camera access to take a photo.',
+            ),
+            buttonPositive: t(
+              'common.mobile.common.gotIt',
+              'Got it',
+            ),
           },
         );
 
-        if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        if (
+          granted !==
+          PermissionsAndroid.RESULTS.GRANTED
+        ) {
           Alert.alert(
-            t('community.mobile.createPost.permissionDeniedTitle', 'Permission denied'),
-            t('community.mobile.createPost.permissionDeniedMessage', 'Camera permission is required to take a photo.'),
+            t(
+              'community.mobile.createPost.permissionDeniedTitle',
+              'Permission denied',
+            ),
+            t(
+              'community.mobile.createPost.permissionDeniedMessage',
+              'Camera permission is required to take a photo.',
+            ),
           );
+
           return;
         }
       }
@@ -141,13 +238,28 @@ export default function CreatePostScreen({ navigation }: any) {
         maxHeight: 1600,
       });
 
-      console.log('Create post camera result:', response);
+      console.log(
+        'Create post camera result:',
+        response,
+      );
+
       handleMediaResult(response);
     } catch (error: any) {
-      console.log('Create post camera error:', error);
+      console.log(
+        'Create post camera error:',
+        error,
+      );
+
       Alert.alert(
-        t('community.mobile.createPost.cameraErrorTitle', 'Camera Error'),
-        error?.message || t('community.mobile.createPost.cameraErrorMessage', 'Unable to open camera.'),
+        t(
+          'community.mobile.createPost.cameraErrorTitle',
+          'Camera Error',
+        ),
+        error?.message ||
+          t(
+            'community.mobile.createPost.cameraErrorMessage',
+            'Unable to open camera.',
+          ),
       );
     }
   };
@@ -161,103 +273,310 @@ export default function CreatePostScreen({ navigation }: any) {
         includeBase64: false,
       });
 
-      console.log('Create post gallery result:', response);
+      console.log(
+        'Create post gallery result:',
+        response,
+      );
+
       handleMediaResult(response);
     } catch (error: any) {
-      console.log('Create post gallery error:', error);
+      console.log(
+        'Create post gallery error:',
+        error,
+      );
+
       Alert.alert(
-        t('community.mobile.createPost.galleryErrorTitle', 'Gallery Error'),
-        error?.message || t('community.mobile.createPost.galleryErrorMessage', 'Unable to open gallery.'),
+        t(
+          'community.mobile.createPost.galleryErrorTitle',
+          'Gallery Error',
+        ),
+        error?.message ||
+          t(
+            'community.mobile.createPost.galleryErrorMessage',
+            'Unable to open gallery.',
+          ),
       );
     }
   };
 
   const pickImage = () => {
     Alert.alert(
-      t('community.mobile.createPost.addPhotoTitle', 'Add Photo'),
-      t('community.mobile.createPost.addPhotoMessage', 'Choose how to attach the photo.'),
+      t(
+        'community.mobile.createPost.addPhotoTitle',
+        'Add Photo',
+      ),
+      t(
+        'community.mobile.createPost.addPhotoMessage',
+        'Choose how to attach the photo.',
+      ),
       [
-        { text: t('community.mobile.createPost.camera', 'Camera'), onPress: () => { openCamera(); } },
-        { text: t('community.mobile.createPost.gallery', 'Gallery'), onPress: () => { openGallery(); } },
-        { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+        {
+          text: t(
+            'community.mobile.createPost.camera',
+            'Camera',
+          ),
+          onPress: () => {
+            openCamera();
+          },
+        },
+        {
+          text: t(
+            'community.mobile.createPost.gallery',
+            'Gallery',
+          ),
+          onPress: () => {
+            openGallery();
+          },
+        },
+        {
+          text: t('common.cancel', 'Cancel'),
+          style: 'cancel',
+        },
       ],
     );
   };
 
+  // ─── Submit ─────────────────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
-    const cleanTitle   = trimValue(title);
+    const cleanTitle = trimValue(title);
     const cleanContent = trimValue(content);
 
-    if (!user?.data?.userId) {
-      Alert.alert(t('common.error', 'Error'), t('community.mobile.createPost.userMissing', 'User information is missing'));
-      return;
-    }
-    if (!cleanTitle || !cleanContent) {
-      Alert.alert(t('community.mobile.createPost.validationTitle', 'Validation'), t('community.mobile.createPost.titleContentRequired', 'Title and content are required'));
-      return;
-    }
-    if (!hasMaxLength(cleanTitle, 120) || !hasMaxLength(cleanContent, 2000)) {
-      Alert.alert(t('community.mobile.createPost.validationTitle', 'Validation'), t('community.mobile.createPost.contentTooLong', 'Title or content is too long'));
+    /**
+     * IMPORTANT:
+     * Do not use user?.data anymore.
+     */
+    if (!userData?.userId) {
+      Alert.alert(
+        t('common.error', 'Error'),
+        t(
+          'community.mobile.createPost.userMissing',
+          'User information is missing',
+        ),
+      );
+
       return;
     }
 
-    let languageId = user?.data?.languageId || user?.data?.preferredLanguageId || '';
-    if (!languageId) languageId = (await AsyncStorage.getItem('selectedLanguageId')) || '';
+    if (!cleanTitle || !cleanContent) {
+      Alert.alert(
+        t(
+          'community.mobile.createPost.validationTitle',
+          'Validation',
+        ),
+        t(
+          'community.mobile.createPost.titleContentRequired',
+          'Title and content are required',
+        ),
+      );
+
+      return;
+    }
+
+    if (
+      !hasMaxLength(cleanTitle, 120) ||
+      !hasMaxLength(cleanContent, 2000)
+    ) {
+      Alert.alert(
+        t(
+          'community.mobile.createPost.validationTitle',
+          'Validation',
+        ),
+        t(
+          'community.mobile.createPost.contentTooLong',
+          'Title or content is too long',
+        ),
+      );
+
+      return;
+    }
+
+    // ─── Resolve language ID ──────────────────────────────────────────────────
+
+    let languageId =
+      userData?.languageId ||
+      userData?.preferredLanguageId ||
+      '';
+
+    if (!languageId) {
+      languageId =
+        (await AsyncStorage.getItem(
+          'selectedLanguageId',
+        )) || '';
+    }
+
     if (!languageId) {
       try {
         const languages = await fetchLanguages();
-        const matched = languages.find(l => String(l.languageCode || '').toLowerCase() === String(language || '').toLowerCase());
+
+        const currentLanguageCode = String(
+          language || '',
+        )
+          .trim()
+          .toLowerCase();
+
+        const matched = languages.find(
+          item =>
+            String(item.languageCode || '')
+              .trim()
+              .toLowerCase() === currentLanguageCode,
+        );
+
         languageId = matched?.languageId || '';
-      } catch {}
+      } catch (error) {
+        console.error(
+          'CREATE POST LANGUAGE LOOKUP ERROR:',
+          error,
+        );
+      }
     }
+
     if (!languageId) {
-      Alert.alert(t('community.mobile.createPost.validationTitle', 'Validation'), t('community.mobile.createPost.languageRequired', 'LanguageId is required. Please select language first.'));
+      Alert.alert(
+        t(
+          'community.mobile.createPost.validationTitle',
+          'Validation',
+        ),
+        t(
+          'community.mobile.createPost.languageRequired',
+          'LanguageId is required. Please select language first.',
+        ),
+      );
+
       return;
     }
 
-    const blockIds: string[] = Array.isArray(user?.data?.blockIds)
-      ? user.data.blockIds.filter(Boolean)
-      : user?.data?.blockId ? [user.data.blockId] : [];
+    // ─── Resolve block IDs ────────────────────────────────────────────────────
+
+    const blockIds: string[] = Array.isArray(
+      userData?.blockIds,
+    )
+      ? userData.blockIds.filter(Boolean)
+      : userData?.blockId
+        ? [userData.blockId]
+        : [];
 
     if (blockIds.length === 0) {
-      Alert.alert(t('community.mobile.createPost.validationTitle', 'Validation'), t('community.mobile.createPost.blockIdsRequired', 'BlockIds are required'));
+      Alert.alert(
+        t(
+          'community.mobile.createPost.validationTitle',
+          'Validation',
+        ),
+        t(
+          'community.mobile.createPost.blockIdsRequired',
+          'BlockIds are required',
+        ),
+      );
+
       return;
     }
 
+    // ─── Create FormData ──────────────────────────────────────────────────────
+
     const formData = new FormData();
+
     formData.append('PostType', postType);
     formData.append('Title', cleanTitle);
     formData.append('Content', cleanContent);
     formData.append('LanguageId', languageId);
     formData.append('Visibility', 'Block');
-    formData.append('CreatedBy', user.data.userId);
-    formData.append('CreatedByRole', user.data.roleName || user.data.role || '');
-    blockIds.forEach((id: string) => formData.append('BlockIds', id));
-    formData.append('PublishAt', new Date().toISOString());
-    formData.append('ExpiryAt', new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString());
-    if (image) {
-      formData.append('AttachmentFile', { uri: image.uri, type: image.type || 'image/png', name: image.fileName || 'post.png' } as any);
+
+    formData.append(
+      'CreatedBy',
+      userData.userId,
+    );
+
+    formData.append(
+      'CreatedByRole',
+      userData.roleName ||
+        userData.role ||
+        '',
+    );
+
+    blockIds.forEach((id: string) => {
+      formData.append('BlockIds', id);
+    });
+
+    formData.append(
+      'PublishAt',
+      new Date().toISOString(),
+    );
+
+    formData.append(
+      'ExpiryAt',
+      new Date(
+        Date.now() +
+          7 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
+    );
+
+    if (image?.uri) {
+      formData.append(
+        'AttachmentFile',
+        {
+          uri: image.uri,
+          type: image.type || 'image/png',
+          name:
+            image.fileName ||
+            'post.png',
+        } as any,
+      );
     }
+
+    // ─── API call ─────────────────────────────────────────────────────────────
 
     try {
       setSubmitting(true);
-      await dispatch(createCommunityPost(formData)).unwrap();
-      await dispatch(fetchPosts());
-      Alert.alert(t('common.success', 'Success'), t('community.mobile.createPost.success', 'Post created successfully'));
+
+      await dispatch(
+        createCommunityPost(formData),
+      ).unwrap();
+
+      await dispatch(
+        fetchPosts(),
+      );
+
+      Alert.alert(
+        t('common.success', 'Success'),
+        t(
+          'community.mobile.createPost.success',
+          'Post created successfully',
+        ),
+      );
+
       navigation.goBack();
     } catch (error: any) {
-      Alert.alert(t('common.error', 'Error'), error?.message || t('community.mobile.createPost.error', 'Failed to create post'));
+      console.error(
+        'CREATE COMMUNITY POST ERROR:',
+        error,
+      );
+
+      Alert.alert(
+        t('common.error', 'Error'),
+        error?.message ||
+          t(
+            'community.mobile.createPost.error',
+            'Failed to create post',
+          ),
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
-  const selectedTypeMeta = POST_TYPES.find(p => p.value === postType);
+  const selectedTypeMeta = POST_TYPES.find(
+    p => p.value === postType,
+  );
 
   return (
     <ScreenWrapper
-      title={t('community.mobile.createPost.title', 'Create Post')}
-      onBackPress={() => navigation.goBack()}
+      title={t(
+        'community.mobile.createPost.title',
+        'Create Post',
+      )}
+      onBackPress={() =>
+        navigation.goBack()
+      }
     >
       <KeyboardSafeScrollView
         bottomOffset={140}
@@ -266,44 +585,123 @@ export default function CreatePostScreen({ navigation }: any) {
           {
             width: contentWidth,
             alignSelf: 'center',
-            paddingBottom: Math.max(insets.bottom, 24) + 72,
+            paddingBottom:
+              Math.max(
+                insets.bottom,
+                24,
+              ) + 72,
           },
-        ]}>
+        ]}
+      >
         {/* ── Type selector ── */}
+
         <View style={localStyles.typeSection}>
-          <Text style={[localStyles.typeSectionLabel, { color: colors.textSecondary }]}>
-            {t('community.mobile.createPost.postType', 'Post Type')}
+          <Text
+            style={[
+              localStyles.typeSectionLabel,
+              {
+                color:
+                  colors.textSecondary,
+              },
+            ]}
+          >
+            {t(
+              'community.mobile.createPost.postType',
+              'Post Type',
+            )}
           </Text>
+
           <View style={localStyles.typeGrid}>
             {POST_TYPES.map(opt => {
-              const active = postType === opt.value;
+              const active =
+                postType === opt.value;
+
               return (
                 <TouchableOpacity
                   key={opt.value}
                   style={[
                     localStyles.typeCard,
-                    active && { backgroundColor: opt.bg, borderColor: opt.color, borderWidth: 1.5 },
-                    !active && [localStyles.typeCardInactive, { backgroundColor: colors.surface, borderColor: colors.border }],
+                    active && {
+                      backgroundColor:
+                        opt.bg,
+                      borderColor:
+                        opt.color,
+                      borderWidth: 1.5,
+                    },
+                    !active && [
+                      localStyles.typeCardInactive,
+                      {
+                        backgroundColor:
+                          colors.surface,
+                        borderColor:
+                          colors.border,
+                      },
+                    ],
                   ]}
-                  onPress={() => setPostType(opt.value)}
+                  onPress={() =>
+                    setPostType(
+                      opt.value,
+                    )
+                  }
                   activeOpacity={0.8}
                 >
-                  <Text style={localStyles.typeCardIcon}>{opt.icon}</Text>
+                  <Text
+                    style={
+                      localStyles.typeCardIcon
+                    }
+                  >
+                    {opt.icon}
+                  </Text>
+
                   <Text
                     style={[
                       localStyles.typeCardText,
-                      { color: active ? opt.color : colors.textPrimary },
-                      active && { fontWeight: '800' },
-                    ]}>
-                    {opt.value === 'Announcement'
-                      ? t('community.mobile.createPost.typeAnnouncement', 'Announcement')
-                      : opt.value === 'Event'
-                        ? t('community.mobile.createPost.typeEvent', 'Event')
-                        : t('community.mobile.createPost.typeMaintenance', 'Maintenance')}
+                      {
+                        color: active
+                          ? opt.color
+                          : colors.textPrimary,
+                      },
+                      active && {
+                        fontWeight:
+                          '800',
+                      },
+                    ]}
+                  >
+                    {opt.value ===
+                    'Announcement'
+                      ? t(
+                          'community.mobile.createPost.typeAnnouncement',
+                          'Announcement',
+                        )
+                      : opt.value ===
+                          'Event'
+                        ? t(
+                            'community.mobile.createPost.typeEvent',
+                            'Event',
+                          )
+                        : t(
+                            'community.mobile.createPost.typeMaintenance',
+                            'Maintenance',
+                          )}
                   </Text>
+
                   {active && (
-                    <View style={[localStyles.typeCardCheck, { backgroundColor: opt.color }]}>
-                      <Text style={localStyles.typeCardCheckMark}>✓</Text>
+                    <View
+                      style={[
+                        localStyles.typeCardCheck,
+                        {
+                          backgroundColor:
+                            opt.color,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={
+                          localStyles.typeCardCheckMark
+                        }
+                      >
+                        ✓
+                      </Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -313,46 +711,128 @@ export default function CreatePostScreen({ navigation }: any) {
         </View>
 
         {/* ── Form card ── */}
-        <View style={styles.card}>
 
-          <Field label={t('community.mobile.createPost.postTitle', 'Title')} required>
+        <View style={styles.card}>
+          <Field
+            label={t(
+              'community.mobile.createPost.postTitle',
+              'Title',
+            )}
+            required
+          >
             <TextInput
-              placeholder={t('community.mobile.createPost.postTitlePlaceholder', 'Give your post a clear title…')}
-              placeholderTextColor={colors.textMuted}
+              placeholder={t(
+                'community.mobile.createPost.postTitlePlaceholder',
+                'Give your post a clear title…',
+              )}
+              placeholderTextColor={
+                colors.textMuted
+              }
               style={styles.input}
               value={title}
               onChangeText={setTitle}
               maxLength={120}
             />
-            <Text style={[localStyles.charCount, { color: colors.textMuted }]}>{title.length}/120</Text>
+
+            <Text
+              style={[
+                localStyles.charCount,
+                {
+                  color:
+                    colors.textMuted,
+                },
+              ]}
+            >
+              {title.length}/120
+            </Text>
           </Field>
 
-          <Field label={t('community.mobile.createPost.content', 'Content')} required>
+          <Field
+            label={t(
+              'community.mobile.createPost.content',
+              'Content',
+            )}
+            required
+          >
             <TextInput
-              placeholder={t('community.mobile.createPost.contentPlaceholder', 'Share details with your community…')}
-              placeholderTextColor={colors.textMuted}
-              style={[styles.input, styles.textArea]}
+              placeholder={t(
+                'community.mobile.createPost.contentPlaceholder',
+                'Share details with your community…',
+              )}
+              placeholderTextColor={
+                colors.textMuted
+              }
+              style={[
+                styles.input,
+                styles.textArea,
+              ]}
               multiline
               value={content}
               onChangeText={setContent}
               maxLength={2000}
             />
-            <Text style={[localStyles.charCount, { color: colors.textMuted }]}>{content.length}/2000</Text>
+
+            <Text
+              style={[
+                localStyles.charCount,
+                {
+                  color:
+                    colors.textMuted,
+                },
+              ]}
+            >
+              {content.length}/2000
+            </Text>
           </Field>
 
-          <Field label={t('community.mobile.createPost.uploadImageOptional', 'Photo (optional)')}>
-            <TouchableOpacity style={styles.uploadBox} onPress={pickImage} activeOpacity={0.8}>
-              <View style={localStyles.uploadInner}>
-                <ImageIcon color={image ? '#16A34A' : '#94A3B8'} />
+          <Field
+            label={t(
+              'community.mobile.createPost.uploadImageOptional',
+              'Photo (optional)',
+            )}
+          >
+            <TouchableOpacity
+              style={styles.uploadBox}
+              onPress={pickImage}
+              activeOpacity={0.8}
+            >
+              <View
+                style={
+                  localStyles.uploadInner
+                }
+              >
+                <ImageIcon
+                  color={
+                    image
+                      ? '#16A34A'
+                      : '#94A3B8'
+                  }
+                />
+
                 <Text
                   style={[
                     styles.uploadText,
-                    { color: image ? '#16A34A' : colors.textSecondary },
-                    image && localStyles.uploadTextDone,
-                  ]}>
+                    {
+                      color: image
+                        ? '#16A34A'
+                        : colors.textSecondary,
+                    },
+                    image &&
+                      localStyles.uploadTextDone,
+                  ]}
+                >
                   {image
-                    ? `✓  ${image.fileName || t('community.mobile.createPost.photoSelected', 'Photo selected')}`
-                    : t('community.mobile.createPost.chooseImage', 'Tap to choose a photo')}
+                    ? `✓  ${
+                        image.fileName ||
+                        t(
+                          'community.mobile.createPost.photoSelected',
+                          'Photo selected',
+                        )
+                      }`
+                    : t(
+                        'community.mobile.createPost.chooseImage',
+                        'Tap to choose a photo',
+                      )}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -360,35 +840,78 @@ export default function CreatePostScreen({ navigation }: any) {
         </View>
 
         {/* ── Buttons ── */}
+
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={styles.cancelBtn}
-            onPress={() => navigation.goBack()}
+            onPress={() =>
+              navigation.goBack()
+            }
             disabled={submitting}
           >
-            <Text style={styles.cancelText}>{t('common.cancel', 'Cancel')}</Text>
+            <Text
+              style={styles.cancelText}
+            >
+              {t(
+                'common.cancel',
+                'Cancel',
+              )}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.postBtn, submitting && { opacity: 0.6 }]}
+            style={[
+              styles.postBtn,
+              submitting && {
+                opacity: 0.6,
+              },
+            ]}
             onPress={handleSubmit}
             disabled={submitting}
           >
             {submitting ? (
-              <Text style={styles.postText1}>
-                {t('community.mobile.createPost.posting', 'Posting...')}
+              <Text
+                style={
+                  styles.postText1
+                }
+              >
+                {t(
+                  'community.mobile.createPost.posting',
+                  'Posting...',
+                )}
               </Text>
             ) : (
-              <View style={localStyles.publishButtonContent}>
-                <Text style={styles.postText1}>
-                  {t('community.mobile.createPost.postButton', 'Publish Post')}
+              <View
+                style={
+                  localStyles.publishButtonContent
+                }
+              >
+                <Text
+                  style={
+                    styles.postText1
+                  }
+                >
+                  {t(
+                    'community.mobile.createPost.postButton',
+                    'Publish Post',
+                  )}
                 </Text>
+
                 <PublishIcon />
               </View>
             )}
           </TouchableOpacity>
         </View>
-        <View style={{ height: Math.max(insets.bottom, 20) + 24 }} />
+
+        <View
+          style={{
+            height:
+              Math.max(
+                insets.bottom,
+                20,
+              ) + 24,
+          }}
+        />
       </KeyboardSafeScrollView>
     </ScreenWrapper>
   );
@@ -400,6 +923,7 @@ const localStyles = StyleSheet.create({
   fieldWrapper: {
     marginBottom: 18,
   },
+
   fieldLabel: {
     fontSize: 11,
     color: '#64748B',
@@ -408,6 +932,7 @@ const localStyles = StyleSheet.create({
     letterSpacing: 0.8,
     textTransform: 'uppercase',
   },
+
   charCount: {
     fontSize: 10,
     color: '#94A3B8',
@@ -417,10 +942,12 @@ const localStyles = StyleSheet.create({
   },
 
   // Type selector
+
   typeSection: {
     marginTop: 12,
     marginBottom: 4,
   },
+
   typeSectionLabel: {
     fontSize: 11,
     fontWeight: '800',
@@ -429,12 +956,14 @@ const localStyles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: 10,
   },
+
   typeGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 10,
     marginBottom: 8,
   },
+
   typeCard: {
     minWidth: 96,
     flexGrow: 1,
@@ -444,20 +973,24 @@ const localStyles = StyleSheet.create({
     borderRadius: 14,
     position: 'relative',
   },
+
   typeCardInactive: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
+
   typeCardIcon: {
     fontSize: 22,
     marginBottom: 6,
   },
+
   typeCardText: {
     fontSize: 11,
     fontWeight: '600',
     color: '#64748B',
   },
+
   typeCardCheck: {
     position: 'absolute',
     top: 8,
@@ -468,6 +1001,7 @@ const localStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   typeCardCheckMark: {
     color: '#FFFFFF',
     fontSize: 10,
@@ -475,6 +1009,7 @@ const localStyles = StyleSheet.create({
   },
 
   // Upload
+
   uploadInner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -482,12 +1017,14 @@ const localStyles = StyleSheet.create({
     width: '100%',
     flexWrap: 'nowrap',
   },
+
   uploadTextDone: {
     color: '#16A34A',
     fontWeight: '700',
     flex: 1,
     flexShrink: 1,
   },
+
   publishButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
