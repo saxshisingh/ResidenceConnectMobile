@@ -15,7 +15,7 @@ platform :ios, '15.1'
 
 prepare_react_native_project!
 
-# React Native Firebase
+# RNFirebase: use CocoaPods instead of Firebase SPM
 $RNFirebaseDisableSPM = true
 
 target 'MyGate' do
@@ -25,7 +25,7 @@ target 'MyGate' do
   pod 'GoogleUtilities', :modular_headers => true
   pod 'RecaptchaInterop', :modular_headers => true
 
-  # Explicit Firebase pods
+  # Explicit Firebase dependencies
   pod 'FirebaseCore'
   pod 'FirebaseMessaging'
 
@@ -48,6 +48,12 @@ target 'MyGate' do
         build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
         build_config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
+
+        # Xcode 26 explicit Swift module handling
+        if target.name == 'FirebaseMessaging'
+          build_config.build_settings['DEFINES_MODULE'] = 'YES'
+          build_config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        end
 
       end
     end

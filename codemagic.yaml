@@ -26,55 +26,58 @@ workflows:
 
     scripts:
 
-      # ---------------------------------------------------------
+      # =========================================================
       # 1. Install JavaScript dependencies
-      # ---------------------------------------------------------
+      # =========================================================
+
       - name: Install dependencies
         script: |
+          set -e
+
+          echo "===== INSTALLING NPM DEPENDENCIES ====="
+
           npm ci
 
-      # ---------------------------------------------------------
-      # 2. Clean iOS and install Pods
-      # ---------------------------------------------------------
-      # Podfile should contain:
-      #
-      # $RNFirebaseDisableSPM = true
-      #
-      # pod 'FirebaseCore'
-      # pod 'FirebaseMessaging'
-      #
-      # Do NOT use:
-      # use_frameworks! :linkage => :static
-      #
+      # =========================================================
+      # 2. Clean iOS + Install CocoaPods
+      # =========================================================
+
       - name: Clean iOS & Install Pods
         script: |
           set -e
 
-          cd ios
+          echo "======================================"
+          echo "CLEANING IOS"
+          echo "======================================"
 
-          echo "===== CLEANING IOS ====="
+          cd ios
 
           rm -rf Pods
           rm -rf build
           rm -rf ~/Library/Developer/Xcode/DerivedData/*
           rm -rf ~/Library/Caches/CocoaPods
 
+          # Regenerate once because Firebase Pod configuration changed.
           rm -f Podfile.lock
 
           echo "===== POD DEINTEGRATE ====="
+
           pod deintegrate || true
 
           echo "===== POD REPOSITORY UPDATE ====="
+
           pod repo update
 
           echo "===== POD INSTALL ====="
+
           pod install --repo-update
 
           echo "===== POD INSTALL COMPLETED ====="
 
-      # ---------------------------------------------------------
-      # 3. Verify Firebase installation
-      # ---------------------------------------------------------
+      # =========================================================
+      # 3. Verify Firebase dependencies
+      # =========================================================
+
       - name: Verify Firebase Pods
         script: |
           set -e
@@ -83,12 +86,15 @@ workflows:
           echo "FIREBASE NPM PACKAGES"
           echo "======================================"
 
-          npm list @react-native-firebase/app \
+          cd ..
+
+          npm list \
+            @react-native-firebase/app \
             @react-native-firebase/messaging || true
 
           echo ""
           echo "======================================"
-          echo "FIREBASE PODS"
+          echo "FIREBASE PODS IN PODFILE.LOCK"
           echo "======================================"
 
           grep -E \
@@ -113,56 +119,129 @@ workflows:
           ls -la ios/Pods/Headers/Public/RNFBApp || true
           ls -la ios/Pods/Headers/Public/RNFBMessaging || true
 
-      # ---------------------------------------------------------
-      # 4. Show Podfile.lock
-      # ---------------------------------------------------------
+      # =========================================================
+      # 4. Verify Firebase module maps
+      # =========================================================
+
+      - name: Verify Firebase Messaging Module
+        script: |
+          set -e
+
+          echo "======================================"
+          echo "FIREBASE MODULE MAPS"
+          echo "======================================"
+
+          echo ""
+          echo "===== FirebaseCore module maps ====="
+
+          find ios/Pods \
+            -iname "*FirebaseCore*.modulemap" \
+            -print || true
+
+          echo ""
+          echo "===== FirebaseMessaging module maps ====="
+
+          find ios/Pods \
+            -iname "*FirebaseMessaging*.modulemap" \
+            -print || true
+
+          echo ""
+          echo "===== All Firebase module maps ====="
+
+          find ios/Pods \
+            -iname "*.modulemap" \
+            | grep -i firebase \
+            || true
+
+          echo ""
+          echo "===== FirebaseMessaging Support Files ====="
+
+          ls -la \
+            ios/Pods/Target\ Support\ Files/FirebaseMessaging \
+            2>/dev/null || true
+
+          echo ""
+          echo "===== FirebaseMessaging Generated xcconfig ====="
+
+          cat \
+            ios/Pods/Target\ Support\ Files/FirebaseMessaging/FirebaseMessaging.debug.xcconfig \
+            2>/dev/null || true
+
+          echo ""
+          echo "===== FirebaseMessaging Release xcconfig ====="
+
+          cat \
+            ios/Pods/Target\ Support\ Files/FirebaseMessaging/FirebaseMessaging.release.xcconfig \
+            2>/dev/null || true
+
+      # =========================================================
+      # 5. Show complete Podfile.lock
+      # =========================================================
+
       - name: Show Podfile.lock
         script: |
-          echo "===== PODFILE.LOCK ====="
+          echo "======================================"
+          echo "PODFILE.LOCK"
+          echo "======================================"
+
           cat ios/Podfile.lock
 
-      # ---------------------------------------------------------
-      # 5. Verify TTLock
-      # ---------------------------------------------------------
-      - name: Show TTLock Pods
+      # =========================================================
+      # 6. Verify TTLock
+      # =========================================================
+
+      - name: Verify TTLock Pods
         script: |
-          echo "===== TTLOCK PODS ====="
+          echo "======================================"
+          echo "TTLOCK PODS"
+          echo "======================================"
 
           grep -i "TTLock" ios/Podfile.lock || true
 
           grep -i "react-native-ttlock" ios/Podfile.lock || true
 
-      # ---------------------------------------------------------
-      # 6. Show React Native configuration
-      # ---------------------------------------------------------
-      - name: Show React Native configuration
+      # =========================================================
+      # 7. Verify React Native configuration
+      # =========================================================
+
+      - name: Verify React Native Configuration
         script: |
-          echo "===== PACKAGE.JSON ====="
+          echo "======================================"
+          echo "PACKAGE.JSON DEPENDENCIES"
+          echo "======================================"
 
           node -p "require('./package.json').dependencies"
 
           echo ""
-          echo "===== PODFILE.PROPERTIES ====="
+          echo "======================================"
+          echo "PODFILE.PROPERTIES.JSON"
+          echo "======================================"
 
           cat ios/Podfile.properties.json || true
 
           echo ""
-          echo "===== PODFILE ====="
+          echo "======================================"
+          echo "PODFILE"
+          echo "======================================"
 
           cat ios/Podfile
 
-      # ---------------------------------------------------------
-      # 7. Verify Hermes
-      # ---------------------------------------------------------
+      # =========================================================
+      # 8. Verify Hermes
+      # =========================================================
+
       - name: Verify Hermes
         script: |
-          echo "===== HERMES ====="
+          echo "======================================"
+          echo "HERMES"
+          echo "======================================"
 
           grep -i hermes ios/Podfile.lock || true
 
-      # ---------------------------------------------------------
-      # 8. Patch fmt
-      # ---------------------------------------------------------
+      # =========================================================
+      # 9. Patch fmt for Xcode
+      # =========================================================
+
       - name: Patch fmt for Xcode
         script: |
           set -e
@@ -171,7 +250,9 @@ workflows:
 
           if [ -f "$FILE" ]; then
 
-            echo "===== FMT BEFORE PATCH ====="
+            echo "======================================"
+            echo "FMT BEFORE PATCH"
+            echo "======================================"
 
             grep -n "FMT_USE_CONSTEVAL" "$FILE" || true
 
@@ -187,7 +268,10 @@ workflows:
               's/#define FMT_USE_CONSTEVAL FMT_HAS_CONSTEVAL/#define FMT_USE_CONSTEVAL 0/g' \
               "$FILE" || true
 
-            echo "===== FMT AFTER PATCH ====="
+            echo ""
+            echo "======================================"
+            echo "FMT AFTER PATCH"
+            echo "======================================"
 
             grep -n "FMT_USE_CONSTEVAL" "$FILE" || true
 
@@ -197,62 +281,98 @@ workflows:
 
           fi
 
-      # ---------------------------------------------------------
-      # 9. Show fmt section
-      # ---------------------------------------------------------
+      # =========================================================
+      # 10. Show fmt section
+      # =========================================================
+
       - name: Show fmt section
         script: |
           if [ -f "ios/Pods/fmt/include/fmt/base.h" ]; then
+
+            echo "======================================"
+            echo "FMT SECTION"
+            echo "======================================"
+
             sed -n '100,140p' ios/Pods/fmt/include/fmt/base.h
+
           fi
 
-      # ---------------------------------------------------------
-      # 10. Verify workspace
-      # ---------------------------------------------------------
-      - name: Verify workspace
-        script: |
-          echo "===== IOS DIRECTORY ====="
-          ls -la ios
+      # =========================================================
+      # 11. Verify workspace
+      # =========================================================
 
-          echo ""
-          echo "===== WORKSPACE ====="
-
-          if [ -d "ios/$XCODE_WORKSPACE" ]; then
-            echo "Workspace found:"
-            ls -la "ios/$XCODE_WORKSPACE"
-          else
-            echo "ERROR: Workspace not found!"
-            exit 1
-          fi
-
-      # ---------------------------------------------------------
-      # 11. Verify Firebase files
-      # ---------------------------------------------------------
-      - name: Verify Firebase configuration files
+      - name: Verify Workspace
         script: |
           set -e
 
-          echo "===== GOOGLE SERVICE INFO ====="
+          echo "======================================"
+          echo "IOS DIRECTORY"
+          echo "======================================"
+
+          ls -la ios
+
+          echo ""
+          echo "======================================"
+          echo "WORKSPACE"
+          echo "======================================"
+
+          if [ -d "ios/$XCODE_WORKSPACE" ]; then
+
+            echo "Workspace found:"
+            ls -la "ios/$XCODE_WORKSPACE"
+
+          else
+
+            echo "ERROR: Workspace not found:"
+            echo "ios/$XCODE_WORKSPACE"
+
+            exit 1
+
+          fi
+
+      # =========================================================
+      # 12. Verify Firebase configuration files
+      # =========================================================
+
+      - name: Verify Firebase Configuration
+        script: |
+          set -e
+
+          echo "======================================"
+          echo "GOOGLE SERVICE INFO"
+          echo "======================================"
 
           if [ -f "ios/GoogleService-Info.plist" ]; then
+
             echo "GoogleService-Info.plist found."
+
           else
+
             echo "ERROR: GoogleService-Info.plist not found."
+
             exit 1
+
           fi
 
           echo ""
-          echo "===== ENTITLEMENTS ====="
+          echo "======================================"
+          echo "ENTITLEMENTS"
+          echo "======================================"
 
           if [ -f "ios/MyGate/MyGate.entitlements" ]; then
+
             cat ios/MyGate/MyGate.entitlements
+
           else
+
             echo "WARNING: MyGate.entitlements not found."
+
           fi
 
-      # ---------------------------------------------------------
-      # 12. Set up code signing
-      # ---------------------------------------------------------
+      # =========================================================
+      # 13. Set up code signing
+      # =========================================================
+
       - name: Set up code signing
         script: |
           set -e
@@ -261,32 +381,41 @@ workflows:
 
           xcode-project use-profiles
 
-      # ---------------------------------------------------------
-      # 13. Check Xcode
-      # ---------------------------------------------------------
+      # =========================================================
+      # 14. Check Xcode environment
+      # =========================================================
+
       - name: Check Build Environment
         script: |
-          echo "===== XCODE VERSION ====="
+          echo "======================================"
+          echo "XCODE VERSION"
+          echo "======================================"
 
           xcodebuild -version
 
           echo ""
-          echo "===== AVAILABLE SDKS ====="
+          echo "======================================"
+          echo "AVAILABLE SDKS"
+          echo "======================================"
 
           xcodebuild -showsdks
 
-      # ---------------------------------------------------------
-      # 14. Check fmt version
-      # ---------------------------------------------------------
+      # =========================================================
+      # 15. Check fmt version
+      # =========================================================
+
       - name: Check fmt Version
         script: |
-          echo "===== FMT VERSION ====="
+          echo "======================================"
+          echo "FMT VERSION"
+          echo "======================================"
 
           grep -A 2 "fmt (" ios/Podfile.lock || true
 
-      # ---------------------------------------------------------
-      # 15. Verify Release build
-      # ---------------------------------------------------------
+      # =========================================================
+      # 16. Verify Release Build
+      # =========================================================
+
       - name: Verify Release Build
         script: |
           set -o pipefail
@@ -318,26 +447,37 @@ workflows:
             ../release-build.log || true
 
           if [ "$BUILD_STATUS" -ne 0 ]; then
+
             echo ""
             echo "======================================"
             echo "RELEASE BUILD FAILED"
             echo "======================================"
 
             exit "$BUILD_STATUS"
+
           fi
 
-      # ---------------------------------------------------------
-      # 16. Increment build number
-      # ---------------------------------------------------------
-      - name: Increment build number
+          echo ""
+          echo "======================================"
+          echo "RELEASE BUILD SUCCESSFUL"
+          echo "======================================"
+
+      # =========================================================
+      # 17. Increment build number
+      # =========================================================
+
+      - name: Increment Build Number
         script: |
+          set -e
+
           cd ios
 
           agvtool new-version -all "$BUILD_NUMBER"
 
-      # ---------------------------------------------------------
-      # 17. Build IPA
-      # ---------------------------------------------------------
+      # =========================================================
+      # 18. Build IPA
+      # =========================================================
+
       - name: Build IPA
         script: |
           set -o pipefail
@@ -364,11 +504,20 @@ workflows:
             build.log || true
 
           if [ "$BUILD_STATUS" -ne 0 ]; then
+
             echo ""
+            echo "======================================"
             echo "IPA BUILD FAILED"
+            echo "======================================"
 
             exit "$BUILD_STATUS"
+
           fi
+
+          echo ""
+          echo "======================================"
+          echo "IPA BUILD SUCCESSFUL"
+          echo "======================================"
 
     artifacts:
 
