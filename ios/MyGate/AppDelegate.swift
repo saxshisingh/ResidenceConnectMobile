@@ -4,7 +4,6 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import TTLock
 import FirebaseCore
-import FirebaseMessaging
 import UserNotifications
 
 @main
@@ -17,39 +16,46 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
   func application(
     _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    didFinishLaunchingWithOptions launchOptions:
+      [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
 
     // --------------------------------------------------
     // Firebase
     // --------------------------------------------------
+
     if FirebaseApp.app() == nil {
       FirebaseApp.configure()
-      NSLog("[FCM] Firebase configured successfully.")
-    } else {
-      NSLog("[FCM] Firebase was already configured.")
-    }
 
-    // --------------------------------------------------
-    // Firebase Messaging
-    // --------------------------------------------------
-    Messaging.messaging().delegate = self
+      NSLog(
+        "[FCM] Firebase configured successfully."
+      )
+    } else {
+      NSLog(
+        "[FCM] Firebase was already configured."
+      )
+    }
 
     // --------------------------------------------------
     // iOS notification delegate
     // --------------------------------------------------
+
     UNUserNotificationCenter.current().delegate = self
 
     // --------------------------------------------------
     // Register application for APNs
     // --------------------------------------------------
+
     application.registerForRemoteNotifications()
 
-    NSLog("[FCM] Registered application for remote notifications.")
+    NSLog(
+      "[FCM] Registered application for remote notifications."
+    )
 
     // --------------------------------------------------
     // TTLock
     // --------------------------------------------------
+
     TTLock.setupBluetooth { state in
       NSLog(
         "[TTLock] Bluetooth state changed: %ld",
@@ -60,15 +66,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // --------------------------------------------------
     // React Native
     // --------------------------------------------------
-    let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
 
-    delegate.dependencyProvider = RCTAppDependencyProvider()
+    let delegate = ReactNativeDelegate()
+
+    let factory = RCTReactNativeFactory(
+      delegate: delegate
+    )
+
+    delegate.dependencyProvider =
+      RCTAppDependencyProvider()
 
     reactNativeDelegate = delegate
     reactNativeFactory = factory
 
-    window = UIWindow(frame: UIScreen.main.bounds)
+    window = UIWindow(
+      frame: UIScreen.main.bounds
+    )
 
     factory.startReactNative(
       withModuleName: "ResidenceConnect",
@@ -82,58 +95,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   // --------------------------------------------------
   // APNs registration success
   // --------------------------------------------------
+
   func application(
     _ application: UIApplication,
-    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+    didRegisterForRemoteNotificationsWithDeviceToken
+      deviceToken: Data
   ) {
 
-    NSLog("[FCM] APNs registration succeeded.")
+    NSLog(
+      "[FCM] APNs registration succeeded."
+    )
 
-    Messaging.messaging().apnsToken = deviceToken
+    let token = deviceToken
+      .map {
+        String(format: "%02.2hhx", $0)
+      }
+      .joined()
 
-    let token = deviceToken.map {
-      String(format: "%02.2hhx", $0)
-    }.joined()
-
-    NSLog("[FCM] APNs device token: %@", token)
+    NSLog(
+      "[FCM] APNs device token: %@",
+      token
+    )
   }
 
   // --------------------------------------------------
   // APNs registration failure
   // --------------------------------------------------
+
   func application(
     _ application: UIApplication,
-    didFailToRegisterForRemoteNotificationsWithError error: Error
+    didFailToRegisterForRemoteNotificationsWithError
+      error: Error
   ) {
 
     NSLog(
       "[FCM] APNs registration failed: %@",
       error.localizedDescription
     )
-  }
-}
-
-// ======================================================
-// MARK: - Firebase Messaging
-// ======================================================
-
-extension AppDelegate: MessagingDelegate {
-
-  func messaging(
-    _ messaging: Messaging,
-    didReceiveRegistrationToken fcmToken: String?
-  ) {
-
-    guard let fcmToken = fcmToken else {
-      NSLog("[FCM] FCM token is nil.")
-      return
-    }
-
-    NSLog("[FCM] FCM registration token received.")
-    NSLog("[FCM] FCM token suffix: %@", String(fcmToken.suffix(12)))
-
-    // The React Native side should also obtain this token
-    // using getToken() and send it to your backend.
   }
 }
 
@@ -146,6 +144,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   // --------------------------------------------------
   // Foreground notification
   // --------------------------------------------------
+
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     willPresent notification: UNNotification,
@@ -153,7 +152,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
       @escaping (UNNotificationPresentationOptions) -> Void
   ) {
 
-    let userInfo = notification.request.content.userInfo
+    let userInfo =
+      notification.request.content.userInfo
 
     NSLog(
       "[FCM] Notification received while app is in foreground."
@@ -164,7 +164,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
       "\(userInfo)"
     )
 
-    // Show notification banner/sound even when app is foreground.
+    // Show banner, sound and badge while app is
+    // in the foreground.
     completionHandler([
       .banner,
       .sound,
@@ -175,6 +176,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   // --------------------------------------------------
   // User tapped notification
   // --------------------------------------------------
+
   func userNotificationCenter(
     _ center: UNUserNotificationCenter,
     didReceive response: UNNotificationResponse,
@@ -202,7 +204,8 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 // MARK: - React Native Delegate
 // ======================================================
 
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+class ReactNativeDelegate:
+  RCTDefaultReactNativeFactoryDelegate {
 
   override func sourceURL(
     for bridge: RCTBridge
@@ -211,14 +214,21 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
   }
 
   override func bundleURL() -> URL? {
+
 #if DEBUG
+
     RCTBundleURLProvider.sharedSettings()
-      .jsBundleURL(forBundleRoot: "index")
+      .jsBundleURL(
+        forBundleRoot: "index"
+      )
+
 #else
+
     Bundle.main.url(
       forResource: "main",
       withExtension: "jsbundle"
     )
+
 #endif
   }
 }
