@@ -5,7 +5,7 @@ require Pod::Executable.execute_command(
     '-p',
     'require.resolve(
       "react-native/scripts/react_native_pods.rb",
-      { paths: [process.argv[1]] },
+      {paths: [process.argv[1]]},
     )',
     __dir__
   ]
@@ -15,15 +15,9 @@ platform :ios, '15.1'
 
 prepare_react_native_project!
 
-# React Native Firebase
-# Disable Firebase Swift Package Manager because
-# RNFirebase + SPM + static frameworks causes
-# duplicate-symbol/linkage conflicts.
+# Prevent React Native Firebase from resolving Firebase
+# through Swift Package Manager.
 $RNFirebaseDisableSPM = true
-
-# Build Firebase and React Native dependencies
-# as static frameworks.
-use_frameworks! :linkage => :static
 
 target 'MyGate' do
 
@@ -49,9 +43,7 @@ target 'MyGate' do
       target.build_configurations.each do |build_config|
 
         build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
-
         build_config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
-
         build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++20'
 
       end
