@@ -15,8 +15,7 @@ platform :ios, '15.1'
 
 prepare_react_native_project!
 
-# Prevent React Native Firebase from resolving Firebase
-# through Swift Package Manager.
+# React Native Firebase
 $RNFirebaseDisableSPM = true
 
 target 'MyGate' do
@@ -25,6 +24,10 @@ target 'MyGate' do
 
   pod 'GoogleUtilities', :modular_headers => true
   pod 'RecaptchaInterop', :modular_headers => true
+
+  # Explicit Firebase pods
+  pod 'FirebaseCore'
+  pod 'FirebaseMessaging'
 
   use_react_native!(
     :path => config[:reactNativePath],
