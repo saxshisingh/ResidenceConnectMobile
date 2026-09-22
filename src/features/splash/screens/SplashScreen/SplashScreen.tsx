@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useRef,
-} from 'react';
+import React, {useEffect, useRef} from 'react';
 
 import {
   View,
@@ -20,10 +17,23 @@ import {useI18n} from '../../../../i18n';
 export default function SplashScreen() {
   const {t} = useI18n();
 
-  const {
-    width,
-    height,
-  } = useWindowDimensions();
+  const {width, height} = useWindowDimensions();
+
+  /*
+   * ==========================================
+   * RESPONSIVE DIMENSIONS
+   * ==========================================
+   */
+
+  const isCompactHeight = height <= 720;
+  const isLargeScreen = width >= 600;
+
+  const logoSize = isLargeScreen
+    ? 300
+    : Math.min(
+        width * 0.68,
+        isCompactHeight ? 235 : 285,
+      );
 
   /*
    * ==========================================
@@ -73,247 +83,188 @@ export default function SplashScreen() {
 
   /*
    * ==========================================
-   * RESPONSIVE DIMENSIONS
-   * ==========================================
-   */
-
-  const isCompactHeight =
-    height <= 720;
-
-  const isLargeScreen =
-    width >= 600;
-
-  const logoSize = isLargeScreen
-    ? 300
-    : Math.min(
-        width * 0.68,
-        isCompactHeight
-          ? 235
-          : 285,
-      );
-
-  /*
-   * ==========================================
-   * ENTRANCE + CONTINUOUS ANIMATIONS
+   * ANIMATIONS
    * ==========================================
    */
 
   useEffect(() => {
-    /*
-     * Main logo entrance
-     */
-    Animated.parallel([
-      Animated.timing(
-        logoOpacity,
-        {
-          toValue: 1,
-
-          duration: 700,
-
-          easing: Easing.out(
-            Easing.cubic,
-          ),
-
-          useNativeDriver: true,
-        },
-      ),
-
-      Animated.spring(
-        logoScale,
-        {
-          toValue: 1,
-
-          friction: 7,
-
-          tension: 60,
-
-          useNativeDriver: true,
-        },
-      ),
-
-      Animated.timing(
-        logoTranslateY,
-        {
-          toValue: 0,
-
-          duration: 750,
-
-          easing: Easing.out(
-            Easing.cubic,
-          ),
-
-          useNativeDriver: true,
-        },
-      ),
-    ]).start();
+    let isMounted = true;
 
     /*
-     * Brand text entrance
+     * ------------------------------------------
+     * Logo entrance
+     * ------------------------------------------
      */
-    Animated.parallel([
-      Animated.timing(
-        brandOpacity,
-        {
-          toValue: 1,
 
-          duration: 600,
+    const logoAnimation = Animated.parallel([
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 700,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
 
-          delay: 350,
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 60,
+        useNativeDriver: true,
+      }),
 
-          easing: Easing.out(
-            Easing.cubic,
-          ),
-
-          useNativeDriver: true,
-        },
-      ),
-
-      Animated.timing(
-        brandTranslateY,
-        {
-          toValue: 0,
-
-          duration: 600,
-
-          delay: 350,
-
-          easing: Easing.out(
-            Easing.cubic,
-          ),
-
-          useNativeDriver: true,
-        },
-      ),
-    ]).start();
+      Animated.timing(logoTranslateY, {
+        toValue: 0,
+        duration: 750,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]);
 
     /*
-     * Loading section
+     * ------------------------------------------
+     * Brand entrance
+     * ------------------------------------------
      */
-    Animated.timing(
+
+    const brandAnimation = Animated.parallel([
+      Animated.timing(brandOpacity, {
+        toValue: 1,
+        duration: 600,
+        delay: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+
+      Animated.timing(brandTranslateY, {
+        toValue: 0,
+        duration: 600,
+        delay: 350,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]);
+
+    /*
+     * ------------------------------------------
+     * Loading entrance
+     * ------------------------------------------
+     */
+
+    const loadingAnimation = Animated.timing(
       loadingOpacity,
       {
         toValue: 1,
-
         duration: 500,
-
         delay: 650,
-
-        easing: Easing.out(
-          Easing.cubic,
-        ),
-
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       },
-    ).start();
+    );
 
     /*
-     * Progress animation
+     * ------------------------------------------
+     * Progress
+     *
+     * IMPORTANT:
+     * width cannot use native driver.
+     * ------------------------------------------
      */
-    Animated.timing(
+
+    const progressAnimation = Animated.timing(
       progress,
       {
         toValue: 1,
-
         duration: 2200,
-
         delay: 700,
-
-        easing: Easing.inOut(
-          Easing.ease,
-        ),
-
+        easing: Easing.inOut(Easing.ease),
         useNativeDriver: false,
       },
-    ).start();
+    );
 
     /*
-     * Logo glow entrance
+     * ------------------------------------------
+     * Glow
+     * ------------------------------------------
      */
-    Animated.parallel([
-      Animated.timing(
-        glowOpacity,
-        {
-          toValue: 0.28,
 
-          duration: 1000,
+    const glowAnimation = Animated.parallel([
+      Animated.timing(glowOpacity, {
+        toValue: 0.28,
+        duration: 1000,
+        delay: 300,
+        useNativeDriver: true,
+      }),
 
-          delay: 300,
-
-          useNativeDriver: true,
-        },
-      ),
-
-      Animated.timing(
-        glowScale,
-        {
-          toValue: 1,
-
-          duration: 1200,
-
-          delay: 200,
-
-          easing: Easing.out(
-            Easing.cubic,
-          ),
-
-          useNativeDriver: true,
-        },
-      ),
-    ]).start();
+      Animated.timing(glowScale, {
+        toValue: 1,
+        duration: 1200,
+        delay: 200,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]);
 
     /*
-     * Continuous subtle floating
+     * ------------------------------------------
+     * Floating animation
+     * ------------------------------------------
      */
+
     const floating = Animated.loop(
       Animated.sequence([
-        Animated.timing(
-          floatAnimation,
-          {
-            toValue: 1,
+        Animated.timing(floatAnimation, {
+          toValue: 1,
+          duration: 2200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
 
-            duration: 2200,
-
-            easing: Easing.inOut(
-              Easing.ease,
-            ),
-
-            useNativeDriver: true,
-          },
-        ),
-
-        Animated.timing(
-          floatAnimation,
-          {
-            toValue: 0,
-
-            duration: 2200,
-
-            easing: Easing.inOut(
-              Easing.ease,
-            ),
-
-            useNativeDriver: true,
-          },
-        ),
+        Animated.timing(floatAnimation, {
+          toValue: 0,
+          duration: 2200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
       ]),
     );
 
-    floating.start();
+    if (isMounted) {
+      logoAnimation.start();
+      brandAnimation.start();
+      loadingAnimation.start();
+      progressAnimation.start();
+      glowAnimation.start();
+      floating.start();
+    }
 
     /*
+     * ------------------------------------------
      * Cleanup
+     * ------------------------------------------
      */
+
     return () => {
+      isMounted = false;
+
+      logoAnimation.stop();
+      brandAnimation.stop();
+      loadingAnimation.stop();
+      progressAnimation.stop();
+      glowAnimation.stop();
       floating.stop();
 
       logoOpacity.stopAnimation();
       logoScale.stopAnimation();
       logoTranslateY.stopAnimation();
+
       brandOpacity.stopAnimation();
       brandTranslateY.stopAnimation();
+
       loadingOpacity.stopAnimation();
+
       progress.stopAnimation();
+
       floatAnimation.stopAnimation();
+
       glowScale.stopAnimation();
       glowOpacity.stopAnimation();
     };
@@ -339,14 +290,12 @@ export default function SplashScreen() {
   const floatingTranslateY =
     floatAnimation.interpolate({
       inputRange: [0, 1],
-
       outputRange: [0, -7],
     });
 
   const floatingRotate =
     floatAnimation.interpolate({
       inputRange: [0, 0.5, 1],
-
       outputRange: [
         '0deg',
         '-0.5deg',
@@ -357,11 +306,7 @@ export default function SplashScreen() {
   const progressWidth =
     progress.interpolate({
       inputRange: [0, 1],
-
-      outputRange: [
-        '0%',
-        '100%',
-      ],
+      outputRange: ['0%', '100%'],
     });
 
   /*
@@ -379,9 +324,9 @@ export default function SplashScreen() {
         barStyle="dark-content"
       />
 
-      {/* ====================================
-          BACKGROUND DECORATION
-         ==================================== */}
+      {/* ======================================
+          BACKGROUND
+         ====================================== */}
 
       <View
         pointerEvents="none"
@@ -435,71 +380,61 @@ export default function SplashScreen() {
         ]}
       />
 
-      {/* ====================================
+      {/* ======================================
           CENTER
-         ==================================== */}
+         ====================================== */}
 
       <View style={styles.centerContent}>
 
-        {/* Logo */}
+        {/* LOGO */}
 
         <Animated.View
           style={[
             styles.logoSection,
-
             {
               opacity: logoOpacity,
 
               transform: [
                 {
-                  translateY:
-                    Animated.add(
-                      logoTranslateY,
-                      floatingTranslateY,
-                    ),
+                  translateY: logoTranslateY,
                 },
-
+                {
+                  translateY: floatingTranslateY,
+                },
                 {
                   scale: logoScale,
                 },
-
                 {
-                  rotate:
-                    floatingRotate,
+                  rotate: floatingRotate,
                 },
               ],
             },
-          ]}>
+          ]}
+        >
 
-          {/* Soft logo halo */}
+          {/* Glow */}
 
           <Animated.View
             pointerEvents="none"
             style={[
               styles.logoGlow,
-
               {
-                width:
-                  logoSize * 0.92,
+                width: logoSize * 0.92,
+                height: logoSize * 0.92,
+                borderRadius: logoSize,
 
-                height:
-                  logoSize * 0.92,
-
-                borderRadius:
-                  logoSize,
-
-                opacity:
-                  glowOpacity,
+                opacity: glowOpacity,
 
                 transform: [
                   {
-                    scale:
-                      glowScale,
+                    scale: glowScale,
                   },
                 ],
               },
             ]}
           />
+
+          {/* Logo */}
 
           <Image
             source={require(
@@ -524,18 +459,17 @@ export default function SplashScreen() {
         <Animated.View
           style={[
             styles.brandSection,
-
             {
               opacity: brandOpacity,
 
               transform: [
                 {
-                  translateY:
-                    brandTranslateY,
+                  translateY: brandTranslateY,
                 },
               ],
             },
-          ]}>
+          ]}
+        >
 
           <Text style={styles.brandName}>
             ResidenceConnect
@@ -549,18 +483,18 @@ export default function SplashScreen() {
 
       </View>
 
-      {/* ====================================
+      {/* ======================================
           LOADING
-         ==================================== */}
+         ====================================== */}
 
       <Animated.View
         style={[
           styles.loadingSection,
           {
-            opacity:
-              loadingOpacity,
+            opacity: loadingOpacity,
           },
-        ]}>
+        ]}
+      >
 
         <View style={styles.loadingHeader}>
 
@@ -571,25 +505,27 @@ export default function SplashScreen() {
             )}
           </Text>
 
-          <Animated.Text
-            style={styles.loadingPercent}>
-            {progress.interpolate({
-              inputRange: [0, 1],
-              outputRange: ['0%', '100%'],
-            })}
-          </Animated.Text>
+          {/*
+           * Do NOT render an AnimatedInterpolation
+           * directly as Text children.
+           *
+           * This is intentionally static for iOS
+           * stability.
+           */}
+
+          <Text style={styles.loadingPercent}>
+            Loading
+          </Text>
 
         </View>
 
-        <View
-          style={styles.progressTrack}>
+        <View style={styles.progressTrack}>
 
           <Animated.View
             style={[
               styles.progressBar,
               {
-                width:
-                  progressWidth,
+                width: progressWidth,
               },
             ]}
           />
@@ -598,15 +534,13 @@ export default function SplashScreen() {
 
       </Animated.View>
 
-      {/* ====================================
+      {/* ======================================
           FOOTER
-         ==================================== */}
+         ====================================== */}
 
       <View style={styles.footer}>
 
-        <View
-          style={styles.footerLine}
-        />
+        <View style={styles.footerLine} />
 
         <Text style={styles.footerText}>
           SECURE • CONNECTED • SIMPLE
