@@ -117,7 +117,12 @@ export const AuthProvider = ({
   /**
    * Register the device for push notifications.
    *
+   * IMPORTANT:
    * FCM errors must NEVER prevent authentication.
+   *
+   * This function is intentionally isolated from the
+   * authentication flow so that an FCM/native failure
+   * cannot log the user out or break authentication.
    */
   const setupPushNotifications =
     useCallback(
@@ -176,6 +181,9 @@ export const AuthProvider = ({
             '[FCM] Device token registration failed:',
             error,
           );
+
+          // IMPORTANT:
+          // Never throw FCM errors into the auth flow.
         }
       },
       [getUserId],
@@ -268,6 +276,8 @@ export const AuthProvider = ({
 
           /* ------------------------------------------------------
            * Register FCM device
+           *
+           * FCM failure must NEVER fail authentication.
            * ------------------------------------------------------ */
 
           await setupPushNotifications(
@@ -329,6 +339,10 @@ export const AuthProvider = ({
       | undefined;
 
     try {
+      console.log(
+        '[FCM] Initializing token refresh listener...',
+      );
+
       const messaging =
         getMessaging();
 
@@ -344,6 +358,14 @@ export const AuthProvider = ({
               console.log(
                 '[FCM] Token refreshed',
               );
+
+              if (!newToken) {
+                console.warn(
+                  '[FCM] Received empty refreshed token',
+                );
+
+                return;
+              }
 
               const registered =
                 await registerDeviceToken(
@@ -376,7 +398,14 @@ export const AuthProvider = ({
 
     return () => {
       if (unsubscribe) {
-        unsubscribe();
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.warn(
+            '[FCM] Error removing token refresh listener:',
+            error,
+          );
+        }
       }
     };
   }, [status]);
@@ -395,6 +424,10 @@ export const AuthProvider = ({
       | undefined;
 
     try {
+      console.log(
+        '[FCM] Initializing foreground message listener...',
+      );
+
       const messaging =
         getMessaging();
 
@@ -406,47 +439,54 @@ export const AuthProvider = ({
         onMessage(
           messaging,
           async remoteMessage => {
-            console.log(
-              '[FCM] Foreground notification received:',
-              remoteMessage,
-            );
+            try {
+              console.log(
+                '[FCM] Foreground notification received:',
+                remoteMessage,
+              );
 
-            const notificationId =
-              remoteMessage.data
-                ?.notificationId;
+              const notificationId =
+                remoteMessage.data
+                  ?.notificationId;
 
-            const type =
-              remoteMessage.data?.type;
+              const type =
+                remoteMessage.data?.type;
 
-            const title =
-              remoteMessage
-                .notification?.title ??
-              'Notification';
+              const title =
+                remoteMessage
+                  .notification?.title ??
+                'Notification';
 
-            const body =
-              remoteMessage
-                .notification?.body ??
-              '';
+              const body =
+                remoteMessage
+                  .notification?.body ??
+                '';
 
-            console.log(
-              '[FCM] Title:',
-              title,
-            );
+              console.log(
+                '[FCM] Title:',
+                title,
+              );
 
-            console.log(
-              '[FCM] Body:',
-              body,
-            );
+              console.log(
+                '[FCM] Body:',
+                body,
+              );
 
-            console.log(
-              '[FCM] Notification ID:',
-              notificationId,
-            );
+              console.log(
+                '[FCM] Notification ID:',
+                notificationId,
+              );
 
-            console.log(
-              '[FCM] Type:',
-              type,
-            );
+              console.log(
+                '[FCM] Type:',
+                type,
+              );
+            } catch (error) {
+              console.warn(
+                '[FCM] Error processing foreground notification:',
+                error,
+              );
+            }
           },
         );
     } catch (error) {
@@ -458,7 +498,14 @@ export const AuthProvider = ({
 
     return () => {
       if (unsubscribe) {
-        unsubscribe();
+        try {
+          unsubscribe();
+        } catch (error) {
+          console.warn(
+            '[FCM] Error removing foreground listener:',
+            error,
+          );
+        }
       }
     };
   }, [status]);
@@ -482,7 +529,7 @@ export const AuthProvider = ({
       /* --------------------------------------------------------
        * Login
        *
-       * loginUser() now returns:
+       * loginUser() returns:
        *
        * {
        *   accessToken,
@@ -572,10 +619,9 @@ export const AuthProvider = ({
       dispatch(
         restoreAuthSession({
           /**
-           * IMPORTANT:
+           * authSlice expects `token`.
            *
-           * authSlice still expects `token`,
-           * but that value is now the access token.
+           * That value is the access token.
            */
           token:
             loginResponse.accessToken,
@@ -658,6 +704,7 @@ export const AuthProvider = ({
         /**
          * Always clear local state.
          */
+
         setUser(null);
 
         dispatch(logout());
