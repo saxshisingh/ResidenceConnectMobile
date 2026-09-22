@@ -21,22 +21,24 @@ export async function registerDeviceToken(
 ): Promise<boolean> {
   try {
     if (!deviceToken) {
-      console.warn(
-        '[FCM] Cannot register empty token',
-      );
-
+      console.warn('[FCM] Cannot register empty token');
       return false;
     }
+
+    const payload = {
+      deviceToken,
+      platform: Platform.OS,
+    };
+
+    console.log('[FCM] Registering device token:', {
+      platform: Platform.OS,
+    });
 
     const response = await apiFetch(
       `${API_BASE_URL}/api/notifications/device-token`,
       {
         method: 'POST',
-        body: JSON.stringify({
-          deviceToken,
-          platform: Platform.OS,
-          deviceId: undefined,
-        }),
+        body: JSON.stringify(payload),
       },
     );
 
@@ -67,9 +69,9 @@ export async function registerDeviceToken(
  * Request notification permission, obtain the
  * current FCM token and register it with backend.
  *
- * userId is kept as an argument because the caller
- * already has the authenticated user, but the backend
- * gets the actual user identity from the JWT.
+ * The backend gets the authenticated user's identity
+ * from the JWT, so userId is only used to ensure that
+ * an authenticated user is available before registration.
  */
 export async function registerForPushNotifications(
   userId: string,
@@ -85,54 +87,83 @@ export async function registerForPushNotifications(
 
     const messaging = getMessaging();
 
-    /*
-     * 1. Request notification permission
-     */
-    const authStatus =
-      await requestPermission(messaging);
+    console.log(
+      '[FCM] Starting push notification registration',
+    );
+
+    // =====================================================
+    // 1. Request notification permission
+    // =====================================================
+
+    console.log(
+      '[FCM] Requesting notification permission...',
+    );
+
+    const authStatus = await requestPermission(
+      messaging,
+    );
 
     const enabled =
-      authStatus ===
-        AuthorizationStatus.AUTHORIZED ||
-      authStatus ===
-        AuthorizationStatus.PROVISIONAL;
+      authStatus === AuthorizationStatus.AUTHORIZED ||
+      authStatus === AuthorizationStatus.PROVISIONAL;
+
+    console.log(
+      '[FCM] Notification authorization status:',
+      authStatus,
+    );
 
     if (!enabled) {
-      console.log(
-        '[FCM] Push notification permission not granted',
-      );
-
-      return null;
-    }
-
-    /*
-     * 2. Get the current FCM token
-     */
-    const token =
-      await getToken(messaging);
-
-    if (!token) {
-      console.log(
-        '[FCM] FCM token not available',
+      console.warn(
+        '[FCM] Push notification permission was not granted',
       );
 
       return null;
     }
 
     console.log(
-      '[FCM] FCM TOKEN:',
-      token,
+      '[FCM] Push notification permission granted',
     );
 
-    /*
-     * 3. Register token with backend
-     */
+    // =====================================================
+    // 2. Get current FCM token
+    // =====================================================
+
+    console.log(
+      '[FCM] Requesting FCM token...',
+    );
+
+    const token = await getToken(messaging);
+
+    if (!token) {
+      console.warn(
+        '[FCM] FCM token was not available',
+      );
+
+      return null;
+    }
+
+    console.log(
+      '[FCM] FCM token received successfully',
+    );
+
+    // =====================================================
+    // 3. Register token with backend
+    // =====================================================
+
     const registered =
       await registerDeviceToken(token);
 
     if (!registered) {
+      console.error(
+        '[FCM] FCM token could not be registered with backend',
+      );
+
       return null;
     }
+
+    console.log(
+      '[FCM] Push notification registration completed',
+    );
 
     return token;
   } catch (error) {
