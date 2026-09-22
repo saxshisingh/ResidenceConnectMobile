@@ -38,6 +38,7 @@ workflows:
 
           npm ci
 
+
       # =========================================================
       # 2. Clean iOS + Install CocoaPods
       # =========================================================
@@ -57,7 +58,7 @@ workflows:
           rm -rf ~/Library/Developer/Xcode/DerivedData/*
           rm -rf ~/Library/Caches/CocoaPods
 
-          # Regenerate once because Firebase Pod configuration changed.
+          # Firebase Pod configuration changed.
           rm -f Podfile.lock
 
           echo "===== POD DEINTEGRATE ====="
@@ -73,6 +74,7 @@ workflows:
           pod install --repo-update
 
           echo "===== POD INSTALL COMPLETED ====="
+
 
       # =========================================================
       # 3. Verify Firebase dependencies
@@ -119,6 +121,7 @@ workflows:
           ls -la ios/Pods/Headers/Public/RNFBApp || true
           ls -la ios/Pods/Headers/Public/RNFBMessaging || true
 
+
       # =========================================================
       # 4. Verify Firebase module maps
       # =========================================================
@@ -161,7 +164,7 @@ workflows:
             2>/dev/null || true
 
           echo ""
-          echo "===== FirebaseMessaging Generated xcconfig ====="
+          echo "===== FirebaseMessaging Debug xcconfig ====="
 
           cat \
             ios/Pods/Target\ Support\ Files/FirebaseMessaging/FirebaseMessaging.debug.xcconfig \
@@ -174,8 +177,9 @@ workflows:
             ios/Pods/Target\ Support\ Files/FirebaseMessaging/FirebaseMessaging.release.xcconfig \
             2>/dev/null || true
 
+
       # =========================================================
-      # 5. Show complete Podfile.lock
+      # 5. Show Podfile.lock
       # =========================================================
 
       - name: Show Podfile.lock
@@ -185,6 +189,7 @@ workflows:
           echo "======================================"
 
           cat ios/Podfile.lock
+
 
       # =========================================================
       # 6. Verify TTLock
@@ -197,8 +202,8 @@ workflows:
           echo "======================================"
 
           grep -i "TTLock" ios/Podfile.lock || true
-
           grep -i "react-native-ttlock" ios/Podfile.lock || true
+
 
       # =========================================================
       # 7. Verify React Native configuration
@@ -226,6 +231,7 @@ workflows:
 
           cat ios/Podfile
 
+
       # =========================================================
       # 8. Verify Hermes
       # =========================================================
@@ -237,6 +243,7 @@ workflows:
           echo "======================================"
 
           grep -i hermes ios/Podfile.lock || true
+
 
       # =========================================================
       # 9. Patch fmt for Xcode
@@ -281,6 +288,7 @@ workflows:
 
           fi
 
+
       # =========================================================
       # 10. Show fmt section
       # =========================================================
@@ -296,6 +304,7 @@ workflows:
             sed -n '100,140p' ios/Pods/fmt/include/fmt/base.h
 
           fi
+
 
       # =========================================================
       # 11. Verify workspace
@@ -330,8 +339,9 @@ workflows:
 
           fi
 
+
       # =========================================================
-      # 12. Verify Firebase configuration files
+      # 12. Verify Firebase configuration
       # =========================================================
 
       - name: Verify Firebase Configuration
@@ -369,8 +379,97 @@ workflows:
 
           fi
 
+
       # =========================================================
-      # 13. Set up code signing
+      # 13. Verify App Icon Source Files
+      # =========================================================
+
+      - name: Verify App Icon Source
+        script: |
+          set -e
+
+          ICON_DIR="ios/MyGate/Images.xcassets/AppIcon.appiconset"
+
+          echo "======================================"
+          echo "APP ICON DIRECTORY"
+          echo "======================================"
+
+          if [ ! -d "$ICON_DIR" ]; then
+            echo "ERROR: AppIcon.appiconset not found."
+            exit 1
+          fi
+
+          find "$ICON_DIR" \
+            -maxdepth 1 \
+            -type f \
+            -print
+
+          echo ""
+          echo "======================================"
+          echo "CONTENTS.JSON"
+          echo "======================================"
+
+          cat "$ICON_DIR/Contents.json"
+
+          echo ""
+          echo "======================================"
+          echo "ICON DIMENSIONS"
+          echo "======================================"
+
+          echo "===== 120x120 ====="
+
+          sips -g pixelWidth -g pixelHeight \
+            "$ICON_DIR/Icon-App-60x60@2x.png"
+
+          echo ""
+          echo "===== 180x180 ====="
+
+          sips -g pixelWidth -g pixelHeight \
+            "$ICON_DIR/Icon-App-60x60@3x.png"
+
+          echo ""
+          echo "===== 1024x1024 ====="
+
+          sips -g pixelWidth -g pixelHeight \
+            "$ICON_DIR/Icon-App-1024x1024@1x.png"
+
+
+      # =========================================================
+      # 14. Verify Xcode App Icon Configuration
+      # =========================================================
+
+      - name: Verify Xcode App Icon Configuration
+        script: |
+          set -e
+
+          echo "======================================"
+          echo "XCODE BUILD SETTINGS"
+          echo "======================================"
+
+          xcodebuild \
+            -workspace "ios/$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -showBuildSettings \
+            > /tmp/mygate-build-settings.txt
+
+          echo ""
+          echo "===== ICON / PLIST SETTINGS ====="
+
+          grep -E \
+            "ASSETCATALOG_COMPILER_APPICON_NAME|ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS|ASSETCATALOG_COMPILER_STANDALONE_ICON_BEHAVIOR|INFOPLIST_FILE|INFOPLIST_KEY_CFBundleIconName|PRODUCT_BUNDLE_IDENTIFIER" \
+            /tmp/mygate-build-settings.txt || true
+
+          echo ""
+          echo "===== SOURCE INFO.PLIST ====="
+
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIconName" \
+            ios/MyGate/Info.plist || true
+
+
+      # =========================================================
+      # 15. Set up code signing
       # =========================================================
 
       - name: Set up code signing
@@ -381,8 +480,9 @@ workflows:
 
           xcode-project use-profiles
 
+
       # =========================================================
-      # 14. Check Xcode environment
+      # 16. Check Xcode environment
       # =========================================================
 
       - name: Check Build Environment
@@ -400,8 +500,9 @@ workflows:
 
           xcodebuild -showsdks
 
+
       # =========================================================
-      # 15. Check fmt version
+      # 17. Check fmt version
       # =========================================================
 
       - name: Check fmt Version
@@ -412,8 +513,9 @@ workflows:
 
           grep -A 2 "fmt (" ios/Podfile.lock || true
 
+
       # =========================================================
-      # 16. Verify Release Build
+      # 18. Verify Release Build
       # =========================================================
 
       - name: Verify Release Build
@@ -462,8 +564,9 @@ workflows:
           echo "RELEASE BUILD SUCCESSFUL"
           echo "======================================"
 
+
       # =========================================================
-      # 17. Increment build number
+      # 19. Increment build number
       # =========================================================
 
       - name: Increment Build Number
@@ -474,50 +577,9 @@ workflows:
 
           agvtool new-version -all "$BUILD_NUMBER"
 
-      - name: Direct Xcode Archive Diagnostic
-        script: |
-          set -o pipefail
 
-          cd ios
-
-          echo "======================================"
-          echo "DIRECT XCODE ARCHIVE"
-          echo "======================================"
-
-          xcodebuild \
-            -workspace "MyGate.xcworkspace" \
-            -scheme "MyGate" \
-            -configuration Release \
-            -sdk iphoneos \
-            -archivePath "$CM_BUILD_DIR/MyGate.xcarchive" \
-            DEVELOPMENT_TEAM=U7WJ5JNRV7 \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            CODE_SIGN_STYLE=Manual \
-            archive \
-            2>&1 | tee ../archive.log
-
-          STATUS=${PIPESTATUS[0]}
-
-          echo ""
-          echo "======================================"
-          echo "ACTUAL XCODE ERRORS"
-          echo "======================================"
-
-          grep -nEi \
-            "error:|fatal error:|BUILD FAILED|CodeSign|Provisioning|No profiles|Signing|SwiftCompile|CompileSwift|PhaseScriptExecution|Command PhaseScriptExecution failed|No such module|unable to resolve module" \
-            ../archive.log || true
-
-          echo ""
-          echo "======================================"
-          echo "LAST 250 LINES"
-          echo "======================================"
-
-          tail -n 250 ../archive.log || true
-
-          exit "$STATUS"
-          
       # =========================================================
-      # 18. Build IPA
+      # 20. Build IPA
       # =========================================================
 
       - name: Build IPA
@@ -561,6 +623,102 @@ workflows:
           echo "IPA BUILD SUCCESSFUL"
           echo "======================================"
 
+
+      # =========================================================
+      # 21. Verify FINAL IPA
+      # =========================================================
+
+      - name: Verify Final IPA
+        script: |
+          set -e
+
+          IPA="build/ios/ipa/MyGate.ipa"
+
+          echo "======================================"
+          echo "VERIFYING FINAL IPA"
+          echo "======================================"
+
+          if [ ! -f "$IPA" ]; then
+            echo "ERROR: IPA not found:"
+            echo "$IPA"
+            exit 1
+          fi
+
+          rm -rf /tmp/mygate_ipa
+          mkdir -p /tmp/mygate_ipa
+
+          unzip -q "$IPA" -d /tmp/mygate_ipa
+
+          APP="/tmp/mygate_ipa/Payload/MyGate.app"
+
+          if [ ! -d "$APP" ]; then
+            echo "ERROR: MyGate.app not found inside IPA."
+            exit 1
+          fi
+
+          echo ""
+          echo "======================================"
+          echo "FINAL APP INFO.PLIST"
+          echo "======================================"
+
+          echo "CFBundleIdentifier:"
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIdentifier" \
+            "$APP/Info.plist"
+
+          echo ""
+          echo "CFBundleIconName:"
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIconName" \
+            "$APP/Info.plist"
+
+          echo ""
+          echo "======================================"
+          echo "CFBundleIcons"
+          echo "======================================"
+
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIcons" \
+            "$APP/Info.plist" || true
+
+          echo ""
+          echo "======================================"
+          echo "CFBundleIconFiles"
+          echo "======================================"
+
+          /usr/libexec/PlistBuddy \
+            -c "Print :CFBundleIconFiles" \
+            "$APP/Info.plist" || true
+
+          echo ""
+          echo "======================================"
+          echo "ASSETS.CAR"
+          echo "======================================"
+
+          if [ -f "$APP/Assets.car" ]; then
+            ls -lh "$APP/Assets.car"
+            echo "Assets.car exists."
+          else
+            echo "ERROR: Assets.car is missing."
+            exit 1
+          fi
+
+          echo ""
+          echo "======================================"
+          echo "LOOSE PNG ICON FILES"
+          echo "======================================"
+
+          find "$APP" \
+            -type f \
+            \( -iname "*Icon*.png" -o -iname "*icon*.png" \) \
+            -print || true
+
+          echo ""
+          echo "======================================"
+          echo "FINAL IPA VERIFICATION COMPLETE"
+          echo "======================================"
+
+
     artifacts:
 
       - ios/Podfile.lock
@@ -569,6 +727,7 @@ workflows:
       - release-build.log
       - /tmp/xcodebuild_logs/*.log
       - $HOME/Library/Developer/Xcode/Archives/**/*.xcarchive
+
 
     publishing:
 
