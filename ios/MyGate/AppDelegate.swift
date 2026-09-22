@@ -4,7 +4,6 @@ import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import TTLock
 import FirebaseCore
-import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -20,36 +19,57 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
 
-    NSLog("[APP] Application starting")
+    NSLog("[APP] didFinishLaunching started")
 
     // =====================================================
-    // FIREBASE
+    // Firebase
     // =====================================================
 
-    if FirebaseApp.app() == nil {
+    if let plistPath = Bundle.main.path(
+      forResource: "GoogleService-Info",
+      ofType: "plist"
+    ) {
 
-      FirebaseApp.configure()
+      NSLog("[Firebase] Found plist at %@", plistPath)
 
-      NSLog("[Firebase] Firebase configured successfully")
+      if FirebaseApp.app() == nil {
+
+        if let options = FirebaseOptions(
+          contentsOfFile: plistPath
+        ) {
+
+          FirebaseApp.configure(options: options)
+
+          NSLog(
+            "[Firebase] Firebase configured successfully"
+          )
+
+        } else {
+
+          NSLog(
+            "[Firebase] Failed to create FirebaseOptions"
+          )
+
+        }
+
+      } else {
+
+        NSLog(
+          "[Firebase] Firebase already configured"
+        )
+
+      }
 
     } else {
 
-      NSLog("[Firebase] Firebase already configured")
+      NSLog(
+        "[Firebase] GoogleService-Info.plist NOT FOUND IN APP BUNDLE"
+      )
 
     }
 
     // =====================================================
-    // APNs
-    // =====================================================
-
-    UNUserNotificationCenter.current().delegate = self
-
-    application.registerForRemoteNotifications()
-
-    NSLog("[FCM] Registered for remote notifications")
-
-    // =====================================================
-    // REACT NATIVE
+    // React Native
     // =====================================================
 
     let delegate = ReactNativeDelegate()
@@ -77,7 +97,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     NSLog("[APP] React Native started")
 
     // =====================================================
-    // TTLOCK
+    // TTLock
     // =====================================================
 
     TTLock.setupBluetooth { state in
@@ -91,101 +111,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     return true
   }
-
-
-  // =======================================================
-  // APNs SUCCESS
-  // =======================================================
-
-  func application(
-    _ application: UIApplication,
-    didRegisterForRemoteNotificationsWithDeviceToken
-      deviceToken: Data
-  ) {
-
-    let token = deviceToken
-      .map {
-        String(format: "%02.2hhx", $0)
-      }
-      .joined()
-
-    NSLog(
-      "[FCM] APNs device token: %@",
-      token
-    )
-  }
-
-
-  // =======================================================
-  // APNs FAILURE
-  // =======================================================
-
-  func application(
-    _ application: UIApplication,
-    didFailToRegisterForRemoteNotificationsWithError
-      error: Error
-  ) {
-
-    NSLog(
-      "[FCM] APNs registration failed: %@",
-      error.localizedDescription
-    )
-  }
 }
-
-
-// =========================================================
-// NOTIFICATION CENTER
-// =========================================================
-
-extension AppDelegate: UNUserNotificationCenterDelegate {
-
-  func userNotificationCenter(
-    _ center: UNUserNotificationCenter,
-    willPresent notification: UNNotification,
-    withCompletionHandler completionHandler:
-      @escaping (UNNotificationPresentationOptions) -> Void
-  ) {
-
-    let userInfo =
-      notification.request.content.userInfo
-
-    NSLog(
-      "[FCM] Foreground notification: %@",
-      "\(userInfo)"
-    )
-
-    completionHandler([
-      .banner,
-      .sound,
-      .badge
-    ])
-  }
-
-
-  func userNotificationCenter(
-    _ center: UNUserNotificationCenter,
-    didReceive response: UNNotificationResponse,
-    withCompletionHandler completionHandler:
-      @escaping () -> Void
-  ) {
-
-    let userInfo =
-      response.notification.request.content.userInfo
-
-    NSLog(
-      "[FCM] Notification tapped: %@",
-      "\(userInfo)"
-    )
-
-    completionHandler()
-  }
-}
-
-
-// =========================================================
-// REACT NATIVE DELEGATE
-// =========================================================
 
 class ReactNativeDelegate:
   RCTDefaultReactNativeFactoryDelegate {

@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.ResidenceConnect.myapp</string>
+	<string>com.residenceconnect.myapp</string>
 	<key>PROJECT_ID</key>
 	<string>residenceconnect-b559d</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:895727375572:ios:6b39d81ad62e92adbcd741</string>
+	<string>1:895727375572:ios:d6975160294322a8bcd741</string>
 </dict>
 </plist>
