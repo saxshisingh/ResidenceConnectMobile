@@ -117,12 +117,7 @@ export const AuthProvider = ({
   /**
    * Register the device for push notifications.
    *
-   * IMPORTANT:
-   * FCM errors must NEVER prevent authentication.
-   *
-   * This function is intentionally isolated from the
-   * authentication flow so that an FCM/native failure
-   * cannot log the user out or break authentication.
+   * FCM failures must NEVER prevent authentication.
    */
   const setupPushNotifications =
     useCallback(
@@ -168,22 +163,33 @@ export const AuthProvider = ({
             return;
           }
 
-          await registerForPushNotifications(
-            userId,
-          );
+          const token =
+            await registerForPushNotifications(
+              userId,
+            );
 
-          console.log(
-            '[FCM] Device registration completed for user:',
-            userId,
-          );
+          if (token) {
+            console.log(
+              '[FCM] Push registration completed for user:',
+              userId,
+            );
+          } else {
+            console.warn(
+              '[FCM] Push registration did not return an FCM token',
+            );
+          }
         } catch (error) {
           console.warn(
             '[FCM] Device token registration failed:',
             error,
           );
 
-          // IMPORTANT:
-          // Never throw FCM errors into the auth flow.
+          /*
+           * IMPORTANT:
+           *
+           * Never throw FCM errors into the
+           * authentication flow.
+           */
         }
       },
       [getUserId],
@@ -317,10 +323,6 @@ export const AuthProvider = ({
    * INITIAL AUTH EFFECT
    * ============================================================ */
 
-  /**
-   * Restore authentication once when
-   * application starts.
-   */
   useEffect(() => {
     void initializeAuth();
   }, [initializeAuth]);
@@ -345,10 +347,6 @@ export const AuthProvider = ({
 
       const messaging =
         getMessaging();
-
-      console.log(
-        '[FCM] Setting up token refresh listener',
-      );
 
       unsubscribe =
         onTokenRefresh(
@@ -389,6 +387,10 @@ export const AuthProvider = ({
             }
           },
         );
+
+      console.log(
+        '[FCM] Token refresh listener registered',
+      );
     } catch (error) {
       console.warn(
         '[FCM] Unable to initialize token refresh listener:',
@@ -400,6 +402,10 @@ export const AuthProvider = ({
       if (unsubscribe) {
         try {
           unsubscribe();
+
+          console.log(
+            '[FCM] Token refresh listener removed',
+          );
         } catch (error) {
           console.warn(
             '[FCM] Error removing token refresh listener:',
@@ -430,10 +436,6 @@ export const AuthProvider = ({
 
       const messaging =
         getMessaging();
-
-      console.log(
-        '[FCM] Setting up foreground message listener',
-      );
 
       unsubscribe =
         onMessage(
@@ -489,6 +491,10 @@ export const AuthProvider = ({
             }
           },
         );
+
+      console.log(
+        '[FCM] Foreground message listener registered',
+      );
     } catch (error) {
       console.warn(
         '[FCM] Unable to initialize foreground message listener:',
@@ -500,6 +506,10 @@ export const AuthProvider = ({
       if (unsubscribe) {
         try {
           unsubscribe();
+
+          console.log(
+            '[FCM] Foreground message listener removed',
+          );
         } catch (error) {
           console.warn(
             '[FCM] Error removing foreground listener:',
@@ -527,15 +537,7 @@ export const AuthProvider = ({
       );
 
       /* --------------------------------------------------------
-       * Login
-       *
-       * loginUser() returns:
-       *
-       * {
-       *   accessToken,
-       *   refreshToken,
-       *   isFirstLogin
-       * }
+       * LOGIN
        * -------------------------------------------------------- */
 
       const loginResponse =
@@ -569,7 +571,7 @@ export const AuthProvider = ({
       );
 
       /* --------------------------------------------------------
-       * Fetch current user
+       * FETCH CURRENT USER
        * -------------------------------------------------------- */
 
       console.log(
@@ -589,7 +591,7 @@ export const AuthProvider = ({
       );
 
       /* --------------------------------------------------------
-       * Resolve user ID
+       * RESOLVE USER ID
        * -------------------------------------------------------- */
 
       const userId =
@@ -607,13 +609,13 @@ export const AuthProvider = ({
       }
 
       /* --------------------------------------------------------
-       * Store user in React state
+       * STORE USER
        * -------------------------------------------------------- */
 
       setUser(currentUser);
 
       /* --------------------------------------------------------
-       * Store auth state in Redux
+       * STORE AUTH STATE IN REDUX
        * -------------------------------------------------------- */
 
       dispatch(
@@ -621,7 +623,7 @@ export const AuthProvider = ({
           /**
            * authSlice expects `token`.
            *
-           * That value is the access token.
+           * The value is the access token.
            */
           token:
             loginResponse.accessToken,
@@ -634,7 +636,7 @@ export const AuthProvider = ({
       );
 
       /* --------------------------------------------------------
-       * Register device for FCM
+       * REGISTER DEVICE FOR FCM
        *
        * This must never block authentication.
        * -------------------------------------------------------- */
@@ -644,7 +646,7 @@ export const AuthProvider = ({
       );
 
       /* --------------------------------------------------------
-       * Authentication complete
+       * AUTHENTICATION COMPLETE
        * -------------------------------------------------------- */
 
       setStatus(
@@ -683,13 +685,6 @@ export const AuthProvider = ({
           '[AUTH] Signing out...',
         );
 
-        /**
-         * logoutUser():
-         *
-         * 1. Sends refresh token to backend.
-         * 2. Backend revokes refresh token.
-         * 3. Local access/refresh tokens are removed.
-         */
         await logoutUser();
 
         console.log(
@@ -701,10 +696,6 @@ export const AuthProvider = ({
           error,
         );
       } finally {
-        /**
-         * Always clear local state.
-         */
-
         setUser(null);
 
         dispatch(logout());

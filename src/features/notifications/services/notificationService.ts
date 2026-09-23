@@ -1,16 +1,25 @@
-import { apiFetch } from '../../../shared/api/apiClient';
-import { API_BASE_URL } from '../../../config/api';
+import {
+  apiFetch,
+} from '../../../shared/api/apiClient';
+
+import {
+  API_BASE_URL,
+} from '../../../config/api';
 
 export interface NotificationItem {
   id: string;
   title: string;
   content: string;
   createdOn: string;
+
   notificationType?: string;
-  isSeen: boolean; 
+
+  isSeen: boolean;
   seenAt?: string;
+
   deliveredAt?: string;
   isDelivered?: boolean;
+
   mediaPath?: string;
   createdBy?: string;
 }
@@ -18,7 +27,7 @@ export interface NotificationItem {
 interface NotificationResponse {
   status: boolean;
   message: string;
-  data: any[]; 
+  data: any[];
 }
 
 interface SingleNotificationResponse {
@@ -27,89 +36,234 @@ interface SingleNotificationResponse {
   data: NotificationItem;
 }
 
-const normalizeMediaUrl = (path?: string | null) => {
-  const cleanPath = String(path || '').trim();
-  if (!cleanPath) return '';
-  if (/^https?:\/\//i.test(cleanPath)) return cleanPath;
-  return `${API_BASE_URL}/${cleanPath.replace(/^\/+/, '')}`;
-};
+/* ============================================================
+ * MEDIA URL
+ * ============================================================ */
 
-const normalizeNotification = (item: any): NotificationItem => ({
-  ...item,
-  mediaPath: normalizeMediaUrl(
-    item?.mediaPath ||
-      item?.MediaPath ||
-      item?.image ||
-      item?.Image ||
-      item?.attachment ||
-      item?.Attachment ||
-      '',
-  ) || undefined,
-});
+const normalizeMediaUrl = (
+  path?: string | null,
+): string => {
+  const cleanPath =
+    String(path || '').trim();
 
-export const fetchNotificationsByResident = async (
-  residentId: string
-): Promise<NotificationItem[]> => {
-  const res = await apiFetch(
-    `${API_BASE_URL}/api/notifications/by-resident/${residentId}`,
-    { method: 'GET' }
-  );
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || 'Failed to fetch notifications');
+  if (!cleanPath) {
+    return '';
   }
 
-  const json: NotificationResponse = await res.json();
+  // Already an absolute URL
+  if (/^https?:\/\//i.test(cleanPath)) {
+    return cleanPath;
+  }
 
+  // Prevent duplicate slashes
+  const normalizedPath =
+    cleanPath.replace(/^\/+/, '');
 
- 
-  const notifications: NotificationItem[] = [];
-  
-  if (json.data && Array.isArray(json.data)) {
-    json.data.forEach((item: any) => {
-      if (item.notifications && Array.isArray(item.notifications)) {
-        notifications.push(...item.notifications.map(normalizeNotification));
+  return `${API_BASE_URL}/${normalizedPath}`;
+};
+
+/* ============================================================
+ * NORMALIZE NOTIFICATION
+ * ============================================================ */
+
+const normalizeNotification = (
+  item: any,
+): NotificationItem => {
+  return {
+    ...item,
+
+    mediaPath:
+      normalizeMediaUrl(
+        item?.mediaPath ||
+          item?.MediaPath ||
+          item?.image ||
+          item?.Image ||
+          item?.attachment ||
+          item?.Attachment ||
+          '',
+      ) || undefined,
+  };
+};
+
+/* ============================================================
+ * FETCH NOTIFICATIONS BY RESIDENT
+ * ============================================================ */
+
+export const fetchNotificationsByResident =
+  async (
+    residentId: string,
+  ): Promise<NotificationItem[]> => {
+    if (!residentId) {
+      console.warn(
+        '[Notification] Cannot fetch notifications without residentId',
+      );
+
+      return [];
+    }
+
+    const res = await apiFetch(
+      `${API_BASE_URL}/api/notifications/by-resident/${residentId}`,
+      {
+        method: 'GET',
+      },
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+
+      throw new Error(
+        text ||
+          'Failed to fetch notifications',
+      );
+    }
+
+    const json: NotificationResponse =
+      await res.json();
+
+    const notifications: NotificationItem[] =
+      [];
+
+    if (
+      json?.data &&
+      Array.isArray(json.data)
+    ) {
+      json.data.forEach(
+        (item: any) => {
+          /*
+           * Backend response may contain:
+           *
+           * {
+           *   notifications: [...]
+           * }
+           */
+          if (
+            item?.notifications &&
+            Array.isArray(
+              item.notifications,
+            )
+          ) {
+            notifications.push(
+              ...item.notifications.map(
+                normalizeNotification,
+              ),
+            );
+          }
+
+          /*
+           * Also support the case where
+           * the API directly returns notification
+           * objects.
+           */
+          else if (
+            item &&
+            typeof item === 'object' &&
+            item.id
+          ) {
+            notifications.push(
+              normalizeNotification(item),
+            );
+          }
+        },
+      );
+    }
+
+    return notifications;
+  };
+
+/* ============================================================
+ * GET NOTIFICATION BY ID / MARK AS SEEN
+ * ============================================================ */
+
+export const getNotificationById =
+  async (
+    id: string,
+    residentId: string,
+  ): Promise<NotificationItem | null> => {
+    if (!id || !residentId) {
+      console.warn(
+        '[Notification] Missing notification id or residentId',
+      );
+
+      return null;
+    }
+
+    const res = await apiFetch(
+      `${API_BASE_URL}/api/notifications/${id}/seen/${residentId}`,
+      {
+        method: 'POST',
+      },
+    );
+
+    if (!res.ok) {
+      const text = await res.text();
+
+      throw new Error(
+        text ||
+          'Failed to fetch notification',
+      );
+    }
+
+    /*
+     * Read the response body only once.
+     */
+    const rawText =
+      await res.text();
+
+    const normalizedText =
+      rawText.trim().toLowerCase();
+
+    /*
+     * Backend may return:
+     *
+     * ""
+     * "seen"
+     *
+     * after successfully marking it as seen.
+     */
+    if (
+      !normalizedText ||
+      normalizedText === 'seen'
+    ) {
+      return null;
+    }
+
+    try {
+      const json:
+        SingleNotificationResponse =
+        JSON.parse(rawText);
+
+      if (!json?.data) {
+        return null;
       }
-    });
-  }
 
+      return normalizeNotification(
+        json.data,
+      );
+    } catch (error) {
+      console.warn(
+        '[Notification] Unable to parse notification response:',
+        error,
+      );
 
-  return notifications;
-};
+      return null;
+    }
+  };
 
-export const getNotificationById = async (
-  id: string,
-  residentId: string
-): Promise<NotificationItem | null> => {
-  const res = await apiFetch(
-    `${API_BASE_URL}/api/notifications/${id}/seen/${residentId}`,
-    { method: 'POST' }
-  );
+/* ============================================================
+ * GET UNREAD NOTIFICATION COUNT
+ * ============================================================ */
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || 'Failed to fetch notification');
-  }
+export const getUnreadNotificationCount =
+  async (
+    residentId: string,
+  ): Promise<number> => {
+    const notifications =
+      await fetchNotificationsByResident(
+        residentId,
+      );
 
-  const rawText = await res.text();
-  const normalizedText = rawText.trim().toLowerCase();
-
-  if (!normalizedText || normalizedText === 'seen') {
-    return null;
-  }
-
-  try {
-    const json: SingleNotificationResponse = JSON.parse(rawText);
-    return normalizeNotification(json.data);
-  } catch {
-    return null;
-  }
-};
-
-export const getUnreadNotificationCount = async (
-  residentId: string
-): Promise<number> => {
-  const notifications = await fetchNotificationsByResident(residentId);
-  return notifications.filter(n => !n.isSeen).length;
-};
+    return notifications.filter(
+      notification =>
+        !notification.isSeen,
+    ).length;
+  };
