@@ -8,46 +8,38 @@ import ReactAppDependencyProvider
 import TTLock
 
 import FirebaseCore
-import FirebaseMessaging
-
 
 @main
 class AppDelegate:
     UIResponder,
     UIApplicationDelegate,
-    UNUserNotificationCenterDelegate,
-    MessagingDelegate {
+    UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
     var reactNativeDelegate: ReactNativeDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
 
-
-    // MARK: - Debug Alert Helper
+    // MARK: - Debug Alert
 
     private func showDebugAlert(
         title: String,
         message: String
     ) {
-
         DispatchQueue.main.async {
-
-            guard let window = self.window else {
+            guard let window = self.window,
+                  let rootViewController = window.rootViewController else {
                 NSLog(
-                    "[DEBUG ALERT] Window not available: %@ - %@",
+                    "[DEBUG ALERT] %@ - %@",
                     title,
                     message
                 )
                 return
             }
 
-            guard window.rootViewController != nil else {
-                NSLog(
-                    "[DEBUG ALERT] RootViewController not available: %@ - %@",
-                    title,
-                    message
-                )
-                return
+            var presenter = rootViewController
+
+            while let presented = presenter.presentedViewController {
+                presenter = presented
             }
 
             let alert = UIAlertController(
@@ -63,25 +55,12 @@ class AppDelegate:
                 )
             )
 
-            var presenter = window.rootViewController
-
-            while let presented = presenter?.presentedViewController {
-                presenter = presented
-            }
-
-            presenter?.present(
+            presenter.present(
                 alert,
                 animated: true
             )
-
-            NSLog(
-                "[DEBUG ALERT] %@ - %@",
-                title,
-                message
-            )
         }
     }
-
 
     // MARK: - Application Launch
 
@@ -91,13 +70,10 @@ class AppDelegate:
             [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
 
-        NSLog(
-            "[APP] didFinishLaunching started"
-        )
-
+        NSLog("[APP] didFinishLaunching started")
 
         // ============================================================
-        // MARK: Firebase Initialization
+        // Firebase
         // ============================================================
 
         if let plistPath = Bundle.main.path(
@@ -106,7 +82,7 @@ class AppDelegate:
         ) {
 
             NSLog(
-                "[Firebase] GoogleService-Info.plist found at: %@",
+                "[Firebase] GoogleService-Info.plist found: %@",
                 plistPath
             )
 
@@ -130,7 +106,7 @@ class AppDelegate:
                             """
                             Firebase initialized successfully.
 
-                            Bundle:
+                            Bundle ID:
                             com.residenceconnect.myapp
 
                             Project:
@@ -141,14 +117,16 @@ class AppDelegate:
                 } else {
 
                     NSLog(
-                        "[Firebase] Failed to create FirebaseOptions"
+                        "[Firebase] Could not create FirebaseOptions"
                     )
 
                     showDebugAlert(
                         title: "FIREBASE ERROR",
                         message:
                             """
-                            FirebaseOptions could not be created from GoogleService-Info.plist.
+                            FirebaseOptions could not be created.
+
+                            Check GoogleService-Info.plist.
                             """
                     )
                 }
@@ -178,55 +156,32 @@ class AppDelegate:
                 title: "FIREBASE ERROR",
                 message:
                     """
-                    GoogleService-Info.plist was NOT found inside the application bundle.
-
-                    Expected:
-                    GoogleService-Info.plist
+                    GoogleService-Info.plist was NOT found
+                    inside the application bundle.
                     """
             )
         }
 
-
         // ============================================================
-        // MARK: Firebase Messaging Delegate
-        // ============================================================
-
-        Messaging.messaging().delegate = self
-
-        NSLog(
-            "[FCM] Messaging delegate configured"
-        )
-
-        showDebugAlert(
-            title: "FCM DELEGATE",
-            message:
-                """
-                Firebase Messaging delegate configured successfully.
-                """
-        )
-
-
-        // ============================================================
-        // MARK: Notification Center
+        // Notification Center
         // ============================================================
 
         UNUserNotificationCenter.current().delegate = self
 
         NSLog(
-            "[APNs] UNUserNotificationCenter delegate configured"
+            "[APNs] Notification center delegate configured"
         )
 
         showDebugAlert(
             title: "NOTIFICATION CENTER",
             message:
                 """
-                UNUserNotificationCenter delegate configured.
+                UNUserNotificationCenter delegate configured successfully.
                 """
         )
 
-
         // ============================================================
-        // MARK: Request Notification Permission
+        // Notification Permission
         // ============================================================
 
         let authorizationOptions:
@@ -251,8 +206,9 @@ class AppDelegate:
                     title: "PERMISSION ERROR",
                     message:
                         """
-                        Notification permission request failed.
+                        Notification permission failed.
 
+                        Error:
                         \(error.localizedDescription)
                         """
                 )
@@ -260,12 +216,10 @@ class AppDelegate:
                 return
             }
 
-
             NSLog(
-                "[APNs] Notification permission granted: %@",
+                "[APNs] Permission granted: %@",
                 granted ? "YES" : "NO"
             )
-
 
             if granted {
 
@@ -289,18 +243,19 @@ class AppDelegate:
                         """
                         Notification permission is DENIED.
 
-                        Go to:
+                        Check:
 
                         Settings
                         → Notifications
                         → ResidenceConnect
-                        → Allow Notifications ON
+                        → Allow Notifications
                         """
                 )
             }
 
-
-            // Register for APNs on the main thread.
+            // ========================================================
+            // Register with APNs
+            // ========================================================
 
             DispatchQueue.main.async {
 
@@ -314,17 +269,16 @@ class AppDelegate:
                     title: "APNs REGISTRATION",
                     message:
                         """
-                        iOS registration for remote notifications was requested.
+                        APNs registration requested.
 
-                        Waiting for APNs device token...
+                        Waiting for the Apple device token...
                         """
                 )
             }
         }
 
-
         // ============================================================
-        // MARK: React Native
+        // React Native
         // ============================================================
 
         let delegate = ReactNativeDelegate()
@@ -339,11 +293,9 @@ class AppDelegate:
         reactNativeDelegate = delegate
         reactNativeFactory = factory
 
-
         window = UIWindow(
             frame: UIScreen.main.bounds
         )
-
 
         factory.startReactNative(
             withModuleName: "ResidenceConnect",
@@ -351,14 +303,12 @@ class AppDelegate:
             launchOptions: launchOptions
         )
 
-
         NSLog(
             "[APP] React Native started"
         )
 
-
         // ============================================================
-        // MARK: TTLock
+        // TTLock
         // ============================================================
 
         TTLock.setupBluetooth { state in
@@ -369,7 +319,6 @@ class AppDelegate:
             )
         }
 
-
         NSLog(
             "[APP] didFinishLaunching completed"
         )
@@ -377,10 +326,7 @@ class AppDelegate:
         return true
     }
 
-
-    // ================================================================
-    // MARK: APNs Registration SUCCESS
-    // ================================================================
+    // MARK: - APNs Registration Success
 
     func application(
         _ application: UIApplication,
@@ -397,115 +343,29 @@ class AppDelegate:
             }
             .joined()
 
-
         NSLog(
             "[APNs] Device token received: %@",
             apnsToken
         )
 
-
-        // Explicitly associate the APNs token with Firebase Messaging.
-
-        Messaging.messaging().apnsToken = deviceToken
-
-
-        NSLog(
-            "[APNs] APNs token assigned to Firebase Messaging"
-        )
-
-
         showDebugAlert(
             title: "APNs SUCCESS",
             message:
                 """
-                APNs device token received successfully.
+                Apple APNs device token received.
 
                 Token length:
                 \(apnsToken.count)
 
-                APNs → Firebase mapping completed.
+                APNs registration is working.
+
+                RNFirebase Messaging should now associate
+                this APNs token with FCM.
                 """
         )
-
-
-        // Ask Firebase for the current FCM token.
-
-        Messaging.messaging().token { token, error in
-
-            if let error = error {
-
-                NSLog(
-                    "[FCM] Token retrieval failed: %@",
-                    error.localizedDescription
-                )
-
-                self.showDebugAlert(
-                    title: "FCM TOKEN ERROR",
-                    message:
-                        """
-                        APNs registration succeeded.
-
-                        But Firebase could not retrieve the FCM token.
-
-                        Error:
-                        \(error.localizedDescription)
-                        """
-                )
-
-                return
-            }
-
-
-            guard let token = token,
-                  !token.isEmpty else {
-
-                NSLog(
-                    "[FCM] FCM token is nil or empty"
-                )
-
-                self.showDebugAlert(
-                    title: "FCM TOKEN EMPTY",
-                    message:
-                        """
-                        APNs registration succeeded.
-
-                        Firebase returned an empty FCM token.
-                        """
-                )
-
-                return
-            }
-
-
-            NSLog(
-                "[FCM] Current FCM token received. Length: %ld",
-                token.count
-            )
-
-
-            self.showDebugAlert(
-                title: "FCM TOKEN SUCCESS",
-                message:
-                    """
-                    FCM token generated successfully.
-
-                    Token length:
-                    \(token.count)
-
-                    APNs token:
-                    PRESENT
-
-                    Firebase Messaging:
-                    CONNECTED
-                    """
-            )
-        }
     }
 
-
-    // ================================================================
-    // MARK: APNs Registration FAILURE
-    // ================================================================
+    // MARK: - APNs Registration Failure
 
     func application(
         _ application: UIApplication,
@@ -514,79 +374,23 @@ class AppDelegate:
     ) {
 
         NSLog(
-            "[APNs] FAILED to register: %@",
+            "[APNs] Registration FAILED: %@",
             error.localizedDescription
         )
-
 
         showDebugAlert(
             title: "APNs ERROR",
             message:
                 """
-                iOS could NOT register this application with APNs.
+                iOS failed to register with APNs.
 
                 Error:
                 \(error.localizedDescription)
-
-                This means the problem is before FCM notification delivery.
                 """
         )
     }
 
-
-    // ================================================================
-    // MARK: FCM Registration Token
-    // ================================================================
-
-    func messaging(
-        _ messaging: Messaging,
-        didReceiveRegistrationToken fcmToken: String?
-    ) {
-
-        guard let fcmToken = fcmToken,
-              !fcmToken.isEmpty else {
-
-            NSLog(
-                "[FCM] Registration token callback returned NIL"
-            )
-
-            showDebugAlert(
-                title: "FCM TOKEN ERROR",
-                message:
-                    """
-                    Firebase Messaging callback was triggered,
-                    but the FCM registration token is NIL.
-                    """
-            )
-
-            return
-        }
-
-
-        NSLog(
-            "[FCM] Registration token received. Length: %ld",
-            fcmToken.count
-        )
-
-
-        showDebugAlert(
-            title: "FCM TOKEN CALLBACK",
-            message:
-                """
-                Firebase returned an FCM registration token.
-
-                Token length:
-                \(fcmToken.count)
-
-                This confirms Firebase registration succeeded.
-                """
-        )
-    }
-
-
-    // ================================================================
-    // MARK: FOREGROUND Notification
-    // ================================================================
+    // MARK: - Foreground Notification
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -597,47 +401,31 @@ class AppDelegate:
             ) -> Void
     ) {
 
-        let userInfo =
-            notification.request.content.userInfo
-
-
         let title =
             notification.request.content.title
-
 
         let body =
             notification.request.content.body
 
-
         NSLog(
-            "[APNs] Notification received in FOREGROUND"
+            "[APNs] Notification received in foreground"
         )
 
-
         NSLog(
-            "[APNs] Notification title: %@",
+            "[APNs] Title: %@",
             title
         )
 
-
         NSLog(
-            "[APNs] Notification body: %@",
+            "[APNs] Body: %@",
             body
         )
-
-
-        // Tell Firebase that a message was received.
-
-        Messaging.messaging().appDidReceiveMessage(
-            userInfo
-        )
-
 
         showDebugAlert(
             title: "NOTIFICATION RECEIVED",
             message:
                 """
-                APNs/FCM notification reached the application.
+                APNs notification reached the application.
 
                 Title:
                 \(title)
@@ -645,12 +433,9 @@ class AppDelegate:
                 Body:
                 \(body)
 
-                If you see this alert, APNs delivery is working.
+                APNs delivery is working.
                 """
         )
-
-
-        // Show the actual iOS notification banner.
 
         completionHandler([
             .banner,
@@ -660,10 +445,7 @@ class AppDelegate:
         ])
     }
 
-
-    // ================================================================
-    // MARK: Notification TAP
-    // ================================================================
+    // MARK: - Notification Tap
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -672,49 +454,21 @@ class AppDelegate:
             @escaping () -> Void
     ) {
 
-        let notification =
-            response.notification
-
-
         let title =
-            notification.request.content.title
-
+            response.notification.request.content.title
 
         let body =
-            notification.request.content.body
-
-
-        let userInfo =
-            notification.request.content.userInfo
-
+            response.notification.request.content.body
 
         NSLog(
             "[APNs] Notification tapped"
         )
 
-
-        NSLog(
-            "[APNs] Notification title: %@",
-            title
-        )
-
-
-        NSLog(
-            "[APNs] Notification body: %@",
-            body
-        )
-
-
-        Messaging.messaging().appDidReceiveMessage(
-            userInfo
-        )
-
-
         showDebugAlert(
             title: "NOTIFICATION TAPPED",
             message:
                 """
-                The user tapped an iOS notification.
+                Notification was delivered and tapped.
 
                 Title:
                 \(title)
@@ -724,19 +478,17 @@ class AppDelegate:
                 """
         )
 
-
         completionHandler()
     }
 }
 
 
 // ====================================================================
-// MARK: React Native Delegate
+// React Native Delegate
 // ====================================================================
 
 class ReactNativeDelegate:
     RCTDefaultReactNativeFactoryDelegate {
-
 
     override func sourceURL(
         for bridge: RCTBridge
@@ -744,7 +496,6 @@ class ReactNativeDelegate:
 
         return bundleURL()
     }
-
 
     override func bundleURL() -> URL? {
 
