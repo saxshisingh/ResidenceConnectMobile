@@ -34,6 +34,8 @@ import {
   onTokenRefresh,
 } from '@react-native-firebase/messaging';
 
+import {Platform} from 'react-native';
+
 type AuthStatus =
   | 'LOADING'
   | 'AUTHENTICATED'
@@ -82,12 +84,6 @@ export const AuthProvider = ({
    *
    * userId and residentId are different IDs.
    *
-   * userId:
-   *   Authenticated application user ID.
-   *
-   * residentId:
-   *   Resident domain/entity ID.
-   *
    * FCM/device registration must use userId.
    */
   const getUserId = useCallback(
@@ -117,7 +113,12 @@ export const AuthProvider = ({
   /**
    * Register the device for push notifications.
    *
-   * FCM failures must NEVER prevent authentication.
+   * IMPORTANT:
+   *
+   * - iOS registration is handled inside
+   *   registerForPushNotifications().
+   * - Android registration continues to work as before.
+   * - FCM failure must NEVER prevent authentication.
    */
   const setupPushNotifications =
     useCallback(
@@ -127,6 +128,19 @@ export const AuthProvider = ({
         try {
           const userId =
             getUserId(userData);
+
+          console.log(
+            '[FCM] ========================================',
+          );
+
+          console.log(
+            '[FCM] Starting device registration',
+          );
+
+          console.log(
+            '[FCM] Platform:',
+            Platform.OS,
+          );
 
           console.log(
             '[FCM] User profile:',
@@ -163,6 +177,10 @@ export const AuthProvider = ({
             return;
           }
 
+          console.log(
+            '[FCM] Calling registerForPushNotifications...',
+          );
+
           const token =
             await registerForPushNotifications(
               userId,
@@ -170,12 +188,39 @@ export const AuthProvider = ({
 
           if (token) {
             console.log(
-              '[FCM] Push registration completed for user:',
+              '[FCM] ========================================',
+            );
+
+            console.log(
+              '[FCM] Push registration completed successfully',
+            );
+
+            console.log(
+              '[FCM] Platform:',
+              Platform.OS,
+            );
+
+            console.log(
+              '[FCM] FCM token received:',
+              `${token.substring(0, 12)}...`,
+            );
+
+            console.log(
+              '[FCM] User:',
               userId,
+            );
+
+            console.log(
+              '[FCM] ========================================',
             );
           } else {
             console.warn(
               '[FCM] Push registration did not return an FCM token',
+            );
+
+            console.warn(
+              '[FCM] Platform:',
+              Platform.OS,
             );
           }
         } catch (error) {
@@ -184,7 +229,7 @@ export const AuthProvider = ({
             error,
           );
 
-          /*
+          /**
            * IMPORTANT:
            *
            * Never throw FCM errors into the
@@ -283,12 +328,18 @@ export const AuthProvider = ({
           /* ------------------------------------------------------
            * Register FCM device
            *
-           * FCM failure must NEVER fail authentication.
+           * This happens while the access token/session
+           * is already restored, so apiFetch can authenticate
+           * the device-token request.
            * ------------------------------------------------------ */
 
           await setupPushNotifications(
             session.user,
           );
+
+          /* ------------------------------------------------------
+           * Authentication complete
+           * ------------------------------------------------------ */
 
           setStatus(
             'AUTHENTICATED',
@@ -354,7 +405,16 @@ export const AuthProvider = ({
           async newToken => {
             try {
               console.log(
+                '[FCM] ========================================',
+              );
+
+              console.log(
                 '[FCM] Token refreshed',
+              );
+
+              console.log(
+                '[FCM] Platform:',
+                Platform.OS,
               );
 
               if (!newToken) {
@@ -364,6 +424,10 @@ export const AuthProvider = ({
 
                 return;
               }
+
+              console.log(
+                '[FCM] Registering refreshed token with backend...',
+              );
 
               const registered =
                 await registerDeviceToken(
@@ -379,6 +443,10 @@ export const AuthProvider = ({
                   '[FCM] Refreshed token registration failed',
                 );
               }
+
+              console.log(
+                '[FCM] ========================================',
+              );
             } catch (error) {
               console.warn(
                 '[FCM] Error registering refreshed token:',
@@ -620,11 +688,6 @@ export const AuthProvider = ({
 
       dispatch(
         restoreAuthSession({
-          /**
-           * authSlice expects `token`.
-           *
-           * The value is the access token.
-           */
           token:
             loginResponse.accessToken,
 
@@ -638,7 +701,10 @@ export const AuthProvider = ({
       /* --------------------------------------------------------
        * REGISTER DEVICE FOR FCM
        *
-       * This must never block authentication.
+       * IMPORTANT:
+       *
+       * The access token has now been stored in Redux,
+       * so apiFetch can authenticate the device-token request.
        * -------------------------------------------------------- */
 
       await setupPushNotifications(
@@ -730,7 +796,7 @@ export const AuthProvider = ({
 
 /* ==============================================================
  * USE AUTH
- * ============================================================ */
+ * ============================================================== */
 
 export const useAuth =
   (): AuthContextType => {
