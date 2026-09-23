@@ -8,24 +8,16 @@ import ReactAppDependencyProvider
 import TTLock
 
 import FirebaseCore
-import FirebaseMessaging
-
 
 @main
 class AppDelegate:
     UIResponder,
     UIApplicationDelegate,
-    UNUserNotificationCenterDelegate,
-    MessagingDelegate {
+    UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
     var reactNativeDelegate: ReactNativeDelegate?
     var reactNativeFactory: RCTReactNativeFactory?
-
-
-    // =========================================================
-    // APP LAUNCH
-    // =========================================================
 
     func application(
         _ application: UIApplication,
@@ -35,20 +27,14 @@ class AppDelegate:
 
         NSLog("[APP] didFinishLaunching started")
 
-
-        // =====================================================
-        // FIREBASE CONFIGURATION
-        // =====================================================
+        // MARK: Firebase
 
         if let plistPath = Bundle.main.path(
             forResource: "GoogleService-Info",
             ofType: "plist"
         ) {
 
-            NSLog(
-                "[Firebase] Found plist at %@",
-                plistPath
-            )
+            NSLog("[Firebase] Found plist at %@", plistPath)
 
             if FirebaseApp.app() == nil {
 
@@ -85,31 +71,19 @@ class AppDelegate:
             )
         }
 
+        // MARK: Notifications
 
-        // =====================================================
-        // PUSH NOTIFICATION DELEGATES
-        // =====================================================
-
-        UNUserNotificationCenter
-            .current()
-            .delegate = self
-
-        Messaging
-            .messaging()
-            .delegate = self
+        UNUserNotificationCenter.current().delegate = self
 
         NSLog(
-            "[FCM] Notification center delegate configured"
+            "[APNs] Notification center delegate configured"
         )
 
-        NSLog(
-            "[FCM] Firebase Messaging delegate configured"
-        )
+        // IMPORTANT:
+        // Do NOT directly import FirebaseMessaging here.
+        // @react-native-firebase/messaging handles FCM registration.
 
-
-        // =====================================================
-        // REACT NATIVE
-        // =====================================================
+        // MARK: React Native
 
         let delegate = ReactNativeDelegate()
 
@@ -137,10 +111,7 @@ class AppDelegate:
             "[APP] React Native started"
         )
 
-
-        // =====================================================
-        // TTLOCK
-        // =====================================================
+        // MARK: TTLock
 
         TTLock.setupBluetooth { state in
 
@@ -150,14 +121,10 @@ class AppDelegate:
             )
         }
 
-
         return true
     }
 
-
-    // =========================================================
-    // APNs SUCCESS
-    // =========================================================
+    // MARK: APNs registration
 
     func application(
         _ application: UIApplication,
@@ -179,23 +146,12 @@ class AppDelegate:
             apnsToken
         )
 
-
-        // IMPORTANT:
-        // Connect Apple's APNs token to Firebase Messaging.
-
-        Messaging
-            .messaging()
-            .apnsToken = deviceToken
-
-        NSLog(
-            "[FCM] APNs token assigned to Firebase Messaging"
-        )
+        // Do not manually assign the token to
+        // FirebaseMessaging here.
+        //
+        // RNFirebase Messaging handles the APNs/FCM
+        // registration through its native module.
     }
-
-
-    // =========================================================
-    // APNs FAILURE
-    // =========================================================
 
     func application(
         _ application: UIApplication,
@@ -209,37 +165,7 @@ class AppDelegate:
         )
     }
 
-
-    // =========================================================
-    // FCM TOKEN CALLBACK
-    // =========================================================
-
-    func messaging(
-        _ messaging: Messaging,
-        didReceiveRegistrationToken fcmToken: String?
-    ) {
-
-        guard let fcmToken = fcmToken,
-              !fcmToken.isEmpty
-        else {
-
-            NSLog(
-                "[FCM] FCM registration token is NIL"
-            )
-
-            return
-        }
-
-        NSLog(
-            "[FCM] FCM registration token received: %@",
-            fcmToken
-        )
-    }
-
-
-    // =========================================================
-    // FOREGROUND NOTIFICATION
-    // =========================================================
+    // MARK: Foreground notification
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -261,10 +187,7 @@ class AppDelegate:
         ])
     }
 
-
-    // =========================================================
-    // NOTIFICATION TAP
-    // =========================================================
+    // MARK: Notification tap
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -282,10 +205,6 @@ class AppDelegate:
 }
 
 
-// =============================================================
-// REACT NATIVE DELEGATE
-// =============================================================
-
 class ReactNativeDelegate:
     RCTDefaultReactNativeFactoryDelegate {
 
@@ -296,13 +215,11 @@ class ReactNativeDelegate:
         return bundleURL()
     }
 
-
     override func bundleURL() -> URL? {
 
 #if DEBUG
 
-        return RCTBundleURLProvider
-            .sharedSettings()
+        return RCTBundleURLProvider.sharedSettings()
             .jsBundleURL(
                 forBundleRoot: "index"
             )

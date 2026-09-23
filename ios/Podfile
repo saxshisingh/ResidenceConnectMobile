@@ -26,7 +26,7 @@ target 'MyGate' do
   pod 'RecaptchaInterop', :modular_headers => true
 
   # Explicitly link Firebase Messaging for native AppDelegate.swift
-  pod 'Firebase/Messaging'
+  # pod 'Firebase/Messaging'
 
   use_react_native!(
     :path => config[:reactNativePath],
