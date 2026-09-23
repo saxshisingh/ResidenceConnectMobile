@@ -36,6 +36,10 @@ import {
 
 import {Platform} from 'react-native';
 
+/* ==============================================================
+ * TYPES
+ * ============================================================== */
+
 type AuthStatus =
   | 'LOADING'
   | 'AUTHENTICATED'
@@ -63,6 +67,10 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/* ==============================================================
+ * AUTH PROVIDER
+ * ============================================================== */
+
 export const AuthProvider = ({
   children,
 }: AuthProviderProps) => {
@@ -76,7 +84,7 @@ export const AuthProvider = ({
     useState<any>(null);
 
   /* ============================================================
-   * RESOLVE AUTHENTICATED USER ID
+   * RESOLVE USER ID
    * ============================================================ */
 
   /**
@@ -111,247 +119,192 @@ export const AuthProvider = ({
    * ============================================================ */
 
   /**
-   * Register the device for push notifications.
+   * Registers the current authenticated user's device
+   * with Firebase and then with the backend.
    *
    * IMPORTANT:
-   *
-   * - iOS registration is handled inside
-   *   registerForPushNotifications().
-   * - Android registration continues to work as before.
-   * - FCM failure must NEVER prevent authentication.
+   * - This function does NOT control authentication.
+   * - Any FCM error is swallowed.
+   * - Authentication must already be AUTHENTICATED before
+   *   this function is called.
    */
-  const setupPushNotifications =
-    useCallback(
-      async (
-        userData: any,
-      ): Promise<void> => {
-        try {
-          const userId =
-            getUserId(userData);
+  const setupPushNotifications = useCallback(
+    async (
+      userData: any,
+    ): Promise<void> => {
+      try {
+        const userId =
+          getUserId(userData);
 
-          console.log(
-            '[FCM] ========================================',
+        console.log(
+          '[FCM] ========================================',
+        );
+
+        console.log(
+          '[FCM] Starting device registration',
+        );
+
+        console.log(
+          '[FCM] Platform:',
+          Platform.OS,
+        );
+
+        console.log(
+          '[FCM] User profile:',
+          JSON.stringify(
+            {
+              userId:
+                userData?.userId ??
+                userData?.id ??
+                null,
+
+              residentId:
+                userData?.residentId ??
+                null,
+
+              roleName:
+                userData?.roleName ??
+                null,
+            },
+            null,
+            2,
+          ),
+        );
+
+        console.log(
+          '[FCM] Resolved user ID:',
+          userId,
+        );
+
+        if (!userId) {
+          console.warn(
+            '[FCM] Unable to resolve user ID',
           );
 
-          console.log(
-            '[FCM] Starting device registration',
+          return;
+        }
+
+        console.log(
+          '[FCM] Calling registerForPushNotifications...',
+        );
+
+        const token =
+          await registerForPushNotifications(
+            userId,
           );
 
-          console.log(
+        if (!token) {
+          console.warn(
+            '[FCM] No FCM token returned',
+          );
+
+          console.warn(
             '[FCM] Platform:',
             Platform.OS,
           );
 
-          console.log(
-            '[FCM] User profile:',
-            JSON.stringify(
-              {
-                userId:
-                  userData?.userId ??
-                  userData?.id ??
-                  null,
-
-                residentId:
-                  userData?.residentId ??
-                  null,
-
-                roleName:
-                  userData?.roleName ??
-                  null,
-              },
-              null,
-              2,
-            ),
-          );
-
-          console.log(
-            '[FCM] Resolved user ID:',
-            userId,
-          );
-
-          if (!userId) {
-            console.warn(
-              '[FCM] Unable to resolve user ID for device registration',
-            );
-
-            return;
-          }
-
-          console.log(
-            '[FCM] Calling registerForPushNotifications...',
-          );
-
-          const token =
-            await registerForPushNotifications(
-              userId,
-            );
-
-          if (token) {
-            console.log(
-              '[FCM] ========================================',
-            );
-
-            console.log(
-              '[FCM] Push registration completed successfully',
-            );
-
-            console.log(
-              '[FCM] Platform:',
-              Platform.OS,
-            );
-
-            console.log(
-              '[FCM] FCM token received:',
-              `${token.substring(0, 12)}...`,
-            );
-
-            console.log(
-              '[FCM] User:',
-              userId,
-            );
-
-            console.log(
-              '[FCM] ========================================',
-            );
-          } else {
-            console.warn(
-              '[FCM] Push registration did not return an FCM token',
-            );
-
-            console.warn(
-              '[FCM] Platform:',
-              Platform.OS,
-            );
-          }
-        } catch (error) {
-          console.warn(
-            '[FCM] Device token registration failed:',
-            error,
-          );
-
-          /**
-           * IMPORTANT:
-           *
-           * Never throw FCM errors into the
-           * authentication flow.
-           */
+          return;
         }
-      },
-      [getUserId],
-    );
+
+        console.log(
+          '[FCM] ========================================',
+        );
+
+        console.log(
+          '[FCM] Push registration completed successfully',
+        );
+
+        console.log(
+          '[FCM] Platform:',
+          Platform.OS,
+        );
+
+        console.log(
+          '[FCM] FCM token received:',
+          `${token.substring(0, 12)}...`,
+        );
+
+        console.log(
+          '[FCM] FCM token length:',
+          token.length,
+        );
+
+        console.log(
+          '[FCM] User:',
+          userId,
+        );
+
+        console.log(
+          '[FCM] ========================================',
+        );
+      } catch (error: any) {
+        console.warn(
+          '[FCM] Device token registration failed:',
+          error?.message ?? error,
+        );
+
+        console.warn(
+          '[FCM] Error code:',
+          error?.code,
+        );
+
+        /**
+         * IMPORTANT:
+         *
+         * Never allow FCM failure to log the user out
+         * or break authentication.
+         */
+      }
+    },
+    [getUserId],
+  );
 
   /* ============================================================
    * INITIALIZE AUTH
    * ============================================================ */
 
   /**
-   * Restore previously persisted authentication.
+   * Restores the previously persisted authentication session.
+   *
+   * FCM registration is intentionally NOT performed here.
+   *
+   * Authentication is completed first and the FCM registration
+   * happens from the AUTHENTICATED useEffect below.
    */
-  const initializeAuth =
-    useCallback(
-      async (): Promise<void> => {
+  const initializeAuth = useCallback(
+    async (): Promise<void> => {
+      console.log(
+        '[AUTH] ========================================',
+      );
+
+      console.log(
+        '[AUTH] initializeAuth START',
+      );
+
+      try {
+        setStatus('LOADING');
+
         console.log(
-          '[AUTH] initializeAuth START',
+          '[AUTH] Calling restoreSession...',
         );
 
-        try {
-          setStatus('LOADING');
+        const session =
+          await restoreSession();
 
+        console.log(
+          '[AUTH] restoreSession FINISHED:',
+          session
+            ? 'SESSION FOUND'
+            : 'NO SESSION',
+        );
+
+        /* --------------------------------------------------------
+         * NO SESSION
+         * -------------------------------------------------------- */
+
+        if (!session) {
           console.log(
-            '[AUTH] calling restoreSession...',
-          );
-
-          const session =
-            await restoreSession();
-
-          console.log(
-            '[AUTH] restoreSession FINISHED:',
-            session
-              ? 'SESSION FOUND'
-              : 'NO SESSION',
-          );
-
-          /* ------------------------------------------------------
-           * No session
-           * ------------------------------------------------------ */
-
-          if (!session) {
-            console.log(
-              '[AUTH] Setting status -> UNAUTHENTICATED',
-            );
-
-            setUser(null);
-
-            dispatch(logout());
-
-            setStatus(
-              'UNAUTHENTICATED',
-            );
-
-            return;
-          }
-
-          /* ------------------------------------------------------
-           * Session found
-           * ------------------------------------------------------ */
-
-          console.log(
-            '[AUTH] Restored user:',
-            JSON.stringify(
-              session.user,
-              null,
-              2,
-            ),
-          );
-
-          const restoredUserId =
-            getUserId(session.user);
-
-          console.log(
-            '[AUTH] Restored user ID:',
-            restoredUserId,
-          );
-
-          setUser(session.user);
-
-          dispatch(
-            restoreAuthSession({
-              token: session.token,
-
-              isFirstLogin:
-                session.isFirstLogin,
-
-              user: session.user,
-            }),
-          );
-
-          /* ------------------------------------------------------
-           * Register FCM device
-           *
-           * This happens while the access token/session
-           * is already restored, so apiFetch can authenticate
-           * the device-token request.
-           * ------------------------------------------------------ */
-
-          await setupPushNotifications(
-            session.user,
-          );
-
-          /* ------------------------------------------------------
-           * Authentication complete
-           * ------------------------------------------------------ */
-
-          setStatus(
-            'AUTHENTICATED',
-          );
-
-          console.log(
-            '[AUTH] initializeAuth SUCCESS',
-          );
-        } catch (error) {
-          console.error(
-            '[AUTH] INITIALIZATION ERROR:',
-            error,
+            '[AUTH] No saved session',
           );
 
           setUser(null);
@@ -361,22 +314,186 @@ export const AuthProvider = ({
           setStatus(
             'UNAUTHENTICATED',
           );
+
+          console.log(
+            '[AUTH] Status -> UNAUTHENTICATED',
+          );
+
+          return;
         }
-      },
-      [
-        dispatch,
-        getUserId,
-        setupPushNotifications,
-      ],
-    );
+
+        /* --------------------------------------------------------
+         * SESSION FOUND
+         * -------------------------------------------------------- */
+
+        console.log(
+          '[AUTH] Restored user:',
+          JSON.stringify(
+            session.user,
+            null,
+            2,
+          ),
+        );
+
+        const restoredUserId =
+          getUserId(session.user);
+
+        console.log(
+          '[AUTH] Restored user ID:',
+          restoredUserId,
+        );
+
+        /* --------------------------------------------------------
+         * RESTORE USER IN REACT STATE
+         * -------------------------------------------------------- */
+
+        setUser(session.user);
+
+        /* --------------------------------------------------------
+         * RESTORE AUTH STATE IN REDUX
+         * -------------------------------------------------------- */
+
+        dispatch(
+          restoreAuthSession({
+            token: session.token,
+
+            isFirstLogin:
+              session.isFirstLogin,
+
+            user: session.user,
+          }),
+        );
+
+        /**
+         * IMPORTANT:
+         *
+         * DO NOT call setupPushNotifications() here.
+         *
+         * Authentication must become AUTHENTICATED first.
+         */
+
+        setStatus(
+          'AUTHENTICATED',
+        );
+
+        console.log(
+          '[AUTH] Status -> AUTHENTICATED',
+        );
+
+        console.log(
+          '[AUTH] initializeAuth SUCCESS',
+        );
+
+        console.log(
+          '[AUTH] ========================================',
+        );
+      } catch (error: any) {
+        console.error(
+          '[AUTH] INITIALIZATION ERROR:',
+          error?.message ?? error,
+        );
+
+        setUser(null);
+
+        dispatch(logout());
+
+        setStatus(
+          'UNAUTHENTICATED',
+        );
+      }
+    },
+    [
+      dispatch,
+      getUserId,
+    ],
+  );
 
   /* ============================================================
    * INITIAL AUTH EFFECT
    * ============================================================ */
 
   useEffect(() => {
+    console.log(
+      '[AUTH] Running initial authentication effect',
+    );
+
     void initializeAuth();
   }, [initializeAuth]);
+
+  /* ============================================================
+   * REGISTER FCM AFTER AUTHENTICATION
+   * ============================================================ */
+
+  /**
+   * IMPORTANT:
+   *
+   * This is the ONLY place where the initial FCM registration
+   * is triggered.
+   *
+   * Flow:
+   *
+   * AUTH LOGIN / RESTORE
+   *       ↓
+   * Redux auth token restored
+   *       ↓
+   * status = AUTHENTICATED
+   *       ↓
+   * this effect runs
+   *       ↓
+   * registerForPushNotifications()
+   *       ↓
+   * APNs token
+   *       ↓
+   * FCM token
+   *       ↓
+   * backend /device-token
+   */
+  useEffect(() => {
+    if (status !== 'AUTHENTICATED') {
+      return;
+    }
+
+    if (!user) {
+      console.warn(
+        '[FCM] Authenticated but user is null',
+      );
+
+      return;
+    }
+
+    console.log(
+      '[FCM] ========================================',
+    );
+
+    console.log(
+      '[FCM] Authentication complete',
+    );
+
+    console.log(
+      '[FCM] Starting push registration effect',
+    );
+
+    console.log(
+      '[FCM] Platform:',
+      Platform.OS,
+    );
+
+    console.log(
+      '[FCM] User ID:',
+      getUserId(user),
+    );
+
+    console.log(
+      '[FCM] ========================================',
+    );
+
+    void setupPushNotifications(user);
+  }, [
+    status,
+    user,
+    setupPushNotifications,
+    getUserId,
+  ]);
 
   /* ============================================================
    * FCM TOKEN REFRESH LISTENER
@@ -426,6 +543,11 @@ export const AuthProvider = ({
               }
 
               console.log(
+                '[FCM] New token length:',
+                newToken.length,
+              );
+
+              console.log(
                 '[FCM] Registering refreshed token with backend...',
               );
 
@@ -436,7 +558,7 @@ export const AuthProvider = ({
 
               if (registered) {
                 console.log(
-                  '[FCM] Refreshed token registered with backend',
+                  '[FCM] Refreshed token registered successfully',
                 );
               } else {
                 console.warn(
@@ -447,10 +569,10 @@ export const AuthProvider = ({
               console.log(
                 '[FCM] ========================================',
               );
-            } catch (error) {
+            } catch (error: any) {
               console.warn(
                 '[FCM] Error registering refreshed token:',
-                error,
+                error?.message ?? error,
               );
             }
           },
@@ -459,10 +581,10 @@ export const AuthProvider = ({
       console.log(
         '[FCM] Token refresh listener registered',
       );
-    } catch (error) {
+    } catch (error: any) {
       console.warn(
         '[FCM] Unable to initialize token refresh listener:',
-        error,
+        error?.message ?? error,
       );
     }
 
@@ -474,10 +596,10 @@ export const AuthProvider = ({
           console.log(
             '[FCM] Token refresh listener removed',
           );
-        } catch (error) {
+        } catch (error: any) {
           console.warn(
             '[FCM] Error removing token refresh listener:',
-            error,
+            error?.message ?? error,
           );
         }
       }
@@ -511,8 +633,11 @@ export const AuthProvider = ({
           async remoteMessage => {
             try {
               console.log(
-                '[FCM] Foreground notification received:',
-                remoteMessage,
+                '[FCM] ========================================',
+              );
+
+              console.log(
+                '[FCM] Foreground notification received',
               );
 
               const notificationId =
@@ -523,13 +648,13 @@ export const AuthProvider = ({
                 remoteMessage.data?.type;
 
               const title =
-                remoteMessage
-                  .notification?.title ??
+                remoteMessage.notification
+                  ?.title ??
                 'Notification';
 
               const body =
-                remoteMessage
-                  .notification?.body ??
+                remoteMessage.notification
+                  ?.body ??
                 '';
 
               console.log(
@@ -551,10 +676,14 @@ export const AuthProvider = ({
                 '[FCM] Type:',
                 type,
               );
-            } catch (error) {
+
+              console.log(
+                '[FCM] ========================================',
+              );
+            } catch (error: any) {
               console.warn(
                 '[FCM] Error processing foreground notification:',
-                error,
+                error?.message ?? error,
               );
             }
           },
@@ -563,10 +692,10 @@ export const AuthProvider = ({
       console.log(
         '[FCM] Foreground message listener registered',
       );
-    } catch (error) {
+    } catch (error: any) {
       console.warn(
         '[FCM] Unable to initialize foreground message listener:',
-        error,
+        error?.message ?? error,
       );
     }
 
@@ -578,10 +707,10 @@ export const AuthProvider = ({
           console.log(
             '[FCM] Foreground message listener removed',
           );
-        } catch (error) {
+        } catch (error: any) {
           console.warn(
             '[FCM] Error removing foreground listener:',
-            error,
+            error?.message ?? error,
           );
         }
       }
@@ -599,6 +728,10 @@ export const AuthProvider = ({
   ): Promise<void> => {
     try {
       setStatus('LOADING');
+
+      console.log(
+        '[AUTH] ========================================',
+      );
 
       console.log(
         '[AUTH] Starting login...',
@@ -643,7 +776,7 @@ export const AuthProvider = ({
        * -------------------------------------------------------- */
 
       console.log(
-        '[AUTH] Login completed. Fetching user profile...',
+        '[AUTH] Fetching user profile...',
       );
 
       const currentUser =
@@ -698,34 +831,34 @@ export const AuthProvider = ({
         }),
       );
 
-      /* --------------------------------------------------------
-       * REGISTER DEVICE FOR FCM
-       *
+      /**
        * IMPORTANT:
        *
-       * The access token has now been stored in Redux,
-       * so apiFetch can authenticate the device-token request.
-       * -------------------------------------------------------- */
-
-      await setupPushNotifications(
-        currentUser,
-      );
-
-      /* --------------------------------------------------------
-       * AUTHENTICATION COMPLETE
-       * -------------------------------------------------------- */
+       * Do NOT call setupPushNotifications() here.
+       *
+       * Once status becomes AUTHENTICATED, the dedicated
+       * FCM effect above will execute.
+       */
 
       setStatus(
         'AUTHENTICATED',
       );
 
       console.log(
-        '[AUTH] LOGIN INITIALIZATION SUCCESS',
+        '[AUTH] Status -> AUTHENTICATED',
       );
-    } catch (error) {
+
+      console.log(
+        '[AUTH] Login completed successfully',
+      );
+
+      console.log(
+        '[AUTH] ========================================',
+      );
+    } catch (error: any) {
       console.error(
         '[AUTH] LOGIN INITIALIZATION ERROR:',
-        error,
+        error?.message ?? error,
       );
 
       setUser(null);
@@ -756,10 +889,10 @@ export const AuthProvider = ({
         console.log(
           '[AUTH] Logout completed',
         );
-      } catch (error) {
+      } catch (error: any) {
         console.warn(
           '[AUTH] BACKEND LOGOUT ERROR:',
-          error,
+          error?.message ?? error,
         );
       } finally {
         setUser(null);
