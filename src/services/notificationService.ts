@@ -24,16 +24,16 @@ const showFcmDebug = (
     `[FCM][DEBUG] ${title}: ${message}`,
   );
 
-  Alert.alert(
-    `FCM DEBUG - ${title}`,
-    message,
-    [
-      {
-        text: 'OK',
-        style: 'default',
-      },
-    ],
-  );
+  // Alert.alert(
+  //   `FCM DEBUG - ${title}`,
+  //   message,
+  //   [
+  //     {
+  //       text: 'OK',
+  //       style: 'default',
+  //     },
+  //   ],
+  // );
 };
 
 /* ==============================================================
