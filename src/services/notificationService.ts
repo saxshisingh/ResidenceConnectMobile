@@ -1,214 +1,165 @@
+import {Alert, Platform} from 'react-native';
+
+import {apiFetch} from '../shared/api/apiClient';
+import {API_BASE_URL} from '../config/api';
+
 import {
-  AuthorizationStatus,
-  getAPNSToken,
   getMessaging,
-  getToken,
-  registerDeviceForRemoteMessages,
   requestPermission,
+  getToken,
+  getAPNSToken,
+  registerDeviceForRemoteMessages,
+  AuthorizationStatus,
 } from '@react-native-firebase/messaging';
 
-import {Platform} from 'react-native';
+/* ==============================================================
+ * DEBUG HELPER
+ * ============================================================== */
 
-import {API_BASE_URL} from '../config/api';
-import {apiFetch} from '../shared/api/apiClient';
+const showFcmDebug = (
+  title: string,
+  message: string,
+) => {
+  console.log(
+    `[FCM][DEBUG] ${title}: ${message}`,
+  );
 
-/**
- * ============================================================
- * TYPES
- * ============================================================
- */
+  Alert.alert(
+    `FCM DEBUG - ${title}`,
+    message,
+    [
+      {
+        text: 'OK',
+        style: 'default',
+      },
+    ],
+  );
+};
 
-interface RegisterDeviceTokenPayload {
-  deviceToken: string;
-  platform: string;
-  deviceId?: string;
-}
+/* ==============================================================
+ * REGISTER DEVICE TOKEN WITH BACKEND
+ * ============================================================== */
 
-/**
- * ============================================================
- * REGISTER TOKEN WITH BACKEND
- * ============================================================
- *
- * This function is responsible ONLY for sending the FCM token
- * to the backend.
- *
- * The backend gets userId from the authenticated JWT.
- */
-export async function registerDeviceToken(
+export const registerDeviceToken = async (
   deviceToken: string,
-): Promise<boolean> {
+): Promise<boolean> => {
   try {
-    if (!deviceToken || !deviceToken.trim()) {
-      console.warn(
-        '[FCM] Cannot register empty FCM token',
+    console.log(
+      '[FCM][Backend] Starting device token registration',
+    );
+
+    if (!deviceToken) {
+      console.error(
+        '[FCM][Backend] Device token is empty',
+      );
+
+      showFcmDebug(
+        'Backend',
+        'Device token is empty',
       );
 
       return false;
     }
 
-    const payload: RegisterDeviceTokenPayload = {
-      deviceToken: deviceToken.trim(),
+    const payload = {
+      deviceToken,
       platform: Platform.OS,
+      deviceId: null,
     };
 
     console.log(
-      '[FCM] Registering device token',
-      {
-        platform: Platform.OS,
-        tokenLength: deviceToken.length,
-        tokenPreview: `${deviceToken.substring(0, 12)}...`,
-      },
+      '[FCM][Backend] Platform:',
+      Platform.OS,
     );
 
-    const url =
-      `${API_BASE_URL}/api/notifications/device-token`;
+    console.log(
+      '[FCM][Backend] Token length:',
+      deviceToken.length,
+    );
 
     console.log(
-      '[FCM] Device token API:',
-      url,
+      '[FCM][Backend] Sending token to backend...',
+    );
+
+    showFcmDebug(
+      'BACKEND',
+      `Sending FCM token to backend\n\nPlatform: ${Platform.OS}\nToken length: ${deviceToken.length}`,
     );
 
     const response = await apiFetch(
-      url,
+      `${API_BASE_URL}/api/notifications/device-token`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       },
+    );
+
+    console.log(
+      '[FCM][Backend] HTTP status:',
+      response.status,
     );
 
     const responseText =
       await response.text();
 
     console.log(
-      '[FCM] Device token API status:',
-      response.status,
-    );
-
-    console.log(
-      '[FCM] Device token API response:',
+      '[FCM][Backend] Response:',
       responseText,
     );
 
     if (!response.ok) {
       console.error(
-        '[FCM] Device token registration failed:',
-        response.status,
-        responseText,
+        '[FCM][Backend] Registration failed',
+      );
+
+      showFcmDebug(
+        'BACKEND FAILED',
+        `Backend rejected device token\n\nHTTP Status: ${response.status}\n\nResponse:\n${responseText}`,
       );
 
       return false;
     }
 
     console.log(
-      '[FCM] Device token registered successfully',
+      '[FCM][Backend] Device token registered successfully',
+    );
+
+    showFcmDebug(
+      'SUCCESS',
+      `FCM token registered successfully with backend\n\nHTTP Status: ${response.status}\nPlatform: ${Platform.OS}`,
     );
 
     return true;
-
-  } catch (error) {
+  } catch (error: any) {
     console.error(
-      '[FCM] Device token registration exception:',
-      error,
+      '[FCM][Backend] Registration exception:',
+      error?.message ?? error,
+    );
+
+    console.error(
+      '[FCM][Backend] Error code:',
+      error?.code,
+    );
+
+    showFcmDebug(
+      'BACKEND ERROR',
+      `Backend registration exception\n\nMessage: ${
+        error?.message ?? String(error)
+      }\n\nCode: ${error?.code ?? 'N/A'}`,
     );
 
     return false;
   }
-}
+};
 
-/**
- * ============================================================
- * WAIT FOR APNs TOKEN
- * ============================================================
- *
- * iOS needs an APNs token before FCM can reliably provide
- * the FCM registration token.
- */
-async function waitForAPNSToken(
-  messaging: ReturnType<typeof getMessaging>,
-  timeoutMs: number = 15000,
-): Promise<string | null> {
+/* ==============================================================
+ * REGISTER FOR PUSH NOTIFICATIONS
+ * ============================================================== */
 
-  const startedAt = Date.now();
-
-  console.log(
-    '[FCM] Waiting for APNs token...',
-  );
-
-  while (
-    Date.now() - startedAt <
-    timeoutMs
-  ) {
-
-    try {
-      const apnsToken =
-        await getAPNSToken(messaging);
-
-      if (apnsToken) {
-
-        console.log(
-          '[FCM] APNs token received',
-          {
-            length: apnsToken.length,
-            preview:
-              `${apnsToken.substring(0, 12)}...`,
-          },
-        );
-
-        return apnsToken;
-      }
-
-    } catch (error) {
-
-      console.warn(
-        '[FCM] Error while reading APNs token:',
-        error,
-      );
-    }
-
-    await new Promise<void>(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, 1000);
-    });
-  }
-
-  console.error(
-    '[FCM] APNs token was not received within timeout',
-  );
-
-  return null;
-}
-
-/**
- * ============================================================
- * MAIN PUSH REGISTRATION
- * ============================================================
- *
- * This is the ONLY function AuthProvider should call.
- *
- * iOS:
- *
- * 1. Request notification permission
- * 2. Register device for APNs
- * 3. Wait for APNs token
- * 4. Get FCM token
- * 5. Register FCM token with backend
- *
- * Android:
- *
- * 1. Request permission
- * 2. Get FCM token
- * 3. Register token with backend
- */
-export async function registerForPushNotifications(
+export const registerForPushNotifications = async (
   userId: string,
-): Promise<string | null> {
-
+): Promise<string | null> => {
   try {
-
     console.log(
       '[FCM] ========================================',
     );
@@ -231,211 +182,447 @@ export async function registerForPushNotifications(
       '[FCM] ========================================',
     );
 
-    /**
-     * --------------------------------------------------------
-     * Validate authenticated user
-     * --------------------------------------------------------
-     */
+    /* ==========================================================
+     * BASIC VALIDATION
+     * ========================================================== */
 
     if (!userId) {
-
       console.warn(
-        '[FCM] No authenticated user ID',
+        '[FCM] User ID is missing',
+      );
+
+      showFcmDebug(
+        'ERROR',
+        'User ID is missing.\n\nPush registration cannot continue.',
       );
 
       return null;
     }
 
-    /**
-     * --------------------------------------------------------
-     * Get Firebase Messaging instance
-     * --------------------------------------------------------
-     */
+    /* ==========================================================
+     * FIREBASE MESSAGING INSTANCE
+     * ========================================================== */
 
     const messaging =
       getMessaging();
 
-    /**
-     * --------------------------------------------------------
-     * Request notification permission
-     * --------------------------------------------------------
-     */
+    /* ==========================================================
+     * ANDROID
+     * ============================================================== */
 
-    console.log(
-      '[FCM] Requesting notification permission...',
-    );
+    if (Platform.OS === 'android') {
+      try {
+        console.log(
+          '[FCM][Android] Getting FCM token...',
+        );
 
-    const authStatus =
-      await requestPermission(
-        messaging,
-      );
+        showFcmDebug(
+          'ANDROID',
+          'Android detected.\n\nGetting FCM token...',
+        );
 
-    console.log(
-      '[FCM] Authorization status:',
-      authStatus,
-    );
+        const token =
+          await getToken(messaging);
 
-    const permissionGranted =
-      authStatus ===
-        AuthorizationStatus.AUTHORIZED ||
-      authStatus ===
-        AuthorizationStatus.PROVISIONAL;
+        if (!token) {
+          console.warn(
+            '[FCM][Android] FCM token is empty',
+          );
 
-    if (!permissionGranted) {
+          showFcmDebug(
+            'ANDROID FAILED',
+            'Firebase returned an empty FCM token.',
+          );
 
-      console.warn(
-        '[FCM] Notification permission NOT granted',
-      );
-
-      return null;
-    }
-
-    console.log(
-      '[FCM] Notification permission granted',
-    );
-
-    /**
-     * --------------------------------------------------------
-     * iOS APNs registration
-     * --------------------------------------------------------
-     */
-
-    if (Platform.OS === 'ios') {
-
-      console.log(
-        '[FCM][iOS] Checking APNs registration...',
-      );
-
-      if (
-        !messaging.isDeviceRegisteredForRemoteMessages
-      ) {
+          return null;
+        }
 
         console.log(
+          '[FCM][Android] FCM token received',
+        );
+
+        console.log(
+          '[FCM][Android] Token length:',
+          token.length,
+        );
+
+        showFcmDebug(
+          'ANDROID TOKEN',
+          `FCM token received successfully.\n\nToken length: ${token.length}`,
+        );
+
+        const registered =
+          await registerDeviceToken(
+            token,
+          );
+
+        if (!registered) {
+          return null;
+        }
+
+        return token;
+      } catch (error: any) {
+        console.error(
+          '[FCM][Android] Registration error:',
+          error,
+        );
+
+        showFcmDebug(
+          'ANDROID ERROR',
+          `Android FCM registration failed.\n\n${
+            error?.message ?? String(error)
+          }`,
+        );
+
+        return null;
+      }
+    }
+
+    /* ==========================================================
+     * IOS
+     * ============================================================== */
+
+    if (Platform.OS === 'ios') {
+      /* ----------------------------------------------------------
+       * STEP 1 - REQUEST NOTIFICATION PERMISSION
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] Requesting notification permission...',
+      );
+
+      showFcmDebug(
+        'iOS STEP 1',
+        'Requesting notification permission...',
+      );
+
+      const authStatus =
+        await requestPermission(
+          messaging,
+        );
+
+      console.log(
+        '[FCM][iOS] Authorization status:',
+        authStatus,
+      );
+
+      const permissionGranted =
+        authStatus ===
+          AuthorizationStatus.AUTHORIZED ||
+        authStatus ===
+          AuthorizationStatus.PROVISIONAL;
+
+      if (!permissionGranted) {
+        console.warn(
+          '[FCM][iOS] Notification permission was not granted',
+        );
+
+        showFcmDebug(
+          'iOS PERMISSION FAILED',
+          `Notification permission was not granted.\n\nAuthorization status: ${authStatus}`,
+        );
+
+        return null;
+      }
+
+      showFcmDebug(
+        'iOS STEP 1 SUCCESS',
+        `Notification permission granted.\n\nAuthorization status: ${authStatus}`,
+      );
+
+      /* ----------------------------------------------------------
+       * STEP 2 - REGISTER DEVICE FOR REMOTE MESSAGES
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] Checking remote message registration...',
+      );
+
+      let isRegistered =
+        messaging.isDeviceRegisteredForRemoteMessages;
+
+      console.log(
+        '[FCM][iOS] Already registered:',
+        isRegistered,
+      );
+
+      if (!isRegistered) {
+        console.log(
           '[FCM][iOS] Registering device for remote messages...',
+        );
+
+        showFcmDebug(
+          'iOS STEP 2',
+          'Registering device with Apple APNs...',
         );
 
         await registerDeviceForRemoteMessages(
           messaging,
         );
 
-        console.log(
-          '[FCM][iOS] Device registered for remote messages',
-        );
-
-      } else {
+        isRegistered =
+          messaging.isDeviceRegisteredForRemoteMessages;
 
         console.log(
-          '[FCM][iOS] Device already registered for remote messages',
+          '[FCM][iOS] Registration completed:',
+          isRegistered,
         );
       }
 
-      /**
-       * ------------------------------------------------------
-       * Wait for APNs token
-       * ------------------------------------------------------
-       */
-
-      const apnsToken =
-        await waitForAPNSToken(
-          messaging,
+      if (!isRegistered) {
+        console.warn(
+          '[FCM][iOS] Device is not registered for remote messages',
         );
 
-      if (!apnsToken) {
+        showFcmDebug(
+          'iOS APNs REGISTRATION FAILED',
+          'The iPhone could not register for remote notifications.\n\nNo APNs registration was detected.',
+        );
 
+        return null;
+      }
+
+      showFcmDebug(
+        'iOS STEP 2 SUCCESS',
+        'Device registered for remote messages.\n\nAPNs registration request completed.',
+      );
+
+      /* ----------------------------------------------------------
+       * STEP 3 - WAIT FOR APNs TOKEN
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] Waiting for APNs token...',
+      );
+
+      showFcmDebug(
+        'iOS STEP 3',
+        'Waiting for APNs device token...',
+      );
+
+      let apnsToken:
+        | string
+        | null = null;
+
+      const maxAttempts = 15;
+
+      for (
+        let attempt = 1;
+        attempt <= maxAttempts;
+        attempt++
+      ) {
+        try {
+          apnsToken =
+            await getAPNSToken(
+              messaging,
+            );
+        } catch (error: any) {
+          console.warn(
+            '[FCM][iOS] getAPNSToken error:',
+            error?.message ?? error,
+          );
+        }
+
+        if (apnsToken) {
+          break;
+        }
+
+        console.log(
+          `[FCM][iOS] APNs token not available yet. Attempt ${attempt}/${maxAttempts}`,
+        );
+
+        await new Promise<void>(
+          resolve => {
+            setTimeout(
+              resolve,
+              1000,
+            );
+          },
+        );
+      }
+
+      /* ----------------------------------------------------------
+       * APNs TOKEN CHECK
+       * ---------------------------------------------------------- */
+
+      if (!apnsToken) {
         console.error(
-          '[FCM][iOS] APNs token unavailable',
+          '[FCM][iOS] APNs token was not received',
+        );
+
+        showFcmDebug(
+          'iOS APNs TOKEN FAILED',
+          'APNs token was NOT received after 15 seconds.\n\nThis means the problem is before FCM token generation.',
         );
 
         return null;
       }
 
       console.log(
-        '[FCM][iOS] APNs registration completed',
+        '[FCM][iOS] APNs token received',
       );
+
+      console.log(
+        '[FCM][iOS] APNs token length:',
+        apnsToken.length,
+      );
+
+      showFcmDebug(
+        'iOS STEP 3 SUCCESS',
+        `APNs token received successfully.\n\nToken length: ${apnsToken.length}`,
+      );
+
+      /* ----------------------------------------------------------
+       * STEP 4 - GET FCM TOKEN
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] Getting FCM token...',
+      );
+
+      showFcmDebug(
+        'iOS STEP 4',
+        'APNs token exists.\n\nNow requesting Firebase FCM token...',
+      );
+
+      const token =
+        await getToken(messaging);
+
+      if (!token) {
+        console.error(
+          '[FCM][iOS] FCM token is empty',
+        );
+
+        showFcmDebug(
+          'iOS FCM TOKEN FAILED',
+          'APNs token exists, but Firebase did not return an FCM token.',
+        );
+
+        return null;
+      }
+
+      console.log(
+        '[FCM][iOS] FCM token received',
+      );
+
+      console.log(
+        '[FCM][iOS] FCM token length:',
+        token.length,
+      );
+
+      showFcmDebug(
+        'iOS STEP 4 SUCCESS',
+        `FCM token received successfully.\n\nToken length: ${token.length}`,
+      );
+
+      /* ----------------------------------------------------------
+       * STEP 5 - SEND FCM TOKEN TO BACKEND
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] Registering FCM token with backend...',
+      );
+
+      const registered =
+        await registerDeviceToken(
+          token,
+        );
+
+      if (!registered) {
+        showFcmDebug(
+          'iOS STEP 5 FAILED',
+          'FCM token was generated, but backend registration failed.',
+        );
+
+        return null;
+      }
+
+      /* ----------------------------------------------------------
+       * COMPLETE
+       * ---------------------------------------------------------- */
+
+      console.log(
+        '[FCM][iOS] ========================================',
+      );
+
+      console.log(
+        '[FCM][iOS] PUSH REGISTRATION COMPLETED',
+      );
+
+      console.log(
+        '[FCM][iOS] APNs token: RECEIVED',
+      );
+
+      console.log(
+        '[FCM][iOS] FCM token: RECEIVED',
+      );
+
+      console.log(
+        '[FCM][iOS] Backend registration: SUCCESS',
+      );
+
+      console.log(
+        '[FCM][iOS] ========================================',
+      );
+
+      showFcmDebug(
+        'iOS COMPLETE',
+        'Push notification registration completed successfully.\n\n✓ APNs token received\n✓ FCM token received\n✓ Backend registration successful',
+      );
+
+      return token;
     }
 
-    /**
-     * --------------------------------------------------------
-     * Get FCM token
-     * --------------------------------------------------------
-     */
+    /* ==========================================================
+     * UNSUPPORTED PLATFORM
+     * ============================================================== */
 
-    console.log(
-      '[FCM] Requesting FCM registration token...',
-    );
-
-    const fcmToken =
-      await getToken(
-        messaging,
-      );
-
-    if (
-      !fcmToken ||
-      !fcmToken.trim()
-    ) {
-
-      console.error(
-        '[FCM] FCM token was not generated',
-      );
-
-      return null;
-    }
-
-    console.log(
-      '[FCM] FCM token generated successfully',
-      {
-        length: fcmToken.length,
-        preview:
-          `${fcmToken.substring(0, 12)}...`,
-      },
-    );
-
-    /**
-     * --------------------------------------------------------
-     * Register FCM token with backend
-     * --------------------------------------------------------
-     */
-
-    const registered =
-      await registerDeviceToken(
-        fcmToken,
-      );
-
-    if (!registered) {
-
-      console.error(
-        '[FCM] FCM token generated but backend registration failed',
-      );
-
-      return null;
-    }
-
-    console.log(
-      '[FCM] ========================================',
-    );
-
-    console.log(
-      '[FCM] PUSH REGISTRATION COMPLETED',
-    );
-
-    console.log(
-      '[FCM] Platform:',
+    console.warn(
+      '[FCM] Unsupported platform:',
       Platform.OS,
     );
 
-    console.log(
+    showFcmDebug(
+      'UNSUPPORTED PLATFORM',
+      `Push notifications are not configured for platform: ${Platform.OS}`,
+    );
+
+    return null;
+  } catch (error: any) {
+    console.error(
       '[FCM] ========================================',
     );
 
-    return fcmToken;
-
-  } catch (error) {
+    console.error(
+      '[FCM] PUSH REGISTRATION FAILED',
+    );
 
     console.error(
-      '[FCM] Push registration failed:',
+      '[FCM] Error:',
       error,
+    );
+
+    console.error(
+      '[FCM] Error message:',
+      error?.message,
+    );
+
+    console.error(
+      '[FCM] Error code:',
+      error?.code,
+    );
+
+    console.error(
+      '[FCM] ========================================',
+    );
+
+    showFcmDebug(
+      'REGISTRATION ERROR',
+      `Push notification registration failed.\n\nMessage: ${
+        error?.message ?? String(error)
+      }\n\nCode: ${error?.code ?? 'N/A'}`,
     );
 
     return null;
   }
-}
+};
