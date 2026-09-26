@@ -25,41 +25,41 @@ class AppDelegate:
         title: String,
         message: String
     ) {
-        DispatchQueue.main.async {
-            guard let window = self.window,
-                  let rootViewController = window.rootViewController else {
-                NSLog(
-                    "[DEBUG ALERT] %@ - %@",
-                    title,
-                    message
-                )
-                return
-            }
+        // DispatchQueue.main.async {
+        //     guard let window = self.window,
+        //           let rootViewController = window.rootViewController else {
+        //         NSLog(
+        //             "[DEBUG ALERT] %@ - %@",
+        //             title,
+        //             message
+        //         )
+        //         return
+        //     }
 
-            var presenter = rootViewController
+        //     var presenter = rootViewController
 
-            while let presented = presenter.presentedViewController {
-                presenter = presented
-            }
+        //     while let presented = presenter.presentedViewController {
+        //         presenter = presented
+        //     }
 
-            let alert = UIAlertController(
-                title: "FCM DEBUG - \(title)",
-                message: message,
-                preferredStyle: .alert
-            )
+        //     let alert = UIAlertController(
+        //         title: "FCM DEBUG - \(title)",
+        //         message: message,
+        //         preferredStyle: .alert
+        //     )
 
-            alert.addAction(
-                UIAlertAction(
-                    title: "OK",
-                    style: .default
-                )
-            )
+        //     alert.addAction(
+        //         UIAlertAction(
+        //             title: "OK",
+        //             style: .default
+        //         )
+        //     )
 
-            presenter.present(
-                alert,
-                animated: true
-            )
-        }
+        //     presenter.present(
+        //         alert,
+        //         animated: true
+        //     )
+        // }
     }
 
     // MARK: - Application Launch
