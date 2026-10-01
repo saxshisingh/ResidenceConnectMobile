@@ -296,10 +296,15 @@ export const registerForPushNotifications = async (
         'Requesting notification permission...',
       );
 
-      const authStatus =
-        await requestPermission(
-          messaging,
-        );
+      const authStatus = await requestPermission(
+        messaging,
+        {
+          alert: true,
+          badge: true,
+          sound: true,
+          provisional: false,
+        },
+      );
 
       console.log(
         '[FCM][iOS] Authorization status:',
