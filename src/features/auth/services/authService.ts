@@ -198,144 +198,243 @@ export const loginUser = async (
   rememberMe = false,
 ): Promise<LoginResponse> => {
   try {
+    const loginUrl = `${API_URL}/login`;
+
     console.log(
       '[AUTH] LOGIN URL:',
-      `${API_URL}/login`,
+      loginUrl,
     );
 
-    const payloads: Array<Record<string, string>> = [
-      {
-        username,
-        password,
-      },
-      {
-        email: username,
-        password,
-      },
-      {
-        Username: username,
-        password,
-      },
-    ];
+    /* ----------------------------------------------------------
+     * LOGIN REQUEST
+     * ---------------------------------------------------------- */
 
-    let response: Response | null = null;
-    let lastErrorText = '';
+    const payload = {
+      username,
+      password,
+    };
 
-    for (const payload of payloads) {
+    console.log(
+      '[AUTH] Sending login request...',
+    );
+
+    const response = await fetch(
+      loginUrl,
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+
+          // Important:
+          // Backend uses this to distinguish Web vs Mobile.
+          'X-Client-Type': 'Mobile',
+        },
+
+        body: JSON.stringify(payload),
+      },
+    );
+
+    console.log(
+      '[AUTH] Login response status:',
+      response.status,
+    );
+
+    console.log(
+      '[AUTH] Login response OK:',
+      response.ok,
+    );
+
+    /* ----------------------------------------------------------
+     * READ RESPONSE BODY
+     *
+     * Do NOT console.log the Response object itself.
+     * Read the body once and then parse it.
+     * ---------------------------------------------------------- */
+
+    const responseText =
+      await response.text();
+
+    console.log(
+      '[AUTH] Login response body received:',
+      {
+        hasBody: Boolean(responseText),
+        bodyLength: responseText.length,
+      },
+    );
+
+    /* ----------------------------------------------------------
+     * HANDLE HTTP ERROR
+     * ---------------------------------------------------------- */
+
+    if (!response.ok) {
+      let errorMessage = '';
+
+      try {
+        const errorJson =
+          JSON.parse(responseText);
+
+        if (
+          typeof errorJson === 'string'
+        ) {
+          errorMessage = errorJson;
+        } else if (
+          typeof errorJson?.message ===
+          'string'
+        ) {
+          errorMessage =
+            errorJson.message;
+        } else if (
+          typeof errorJson?.error ===
+          'string'
+        ) {
+          errorMessage =
+            errorJson.error;
+        } else if (
+          Array.isArray(
+            errorJson?.errors,
+          ) &&
+          typeof errorJson.errors[0] ===
+            'string'
+        ) {
+          errorMessage =
+            errorJson.errors[0];
+        } else if (
+          errorJson?.errors &&
+          typeof errorJson.errors ===
+            'object'
+        ) {
+          const firstErrorGroup =
+            Object.values(
+              errorJson.errors,
+            )[0];
+
+          if (
+            Array.isArray(
+              firstErrorGroup,
+            ) &&
+            typeof firstErrorGroup[0] ===
+              'string'
+          ) {
+            errorMessage =
+              firstErrorGroup[0];
+          }
+        }
+      } catch {
+        errorMessage =
+          responseText.trim();
+      }
+
       console.log(
-        '[AUTH] Trying login payload:',
-        Object.keys(payload),
-      );
-
-      response = await fetch(
-        `${API_URL}/login`,
+        '[AUTH] Login error:',
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
+          status: response.status,
+          message:
+            errorMessage ||
+            'Unknown login error',
         },
       );
 
-      console.log(
-        '[AUTH] Login response status:',
-        response.status,
-      );
-
-      if (response.ok) {
-        break;
-      }
-
-      lastErrorText =
-        await extractResponseErrorMessage(
-          response,
-        );
-
-      console.log(
-        '[AUTH] Login error response:',
-        lastErrorText,
-      );
-
-      /**
-       * Only retry another payload
-       * for HTTP 400.
-       */
-      if (response.status !== 400) {
-        break;
-      }
-    }
-
-    if (!response || !response.ok) {
       if (
-        response?.status === 401 ||
-        response?.status === 403
+        response.status === 401 ||
+        response.status === 403
       ) {
         throw new Error(
-          lastErrorText ||
+          errorMessage ||
             'INVALID_CREDENTIALS',
         );
       }
 
       if (
         /invalid credentials|invalid password|wrong password|incorrect password|unauthorized/i.test(
-          lastErrorText,
+          errorMessage,
         )
       ) {
         throw new Error(
           /invalid credentials/i.test(
-            lastErrorText,
+            errorMessage,
           )
             ? 'INVALID_CREDENTIALS'
-            : lastErrorText,
+            : errorMessage,
         );
       }
 
-      const statusCode = response?.status
-        ? ` (HTTP ${response.status})`
-        : '';
-
       throw new Error(
-        lastErrorText ||
-          `Login failed${statusCode}`,
+        errorMessage ||
+          `Login failed (HTTP ${response.status})`,
       );
     }
 
     /* ----------------------------------------------------------
-     * Read backend response
+     * PARSE SUCCESS RESPONSE
      * ---------------------------------------------------------- */
 
-    const rawLoginResponse =
-      (await response.json()) as LoginApiResponse;
+    if (!responseText.trim()) {
+      throw new Error(
+        'Login succeeded but server returned an empty response',
+      );
+    }
 
-    /**
-     * Do NOT log actual tokens.
-     */
+    let rawLoginResponse: LoginApiResponse;
+
+    try {
+      rawLoginResponse =
+        JSON.parse(
+          responseText,
+        ) as LoginApiResponse;
+    } catch (error) {
+      console.error(
+        '[AUTH] Invalid JSON received from login API:',
+        error,
+      );
+
+      throw new Error(
+        'Invalid response received from authentication server',
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * LOG RESPONSE STRUCTURE
+     *
+     * Never log actual token values.
+     * ---------------------------------------------------------- */
+
     console.log(
       '[AUTH] Login response received:',
       {
-        status: rawLoginResponse.status,
-        message: rawLoginResponse.message,
+        status:
+          rawLoginResponse.status,
 
-        hasDirectAccessToken: Boolean(
-          rawLoginResponse.accessToken,
-        ),
+        message:
+          rawLoginResponse.message,
 
-        hasDirectRefreshToken: Boolean(
-          rawLoginResponse.refreshToken,
-        ),
+        hasDirectAccessToken:
+          Boolean(
+            rawLoginResponse.accessToken,
+          ),
 
-        hasData: Boolean(
-          rawLoginResponse.data,
-        ),
+        hasDirectRefreshToken:
+          Boolean(
+            rawLoginResponse.refreshToken,
+          ),
 
-        hasDataAccessToken: Boolean(
-          rawLoginResponse.data?.accessToken,
-        ),
+        hasData:
+          Boolean(
+            rawLoginResponse.data,
+          ),
 
-        hasDataRefreshToken: Boolean(
-          rawLoginResponse.data?.refreshToken,
-        ),
+        hasDataAccessToken:
+          Boolean(
+            rawLoginResponse.data
+              ?.accessToken,
+          ),
+
+        hasDataRefreshToken:
+          Boolean(
+            rawLoginResponse.data
+              ?.refreshToken,
+          ),
 
         isFirstLogin:
           rawLoginResponse.data
@@ -345,16 +444,31 @@ export const loginUser = async (
     );
 
     /* ----------------------------------------------------------
-     * Resolve access token
+     * RESOLVE ACCESS TOKEN
+     *
+     * Supports:
+     *
+     * {
+     *   accessToken: "..."
+     * }
+     *
+     * and:
+     *
+     * {
+     *   data: {
+     *     accessToken: "..."
+     *   }
+     * }
      * ---------------------------------------------------------- */
 
     const accessToken =
       rawLoginResponse.data
         ?.accessToken ??
-      rawLoginResponse.accessToken;
+      rawLoginResponse.accessToken ??
+      null;
 
     /* ----------------------------------------------------------
-     * Resolve refresh token
+     * RESOLVE REFRESH TOKEN
      * ---------------------------------------------------------- */
 
     const refreshToken =
@@ -364,7 +478,7 @@ export const loginUser = async (
       null;
 
     /* ----------------------------------------------------------
-     * Resolve first-login flag
+     * RESOLVE FIRST LOGIN
      * ---------------------------------------------------------- */
 
     const isFirstLogin =
@@ -374,27 +488,60 @@ export const loginUser = async (
       false;
 
     /* ----------------------------------------------------------
-     * Validate access token
+     * VALIDATE ACCESS TOKEN
      * ---------------------------------------------------------- */
 
     if (!accessToken) {
+      console.error(
+        '[AUTH] Login response does not contain an access token',
+      );
+
       throw new Error(
         'Login succeeded but access token was not returned by the server',
       );
     }
 
     /* ----------------------------------------------------------
-     * Refresh token is mandatory for the new auth flow
+     * VALIDATE REFRESH TOKEN
      * ---------------------------------------------------------- */
 
     if (!refreshToken) {
+      console.error(
+        '[AUTH] Login response does not contain a refresh token',
+      );
+
       throw new Error(
         'Login succeeded but refresh token was not returned by the server',
       );
     }
 
     /* ----------------------------------------------------------
-     * Store authentication data
+     * TOKEN INFORMATION
+     *
+     * Do not log token values.
+     * ---------------------------------------------------------- */
+
+    console.log(
+      '[AUTH] Tokens resolved successfully:',
+      {
+        hasAccessToken:
+          Boolean(accessToken),
+
+        accessTokenLength:
+          accessToken.length,
+
+        hasRefreshToken:
+          Boolean(refreshToken),
+
+        refreshTokenLength:
+          refreshToken.length,
+
+        isFirstLogin,
+      },
+    );
+
+    /* ----------------------------------------------------------
+     * STORE AUTHENTICATION DATA
      * ---------------------------------------------------------- */
 
     const storageEntries: [
@@ -405,17 +552,24 @@ export const loginUser = async (
         AUTH_STORAGE_KEYS.token,
         accessToken,
       ],
+
       [
         AUTH_STORAGE_KEYS.refreshToken,
         refreshToken,
       ],
+
       [
         AUTH_STORAGE_KEYS.isFirstLogin,
-        JSON.stringify(isFirstLogin),
+        JSON.stringify(
+          isFirstLogin,
+        ),
       ],
+
       [
         AUTH_STORAGE_KEYS.rememberMe,
-        JSON.stringify(rememberMe),
+        JSON.stringify(
+          rememberMe,
+        ),
       ],
     ];
 
@@ -423,18 +577,84 @@ export const loginUser = async (
       storageEntries,
     );
 
+    /* ----------------------------------------------------------
+     * VERIFY STORAGE
+     *
+     * This is especially important because your current issue
+     * is "Refresh token not found".
+     * ---------------------------------------------------------- */
+
+    const storedAccessToken =
+      await AsyncStorage.getItem(
+        AUTH_STORAGE_KEYS.token,
+      );
+
+    const storedRefreshToken =
+      await AsyncStorage.getItem(
+        AUTH_STORAGE_KEYS.refreshToken,
+      );
+
+    const storedIsFirstLogin =
+      await AsyncStorage.getItem(
+        AUTH_STORAGE_KEYS.isFirstLogin,
+      );
+
+    const storedRememberMe =
+      await AsyncStorage.getItem(
+        AUTH_STORAGE_KEYS.rememberMe,
+      );
+
+    console.log(
+      '[AUTH] Authentication storage verified:',
+      {
+        accessTokenStored:
+          Boolean(
+            storedAccessToken,
+          ),
+
+        refreshTokenStored:
+          Boolean(
+            storedRefreshToken,
+          ),
+
+        accessTokenLength:
+          storedAccessToken?.length ??
+          0,
+
+        refreshTokenLength:
+          storedRefreshToken?.length ??
+          0,
+
+        isFirstLogin:
+          storedIsFirstLogin,
+
+        rememberMe:
+          storedRememberMe,
+      },
+    );
+
+    /* ----------------------------------------------------------
+     * FINAL STORAGE VALIDATION
+     * ---------------------------------------------------------- */
+
+    if (!storedAccessToken) {
+      throw new Error(
+        'Login succeeded but access token could not be stored',
+      );
+    }
+
+    if (!storedRefreshToken) {
+      throw new Error(
+        'Login succeeded but refresh token could not be stored',
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * LOGIN SUCCESS
+     * ---------------------------------------------------------- */
+
     console.log(
       '[AUTH] LOGIN SUCCESS',
-    );
-
-    console.log(
-      '[AUTH] Access token stored:',
-      Boolean(accessToken),
-    );
-
-    console.log(
-      '[AUTH] Refresh token stored:',
-      Boolean(refreshToken),
     );
 
     return {
@@ -445,7 +665,7 @@ export const loginUser = async (
   } catch (error: any) {
     console.error(
       '[AUTH] LOGIN ERROR:',
-      error,
+      error?.message || error,
     );
 
     throw new Error(

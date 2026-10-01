@@ -385,15 +385,23 @@ const residentId = userData?.residentId ?? null;
        * Fast path:
        * Bluetooth and permissions were already verified.
        */
-      if (
-        androidPermissionsGrantedRef.current &&
-        androidBluetoothReadyRef.current
-      ) {
+      if (androidPermissionsGrantedRef.current) {
+        const currentBluetoothState =
+          await ttlockNative.isBluetoothEnabled();
+
         Logger.info(
-          '[TTLock][ANDROID] Bluetooth already ready',
+          '[TTLock][ANDROID] Current Bluetooth state',
+          {
+            enabled: currentBluetoothState,
+          },
         );
 
-        return true;
+        if (currentBluetoothState) {
+          androidBluetoothReadyRef.current = true;
+          return true;
+        }
+
+        androidBluetoothReadyRef.current = false;
       }
 
       /**
@@ -1290,6 +1298,30 @@ const residentId = userData?.residentId ?? null;
         if (Platform.OS === 'android') {
           const controlStart = Date.now();
 
+          const bluetoothEnabled =
+            await ttlockNative.isBluetoothEnabled();
+
+          Logger.info(
+            '[TTLock][ANDROID] Bluetooth state immediately before control',
+            {
+              bluetoothEnabled,
+              action,
+              lockMac,
+            },
+          );
+
+          if (!bluetoothEnabled) {
+            Logger.error(
+              '[TTLock][ANDROID] Bluetooth is disabled before controlLock',
+              {
+                action,
+                lockMac,
+              },
+            );
+
+            throw new Error('BLUETOOTH_DISABLED');
+          }
+
           Logger.info(
             '[TTLock][ANDROID] Calling controlLock directly',
             {
@@ -1298,18 +1330,16 @@ const residentId = userData?.residentId ?? null;
             },
           );
 
-          const result =
-            await ttlockNative.controlLock(
-              lockData,
-              lockMac,
-              action,
-            );
+          const result = await ttlockNative.controlLock(
+            lockData,
+            lockMac,
+            action,
+          );
 
           Logger.info(
             '[TTLock][ANDROID][PERF] controlLock completed',
             {
-              durationMs:
-                Date.now() - controlStart,
+              durationMs: Date.now() - controlStart,
               action,
               lockMac,
               result,

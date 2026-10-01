@@ -5,16 +5,33 @@ import {API_BASE_URL} from '../../config/api';
 const AUTH_TOKEN_KEY = 'authToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
+/* ============================================================
+ * TYPES
+ * ============================================================ */
+
+interface RefreshTokenResult {
+  accessToken: string;
+  refreshToken: string;
+}
+
+/* ============================================================
+ * UNAUTHORIZED ERROR
+ * ============================================================ */
+
 export class UnauthorizedError extends Error {
-  constructor(message = 'UNAUTHORIZED') {
+  constructor(
+    message = 'UNAUTHORIZED',
+  ) {
     super(message);
     this.name = 'UnauthorizedError';
   }
 }
 
-/*
- * Prevent multiple API calls from starting multiple
- * refresh requests at the same time.
+/* ============================================================
+ * REFRESH LOCK
+ * ============================================================
+ *
+ * Prevent multiple simultaneous refresh requests.
  *
  * Example:
  *
@@ -23,158 +40,418 @@ export class UnauthorizedError extends Error {
  * Request C -> 401
  *
  * Only ONE refresh request is sent.
- * B and C wait for the same refreshPromise.
- */
-let refreshPromise: Promise<string> | null = null;
+ *
+ * B and C wait for the same promise.
+ * ============================================================ */
+
+let refreshPromise:
+  | Promise<RefreshTokenResult>
+  | null = null;
 
 /* ============================================================
  * CLEAR LOCAL SESSION
  * ============================================================ */
 
-const clearLocalSession = async (): Promise<void> => {
-  await AsyncStorage.multiRemove([
-    AUTH_TOKEN_KEY,
-    REFRESH_TOKEN_KEY,
+const clearLocalSession =
+  async (): Promise<void> => {
+    console.log(
+      '[AUTH] Clearing local authentication session...',
+    );
 
-    'isFirstLogin',
-    'authRememberMe',
-    'authUsername',
-    'Password',
+    await AsyncStorage.multiRemove([
+      AUTH_TOKEN_KEY,
+      REFRESH_TOKEN_KEY,
 
-    /*
-     * Clear only local language cache.
-     *
-     * The actual language stored in the database
-     * is NOT changed.
-     */
-    'selectedLanguageId',
-    'appLanguageCode',
+      'isFirstLogin',
+      'authRememberMe',
+      'authUsername',
+      'Password',
 
-    /*
-     * Cached user profile.
-     */
-    'user',
-  ]);
-};
+      /* Language cache */
+      'selectedLanguageId',
+      'appLanguageCode',
+
+      /* Cached user */
+      'user',
+    ]);
+
+    console.log(
+      '[AUTH] Local authentication session cleared.',
+    );
+  };
 
 /* ============================================================
  * REFRESH ACCESS TOKEN
  * ============================================================ */
 
-const refreshAccessToken = async (): Promise<string> => {
-  const refreshToken =
-    await AsyncStorage.getItem(
-      REFRESH_TOKEN_KEY,
+const refreshAccessToken =
+  async (): Promise<RefreshTokenResult> => {
+    console.log(
+      '[AUTH] Starting access-token refresh...',
     );
 
-  if (!refreshToken) {
-    await clearLocalSession();
+    /* ----------------------------------------------------------
+     * Get refresh token
+     * ---------------------------------------------------------- */
 
-    throw new UnauthorizedError(
-      'REFRESH_TOKEN_NOT_FOUND',
+    const refreshToken =
+      await AsyncStorage.getItem(
+        REFRESH_TOKEN_KEY,
+      );
+
+    console.log(
+      '[AUTH] Refresh token available:',
+      Boolean(refreshToken),
     );
-  }
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/auth/refresh`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    if (!refreshToken) {
+      console.error(
+        '[AUTH] Refresh token not found.',
+      );
+
+      await clearLocalSession();
+
+      throw new UnauthorizedError(
+        'REFRESH_TOKEN_NOT_FOUND',
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * Refresh request
+     * ---------------------------------------------------------- */
+
+    let response: Response;
+
+    try {
+      response = await fetch(
+        `${API_BASE_URL}/api/auth/refresh`,
+        {
+          method: 'POST',
+
+          headers: {
+            'Content-Type':
+              'application/json',
+
+            Accept:
+              'application/json',
+          },
+
+          body: JSON.stringify({
+            refreshToken,
+          }),
+        },
+      );
+    } catch (error) {
+      console.error(
+        '[AUTH] Refresh network error:',
+        error,
+      );
+
+      /*
+       * IMPORTANT:
+       *
+       * Do NOT clear the session just because
+       * of a network error.
+       *
+       * The refresh token may still be valid.
+       */
+
+      throw error;
+    }
+
+    console.log(
+      '[AUTH] Refresh response status:',
+      response.status,
+    );
+
+    console.log(
+      '[AUTH] Refresh response OK:',
+      response.ok,
+    );
+
+    /* ----------------------------------------------------------
+     * Read response body once
+     * ---------------------------------------------------------- */
+
+    const responseText =
+      await response.text();
+
+    console.log(
+      '[AUTH] Refresh response body:',
+      {
+        hasBody:
+          Boolean(responseText),
+
+        bodyLength:
+          responseText.length,
       },
-      body: JSON.stringify({
-        refreshToken,
-      }),
-    },
-  );
-
-  /*
-   * IMPORTANT:
-   *
-   * 401 here means the REFRESH TOKEN itself
-   * is invalid/expired/revoked.
-   *
-   * Only NOW should we clear the session.
-   */
-  if (response.status === 401) {
-    await clearLocalSession();
-
-    throw new UnauthorizedError(
-      'REFRESH_TOKEN_EXPIRED',
     );
-  }
 
-  if (!response.ok) {
-    await clearLocalSession();
+    /* ----------------------------------------------------------
+     * Refresh token invalid/expired/revoked
+     * ---------------------------------------------------------- */
 
-    throw new UnauthorizedError(
-      `TOKEN_REFRESH_FAILED_${response.status}`,
+    if (response.status === 401) {
+      console.error(
+        '[AUTH] Refresh token is invalid, expired, or revoked.',
+      );
+
+      await clearLocalSession();
+
+      throw new UnauthorizedError(
+        'REFRESH_TOKEN_EXPIRED',
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * Other HTTP errors
+     * ---------------------------------------------------------- */
+
+    if (!response.ok) {
+      console.error(
+        '[AUTH] Refresh request failed:',
+        {
+          status:
+            response.status,
+        },
+      );
+
+      /*
+       * Don't automatically clear the session for
+       * temporary server/network errors.
+       *
+       * A 500, 502, 503 etc. does not prove that
+       * the refresh token is invalid.
+       */
+
+      throw new UnauthorizedError(
+        `TOKEN_REFRESH_FAILED_${response.status}`,
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * Parse JSON
+     * ---------------------------------------------------------- */
+
+    let json: any;
+
+    try {
+      json =
+        JSON.parse(responseText);
+    } catch (error) {
+      console.error(
+        '[AUTH] Invalid JSON from refresh endpoint:',
+        error,
+      );
+
+      throw new UnauthorizedError(
+        'INVALID_REFRESH_RESPONSE',
+      );
+    }
+
+    console.log(
+      '[AUTH] Refresh response structure:',
+      {
+        status:
+          json?.status,
+
+        message:
+          json?.message,
+
+        hasData:
+          Boolean(json?.data),
+
+        hasDirectAccessToken:
+          Boolean(
+            json?.accessToken,
+          ),
+
+        hasDirectRefreshToken:
+          Boolean(
+            json?.refreshToken,
+          ),
+
+        hasDataAccessToken:
+          Boolean(
+            json?.data?.accessToken,
+          ),
+
+        hasDataRefreshToken:
+          Boolean(
+            json?.data?.refreshToken,
+          ),
+
+        hasDataToken:
+          Boolean(
+            json?.data?.token,
+          ),
+      },
     );
-  }
 
-  let json: any;
+    /* ========================================================
+     * RESOLVE ACCESS TOKEN
+     *
+     * Supports:
+     *
+     * 1.
+     * {
+     *   accessToken: "...",
+     *   refreshToken: "..."
+     * }
+     *
+     * 2.
+     * {
+     *   data: {
+     *     accessToken: "...",
+     *     refreshToken: "..."
+     *   }
+     * }
+     *
+     * 3. Legacy:
+     * {
+     *   data: {
+     *     token: "...",
+     *     refreshToken: "..."
+     *   }
+     * }
+     * ======================================================== */
 
-  try {
-    json = await response.json();
-  } catch {
-    await clearLocalSession();
+    const newAccessToken =
+      json?.data?.accessToken ??
+      json?.data?.token ??
+      json?.accessToken ??
+      null;
 
-    throw new UnauthorizedError(
-      'INVALID_REFRESH_RESPONSE',
+    const newRefreshToken =
+      json?.data?.refreshToken ??
+      json?.refreshToken ??
+      null;
+
+    /* ----------------------------------------------------------
+     * Validate refresh response
+     * ---------------------------------------------------------- */
+
+    if (!newAccessToken) {
+      console.error(
+        '[AUTH] Refresh response does not contain access token.',
+      );
+
+      throw new UnauthorizedError(
+        'INVALID_REFRESH_RESPONSE',
+      );
+    }
+
+    if (!newRefreshToken) {
+      console.error(
+        '[AUTH] Refresh response does not contain refresh token.',
+      );
+
+      throw new UnauthorizedError(
+        'INVALID_REFRESH_RESPONSE',
+      );
+    }
+
+    /* ----------------------------------------------------------
+     * Token information
+     *
+     * Never log actual token values.
+     * ---------------------------------------------------------- */
+
+    console.log(
+      '[AUTH] New tokens received:',
+      {
+        hasAccessToken:
+          Boolean(
+            newAccessToken,
+          ),
+
+        accessTokenLength:
+          newAccessToken.length,
+
+        hasRefreshToken:
+          Boolean(
+            newRefreshToken,
+          ),
+
+        refreshTokenLength:
+          newRefreshToken.length,
+      },
     );
-  }
 
-  /*
-   * Expected backend response:
-   *
-   * {
-   *   status: true,
-   *   message: "Token refreshed successfully.",
-   *   data: {
-   *     token: "...",
-   *     refreshToken: "..."
-   *   }
-   * }
-   */
+    /* ========================================================
+     * STORE NEW TOKENS
+     * ======================================================== */
 
-  const newAccessToken =
-    json?.data?.token;
+    await AsyncStorage.multiSet([
+      [
+        AUTH_TOKEN_KEY,
+        newAccessToken,
+      ],
 
-  const newRefreshToken =
-    json?.data?.refreshToken;
+      [
+        REFRESH_TOKEN_KEY,
+        newRefreshToken,
+      ],
+    ]);
 
-  if (
-    !json?.status ||
-    !newAccessToken ||
-    !newRefreshToken
-  ) {
-    await clearLocalSession();
+    /* ----------------------------------------------------------
+     * Verify storage
+     * ---------------------------------------------------------- */
 
-    throw new UnauthorizedError(
-      'INVALID_REFRESH_RESPONSE',
+    const storedAccessToken =
+      await AsyncStorage.getItem(
+        AUTH_TOKEN_KEY,
+      );
+
+    const storedRefreshToken =
+      await AsyncStorage.getItem(
+        REFRESH_TOKEN_KEY,
+      );
+
+    console.log(
+      '[AUTH] Refreshed tokens stored:',
+      {
+        accessTokenStored:
+          Boolean(
+            storedAccessToken,
+          ),
+
+        refreshTokenStored:
+          Boolean(
+            storedRefreshToken,
+          ),
+
+        accessTokenLength:
+          storedAccessToken?.length ??
+          0,
+
+        refreshTokenLength:
+          storedRefreshToken?.length ??
+          0,
+      },
     );
-  }
 
-  /*
-   * IMPORTANT:
-   *
-   * Your backend rotates the refresh token.
-   *
-   * Therefore BOTH values must be replaced.
-   */
+    if (
+      !storedAccessToken ||
+      !storedRefreshToken
+    ) {
+      throw new UnauthorizedError(
+        'REFRESH_TOKEN_STORAGE_FAILED',
+      );
+    }
 
-  await AsyncStorage.setItem(
-    AUTH_TOKEN_KEY,
-    newAccessToken,
-  );
+    console.log(
+      '[AUTH] Access token refreshed successfully.',
+    );
 
-  await AsyncStorage.setItem(
-    REFRESH_TOKEN_KEY,
-    newRefreshToken,
-  );
+    return {
+      accessToken:
+        newAccessToken,
 
-  return newAccessToken;
-};
+      refreshToken:
+        newRefreshToken,
+    };
+  };
 
 /* ============================================================
  * API FETCH
@@ -184,24 +461,54 @@ export const apiFetch = async (
   url: string,
   options: RequestInit = {},
 ): Promise<Response> => {
-  /*
-   * Get current access token.
-   */
+  console.log(
+    '[API] REQUEST:',
+    {
+      url,
+      method:
+        options.method ?? 'GET',
+    },
+  );
+
+  /* ----------------------------------------------------------
+   * Get current access token
+   * ---------------------------------------------------------- */
+
   let token =
     await AsyncStorage.getItem(
       AUTH_TOKEN_KEY,
     );
 
-  /*
-   * Build headers.
-   */
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+  console.log(
+    '[API] Access token before request:',
+    {
+      hasToken:
+        Boolean(token),
+
+      tokenLength:
+        token?.length ?? 0,
+    },
+  );
+
+  /* ----------------------------------------------------------
+   * Build headers
+   * ---------------------------------------------------------- */
+
+  const headers: Record<
+    string,
+    string
+  > = {
+    'Content-Type':
+      'application/json',
+
+    Accept:
+      'application/json',
   };
 
-  /*
-   * Preserve existing headers.
-   */
+  /* ----------------------------------------------------------
+   * Preserve existing headers
+   * ---------------------------------------------------------- */
+
   if (options.headers) {
     Object.assign(
       headers,
@@ -209,68 +516,122 @@ export const apiFetch = async (
     );
   }
 
-  /*
-   * Add current access token.
-   */
+  /* ----------------------------------------------------------
+   * Add access token
+   * ---------------------------------------------------------- */
+
   if (token) {
     headers.Authorization =
       `Bearer ${token}`;
   }
 
-  /*
-   * ==========================================================
+  /* ==========================================================
    * FIRST REQUEST
-   * ==========================================================
-   */
+   * ========================================================== */
 
-  let response = await fetch(
-    url,
+  let response: Response;
+
+  try {
+    response = await fetch(
+      url,
+      {
+        ...options,
+        headers,
+      },
+    );
+  } catch (error) {
+    console.error(
+      '[API] NETWORK ERROR:',
+      {
+        url,
+        error,
+      },
+    );
+
+    throw error;
+  }
+
+  /* ----------------------------------------------------------
+   * Log first response
+   * ---------------------------------------------------------- */
+
+  console.log(
+    '[API] RESPONSE:',
     {
-      ...options,
-      headers,
+      url,
+
+      status:
+        response.status,
+
+      ok:
+        response.ok,
     },
   );
 
-  /*
-   * ==========================================================
+  /* ==========================================================
    * ACCESS TOKEN EXPIRED
-   * ==========================================================
-   *
-   * DO NOT LOG OUT HERE.
-   *
-   * Try the refresh token first.
-   */
+   * ========================================================== */
 
   if (
     response.status === 401 &&
-    !url.includes('/api/auth/refresh')
+    !url.includes(
+      '/api/auth/refresh',
+    )
   ) {
+    console.warn(
+      '[API] Received 401. Attempting token refresh...',
+    );
+
     try {
-      /*
-       * If another request is already refreshing,
-       * wait for that request.
-       *
-       * Otherwise start a new refresh.
-       */
+      /* ------------------------------------------------------
+       * Only one refresh request at a time.
+       * ------------------------------------------------------ */
 
       if (!refreshPromise) {
+        console.log(
+          '[API] Creating refresh promise...',
+        );
+
         refreshPromise =
-          refreshAccessToken().finally(() => {
-            refreshPromise = null;
-          });
+          refreshAccessToken().finally(
+            () => {
+              console.log(
+                '[API] Refresh promise completed.',
+              );
+
+              refreshPromise = null;
+            },
+          );
+      } else {
+        console.log(
+          '[API] Refresh already in progress. Waiting...',
+        );
       }
 
-      /*
-       * Wait for refresh.
-       */
-      token =
+      /* ------------------------------------------------------
+       * Wait for refresh
+       * ------------------------------------------------------ */
+
+      const refreshed =
         await refreshPromise;
 
-      /*
-       * ======================================================
+      token =
+        refreshed.accessToken;
+
+      console.log(
+        '[API] Using refreshed access token to retry request.',
+        {
+          hasToken:
+            Boolean(token),
+
+          tokenLength:
+            token?.length ?? 0,
+        },
+      );
+
+      /* ======================================================
        * RETRY ORIGINAL REQUEST
-       * ======================================================
-       */
+       * ====================================================== */
 
       const retryHeaders: Record<
         string,
@@ -278,7 +639,14 @@ export const apiFetch = async (
       > = {
         'Content-Type':
           'application/json',
+
+        Accept:
+          'application/json',
       };
+
+      /* ------------------------------------------------------
+       * Preserve original headers
+       * ------------------------------------------------------ */
 
       if (options.headers) {
         Object.assign(
@@ -287,29 +655,88 @@ export const apiFetch = async (
         );
       }
 
+      /* ------------------------------------------------------
+       * IMPORTANT:
+       *
+       * Replace old access token with new token.
+       * ------------------------------------------------------ */
+
       retryHeaders.Authorization =
         `Bearer ${token}`;
 
-      response = await fetch(
-        url,
+      console.log(
+        '[API] Retrying original request:',
         {
-          ...options,
-          headers: retryHeaders,
+          url,
+
+          method:
+            options.method ?? 'GET',
         },
       );
-    } catch (error) {
-      /*
-       * refreshAccessToken() already clears
-       * local session if refresh fails.
-       */
+
+      response =
+        await fetch(
+          url,
+          {
+            ...options,
+            headers:
+              retryHeaders,
+          },
+        );
+
+      /* ------------------------------------------------------
+       * Retry response
+       * ------------------------------------------------------ */
+
+      console.log(
+        '[API] RETRY RESPONSE:',
+        {
+          url,
+
+          status:
+            response.status,
+
+          ok:
+            response.ok,
+        },
+      );
+
+      /* ------------------------------------------------------
+       * Refresh succeeded but retry still returns 401.
+       *
+       * This means the newly issued token is not being
+       * accepted by the backend.
+       * ------------------------------------------------------ */
 
       if (
-        error instanceof UnauthorizedError
+        response.status === 401
+      ) {
+        console.error(
+          '[API] RETRY STILL RETURNED 401.',
+        );
+
+        await clearLocalSession();
+
+        throw new UnauthorizedError(
+          'AUTHENTICATION_FAILED_AFTER_REFRESH',
+        );
+      }
+    } catch (error) {
+      console.error(
+        '[API] TOKEN REFRESH FLOW FAILED:',
+        error,
+      );
+
+      if (
+        error instanceof
+        UnauthorizedError
       ) {
         throw error;
       }
 
-      throw new UnauthorizedError();
+      throw new UnauthorizedError(
+        'UNABLE_TO_REFRESH_SESSION',
+      );
     }
   }
 

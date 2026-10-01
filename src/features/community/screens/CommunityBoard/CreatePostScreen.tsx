@@ -23,7 +23,7 @@ import {
   createCommunityPost,
   fetchPosts,
 } from '../../state/communitySlice';
-import { fetchLanguages } from '../../../language/services/languageService';
+import { fetchLanguages, normalizeSupportedLanguageCode } from '../../../language/services/languageService';
 import { useI18n } from '../../../../i18n';
 import { useAppTheme } from '../../../../theme/ThemeProvider';
 import {
@@ -336,11 +336,65 @@ export default function CreatePostScreen({ navigation }: any) {
     );
   };
 
+      // ─── Resolve Language ID ─────────────────────────────────────────────────
+
+    const DEFAULT_ENGLISH_LANGUAGE_ID =
+      'ef7e19fc-cbca-4519-99c3-665a9c367a42';
+
+    const getLanguageId = async (): Promise<string> => {
+      // 1. Prefer the language ID already present in the user profile.
+      if (userData?.languageId) {
+        return userData.languageId;
+      }
+
+      // 2. Check the locally selected language ID.
+      const storedLanguageId = await AsyncStorage.getItem(
+        'selectedLanguageId',
+      );
+
+      if (storedLanguageId) {
+        return storedLanguageId;
+      }
+
+      // 3. Resolve the language ID from the current app language.
+      const languageCode = normalizeSupportedLanguageCode(language);
+
+      if (languageCode) {
+        try {
+          const languages = await fetchLanguages();
+
+          const matchedLanguage = languages.find(
+                  item =>
+                    normalizeSupportedLanguageCode(item.languageCode) ===
+                    languageCode,
+                );
+
+          if (matchedLanguage?.languageId) {
+            return matchedLanguage.languageId;
+          }
+        } catch (error) {
+          console.error(
+            '[CREATE POST] Failed to resolve language ID:',
+            error,
+          );
+        }
+      }
+
+      // 4. Final fallback → English.
+      console.log(
+        '[CREATE POST] No language preference found. Using English.',
+      );
+
+      return DEFAULT_ENGLISH_LANGUAGE_ID;
+    };
+
+    
   // ─── Submit ─────────────────────────────────────────────────────────────────
 
   const handleSubmit = async () => {
     const cleanTitle = trimValue(title);
     const cleanContent = trimValue(content);
+    const languageId = await getLanguageId();
 
     /**
      * IMPORTANT:
@@ -385,61 +439,6 @@ export default function CreatePostScreen({ navigation }: any) {
         t(
           'community.mobile.createPost.contentTooLong',
           'Title or content is too long',
-        ),
-      );
-
-      return;
-    }
-
-    // ─── Resolve language ID ──────────────────────────────────────────────────
-
-    let languageId =
-      userData?.languageId ||
-      userData?.preferredLanguageId ||
-      '';
-
-    if (!languageId) {
-      languageId =
-        (await AsyncStorage.getItem(
-          'selectedLanguageId',
-        )) || '';
-    }
-
-    if (!languageId) {
-      try {
-        const languages = await fetchLanguages();
-
-        const currentLanguageCode = String(
-          language || '',
-        )
-          .trim()
-          .toLowerCase();
-
-        const matched = languages.find(
-          item =>
-            String(item.languageCode || '')
-              .trim()
-              .toLowerCase() === currentLanguageCode,
-        );
-
-        languageId = matched?.languageId || '';
-      } catch (error) {
-        console.error(
-          'CREATE POST LANGUAGE LOOKUP ERROR:',
-          error,
-        );
-      }
-    }
-
-    if (!languageId) {
-      Alert.alert(
-        t(
-          'community.mobile.createPost.validationTitle',
-          'Validation',
-        ),
-        t(
-          'community.mobile.createPost.languageRequired',
-          'LanguageId is required. Please select language first.',
         ),
       );
 

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Provider} from 'react-redux';
+
 import {
   getMessaging,
   requestPermission,
@@ -43,6 +44,11 @@ import {
 
 import ForegroundSosAlertWatcher from './src/features/alerts/components/ForegroundSosAlertWatcher';
 import ForegroundSosAlertOverlay from './src/features/alerts/components/ForegroundSosAlertOverlay';
+
+// Notification channel
+import {
+  createNotificationChannel,
+} from './src/notifications/notificationChannel';
 
 installAppAlertPatch();
 installI18nRuntimePatch();
@@ -143,7 +149,7 @@ const requestNotificationPermission = async () => {
       const enabled =
         authStatus === AuthorizationStatus.AUTHORIZED ||
         authStatus === AuthorizationStatus.PROVISIONAL;
-        
+
       console.log(
         '[FCM] iOS notification authorization status:',
         authStatus,
@@ -203,9 +209,33 @@ function AppContent() {
 
 function App() {
   useEffect(() => {
-    console.log('[FCM] App started.');
+    const initializeNotifications = async () => {
+      console.log('[FCM] App started.');
 
-    requestNotificationPermission();
+      /**
+       * Create Android notification channel.
+       * Must happen before receiving/displaying notifications.
+       */
+      if (Platform.OS === 'android') {
+        try {
+          await createNotificationChannel();
+
+          console.log(
+            '[FCM] Android notification channel created successfully.',
+          );
+        } catch (error) {
+          console.error(
+            '[FCM] Failed to create Android notification channel:',
+            error,
+          );
+        }
+      }
+
+      // Request notification permission
+      await requestNotificationPermission();
+    };
+
+    initializeNotifications();
   }, []);
 
   return (
