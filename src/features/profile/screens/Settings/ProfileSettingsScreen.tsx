@@ -336,13 +336,7 @@ export default function ProfileSettingsScreen({navigation}: any) {
           ]}>
           {t('settings.mobile.about', 'ABOUT')}
         </Text>
-        <View style={[styles.aboutCard, {width: contentWidth, alignSelf: 'center'}]}>
-          <Text style={[styles.aboutLabel, {color: colors.textMuted}]}>
-            {t('settings.mobile.appVersion', 'App Version')}
-          </Text>
-          <Text style={[styles.aboutValue, {color: colors.textPrimary}]}>1.0.0</Text>
-        </View>
-
+        
         <View style={{height: 40}} />
       </ScrollView>
     </ScreenWrapper>

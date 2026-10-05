@@ -43,12 +43,6 @@ import * as ttlockNative from '../../native/ttlockNative';
 type AccessIconComponent = React.ComponentType<any>;
 type ControlAction = 'unlock' | 'lock';
 
-type CachedBleAccess = {
-  lockData: string;
-  lockMac: string;
-  deviceName?: string;
-};
-
 const ACCESS_ICON_MAP: Record<string, AccessIconComponent> = {
   main: DoorFrontIcon,
   entrance: DoorFrontIcon,
@@ -186,14 +180,29 @@ export default function UnlockDoorScreen() {
   const user = useAppSelector(state => state.auth.user);
   const userData = user?.data ?? user ?? null;
 
-const residentId = userData?.residentId ?? null;
+  const residentId = userData?.residentId ?? null;
 
   /**
    * ============================================================
-   * PERFORMANCE / ANDROID CACHE
+   * ANDROID PERFORMANCE STATE
    * ============================================================
    *
-   * These caches are intentionally used for Android only.
+   * IMPORTANT:
+   *
+   * There is NO Android BLE access cache in this screen.
+   *
+   * Android always gets fresh:
+   * - lockData
+   * - lockMac
+   * - deviceName
+   *
+   * from getDeviceBleAccess().
+   *
+   * We only retain:
+   * - Bluetooth readiness state
+   * - permission state
+   * - control-in-progress state
+   * - Bluetooth readiness promise
    *
    * iOS behaviour remains unchanged.
    */
@@ -201,9 +210,6 @@ const residentId = userData?.residentId ?? null;
   const androidBluetoothReadyRef = useRef(false);
 
   const androidPermissionsGrantedRef = useRef(false);
-
-  const androidBleAccessCache =
-    useRef<Record<string, CachedBleAccess>>({});
 
   /**
    * Prevents Android battery BLE operation from starting while
@@ -293,82 +299,6 @@ const residentId = userData?.residentId ?? null;
 
   /**
    * ============================================================
-   * ANDROID BLE ACCESS CACHE
-   * ============================================================
-   */
-
-  const getCachedBleAccess = async (
-    deviceId: string,
-    residentIdValue: string,
-    forceRefresh = false,
-  ): Promise<CachedBleAccess> => {
-    /**
-     * iOS:
-     *
-     * DO NOT change the existing behaviour.
-     */
-    if (Platform.OS === 'ios') {
-      return await getDeviceBleAccess(
-        deviceId,
-        residentIdValue,
-      );
-    }
-
-    /**
-     * Android:
-     *
-     * Reuse BLE access whenever possible.
-     */
-    if (!forceRefresh) {
-      const cached =
-        androidBleAccessCache.current[deviceId];
-
-      if (cached) {
-        Logger.info('[TTLock][ANDROID] Using cached BLE access', {
-          deviceId,
-          lockMac: cached.lockMac,
-        });
-
-        return cached;
-      }
-    }
-
-    Logger.info(
-      '[TTLock][ANDROID] Fetching BLE access from backend',
-      {
-        deviceId,
-        forceRefresh,
-      },
-    );
-
-    const start = Date.now();
-
-    const access = await getDeviceBleAccess(
-      deviceId,
-      residentIdValue,
-    );
-
-    androidBleAccessCache.current[deviceId] = {
-      lockData: access.lockData,
-      lockMac: access.lockMac,
-      deviceName: access.deviceName,
-    };
-
-    Logger.info(
-      '[TTLock][ANDROID][PERF] BLE access received',
-      {
-        deviceId,
-        durationMs: Date.now() - start,
-        lockMac: access.lockMac,
-        hasLockData: !!access.lockData,
-      },
-    );
-
-    return access;
-  };
-
-  /**
-   * ============================================================
    * BLUETOOTH READY
    * ============================================================
    */
@@ -378,136 +308,74 @@ const residentId = userData?.residentId ?? null;
      * ============================================================
      * ANDROID
      * ============================================================
+     *
+     * IMPORTANT:
+     *
+     * Do NOT use TTLockClient.isBLEEnabled() as a hard gate here.
+     *
+     * The native TTLock SDK can report BLE disabled/stale while
+     * Android Bluetooth is actually ON and the SDK is capable of
+     * scanning.
+     *
+     * scanLocks() itself calls prepareBTService() and starts the
+     * actual TTLock BLE scan.
      */
 
     if (Platform.OS === 'android') {
-      /**
-       * Fast path:
-       * Bluetooth and permissions were already verified.
-       */
       if (androidPermissionsGrantedRef.current) {
-        const currentBluetoothState =
-          await ttlockNative.isBluetoothEnabled();
-
-        Logger.info(
-          '[TTLock][ANDROID] Current Bluetooth state',
-          {
-            enabled: currentBluetoothState,
-          },
-        );
-
-        if (currentBluetoothState) {
-          androidBluetoothReadyRef.current = true;
-          return true;
-        }
-
-        androidBluetoothReadyRef.current = false;
+        return true;
       }
 
-      /**
-       * Prevent multiple simultaneous readiness checks.
-       */
       if (androidBluetoothCheckPromiseRef.current) {
-        Logger.info(
-          '[TTLock][ANDROID] Waiting for existing Bluetooth check',
-        );
-
         return await androidBluetoothCheckPromiseRef.current;
       }
 
       const checkPromise = (async () => {
-        const start = Date.now();
-
         try {
-          /**
-           * Request permissions only when we don't already
-           * know that they were granted.
-           */
-          if (!androidPermissionsGrantedRef.current) {
-            Logger.info(
-              '[TTLock][ANDROID] Requesting Bluetooth permissions',
-            );
+          Logger.info(
+            '[TTLock][ANDROID] Checking BLE permissions',
+          );
 
-            const permissionsGranted =
-              await requestBluetoothPermissions();
-
-            if (!permissionsGranted) {
-              Alert.alert(
-                t(
-                  'mobile.smartAccess.devices.permissionTitle',
-                  'Permission required',
-                ),
-                t(
-                  'mobile.smartAccess.devices.permissionMessage',
-                  'Bluetooth and location permissions are required for BLE access.',
-                ),
-              );
-
-              androidPermissionsGrantedRef.current =
-                false;
-
-              return false;
-            }
-
-            androidPermissionsGrantedRef.current =
-              true;
-          }
-
-          /**
-           * Check Bluetooth only if it hasn't already been
-           * verified.
-           */
-          if (!androidBluetoothReadyRef.current) {
-            Logger.info(
-              '[TTLock][ANDROID] Checking Bluetooth state',
-            );
-
-            let enabled =
-              await ttlockNative.isBluetoothEnabled();
-
-            if (!enabled) {
-              Logger.info(
-                '[TTLock][ANDROID] Bluetooth disabled. Requesting enable.',
-              );
-
-              await ttlockNative.requestBluetoothEnable();
-
-              enabled =
-                await ttlockNative.isBluetoothEnabled();
-            }
-
-            if (!enabled) {
-              Alert.alert(
-                t(
-                  'mobile.smartAccess.devices.bluetoothRequiredTitle',
-                  'Bluetooth Required',
-                ),
-                t(
-                  'mobile.smartAccess.devices.bluetoothRequiredMessage',
-                  'Enable Bluetooth, then try again.',
-                ),
-              );
-
-              androidBluetoothReadyRef.current =
-                false;
-
-              return false;
-            }
-
-            androidBluetoothReadyRef.current = true;
-          }
+          const permissionsGranted =
+            await requestBluetoothPermissions();
 
           Logger.info(
-            '[TTLock][ANDROID][PERF] Bluetooth ready',
+            '[TTLock][ANDROID] BLE permissions result',
             {
-              durationMs: Date.now() - start,
+              permissionsGranted,
             },
           );
 
+          if (!permissionsGranted) {
+            androidPermissionsGrantedRef.current =
+              false;
+
+            Alert.alert(
+              t(
+                'mobile.smartAccess.devices.permissionTitle',
+                'Permission required',
+              ),
+              t(
+                'mobile.smartAccess.devices.permissionMessage',
+                'Bluetooth permissions are required for smart lock access.',
+              ),
+            );
+
+            return false;
+          }
+
+          androidPermissionsGrantedRef.current = true;
+
+          /**
+           * DO NOT call isBluetoothEnabled() here.
+           *
+           * The TTLock native scan will initialize the Bluetooth
+           * service and tell us whether BLE is actually usable.
+           */
+
           return true;
         } finally {
-          androidBluetoothCheckPromiseRef.current =
-            null;
+          androidBluetoothCheckPromiseRef.current = null;
         }
       })();
 
@@ -519,8 +387,10 @@ const residentId = userData?.residentId ?? null;
 
     /**
      * ============================================================
-     * iOS — EXISTING FLOW
+     * iOS
      * ============================================================
+     *
+     * KEEP EXISTING iOS BEHAVIOUR.
      */
 
     const permissionsGranted =
@@ -685,8 +555,8 @@ const residentId = userData?.residentId ?? null;
    *
    * iOS behaviour is unchanged.
    *
-   * Android uses cached BLE access and avoids another backend
-   * BLE-access request.
+   * Android does NOT use cached BLE access.
+   * Android always fetches fresh BLE access.
    *
    * IMPORTANT:
    * Android battery BLE operation will not start while a control
@@ -816,22 +686,19 @@ const residentId = userData?.residentId ?? null;
 
         Logger.info('[Battery] Fetching BLE access');
 
-        let bleAccess: CachedBleAccess;
-
-        if (Platform.OS === 'android') {
-          bleAccess = await getCachedBleAccess(
+        /**
+         * Fresh BLE access on every battery request.
+         *
+         * There is intentionally NO Android BLE cache.
+         *
+         * iOS behaviour remains the same because it already
+         * called getDeviceBleAccess().
+         */
+        const bleAccess =
+          await getDeviceBleAccess(
             selectedDevice.id,
             String(residentId),
           );
-        } else {
-          /**
-           * iOS — unchanged.
-           */
-          bleAccess = await getDeviceBleAccess(
-            selectedDevice.id,
-            String(residentId),
-          );
-        }
 
         if (cancelled) {
           return;
@@ -970,16 +837,18 @@ const residentId = userData?.residentId ?? null;
    * OPEN DEVICE MODAL
    * ============================================================
    *
-   * This remains the place where we verify that the lock is
-   * actually nearby.
+   * This is where we verify that the lock is actually nearby.
    *
    * Android:
    * - permissions are cached
-   * - BLE access is cached
+   * - BLE access is ALWAYS fresh
    * - scan happens ONCE here
+   * - Android scan is unrestricted
+   * - expected MAC is matched in JavaScript
    *
    * iOS:
-   * - existing behaviour remains.
+   * - existing behaviour remains
+   * - scanLocks(lockMac)
    */
 
   const openSelectedDeviceModal = async (
@@ -988,113 +857,204 @@ const residentId = userData?.residentId ?? null;
     try {
       setCheckingNearbyDeviceId(device.id);
 
+      /**
+       * ========================================================
+       * BLUETOOTH / BLE PERMISSIONS
+       * ========================================================
+       *
+       * Android:
+       * - Do not use isBluetoothEnabled() as a hard gate here.
+       * - TTLock native scanLocks() initializes the BLE service
+       *   and performs the actual BLE scan.
+       *
+       * iOS:
+       * - Keep the existing permission flow unchanged.
+       */
       const permissionsGranted =
         await requestBluetoothPermissions();
 
       if (!permissionsGranted) {
-        return;
-      }
-
-      const bluetoothEnabled =
-        await ttlockNative.isBluetoothEnabled();
-
-      if (!bluetoothEnabled) {
-        Alert.alert(
-          'Bluetooth Required',
-          'Please turn on Bluetooth to access this smart lock.',
+        Logger.warn(
+          '[TTLock] Bluetooth permissions not granted',
+          {
+            platform: Platform.OS,
+            deviceId: device.id,
+          },
         );
-
-        if (Platform.OS === 'android') {
-          androidBluetoothReadyRef.current = false;
-        }
 
         return;
       }
 
       /**
        * ========================================================
-       * GET BLE ACCESS
+       * GET FRESH BLE ACCESS
        * ========================================================
+       *
+       * No Android BLE-access cache.
+       *
+       * This guarantees that lockData and lockMac are current
+       * when the user selects the lock.
        */
-
       const accessStart = Date.now();
 
       const bleAccess =
-        Platform.OS === 'android'
-          ? await getCachedBleAccess(
-              device.id,
-              String(residentId),
-            )
-          : await getDeviceBleAccess(
-              device.id,
-              String(residentId),
-            );
+        await getDeviceBleAccess(
+          device.id,
+          String(residentId),
+        );
 
       Logger.info(
         '[TTLock][PERF] Modal BLE access ready',
         {
-          durationMs: Date.now() - accessStart,
+          durationMs:
+            Date.now() - accessStart,
           platform: Platform.OS,
           deviceId: device.id,
           lockMac: bleAccess.lockMac,
+          hasLockData: !!bleAccess.lockData,
         },
       );
+
+      /**
+       * ========================================================
+       * VALIDATE LOCK MAC
+       * ========================================================
+       */
+      const expectedMac = String(
+        bleAccess.lockMac || '',
+      )
+        .trim()
+        .toUpperCase();
+
+      if (!expectedMac) {
+        Logger.error(
+          '[TTLock] BLE access did not contain lock MAC',
+          {
+            platform: Platform.OS,
+            deviceId: device.id,
+            bleAccess,
+          },
+        );
+
+        Alert.alert(
+          'Error',
+          'Unable to determine the lock Bluetooth address.',
+        );
+
+        return;
+      }
 
       /**
        * ========================================================
        * NEARBY SCAN
        * ========================================================
        *
-       * This is the ONLY scan required before opening the
-       * modal.
+       * Android:
+       * - Scan ALL nearby TTLock devices.
+       * - Compare MAC addresses in JavaScript.
+       *
+       * This follows the same discovery approach as the
+       * working TTLock Admin screen.
+       *
+       * iOS:
+       * - Keep the existing filtered scan by lock MAC.
        */
-
       const scanStart = Date.now();
 
       Logger.info(
         '[TTLock] Checking nearby lock',
         {
           platform: Platform.OS,
-          lockMac: bleAccess.lockMac,
+          deviceId: device.id,
+          expectedMac,
         },
       );
 
       const nearbyDevices =
-        await ttlockNative.scanLocks(
-          bleAccess.lockMac,
-        );
+        Platform.OS === 'android'
+          ? await ttlockNative.scanLocks()
+          : await ttlockNative.scanLocks(
+              bleAccess.lockMac,
+            );
 
       Logger.info(
         '[TTLock][PERF] Nearby scan completed',
         {
-          durationMs: Date.now() - scanStart,
+          durationMs:
+            Date.now() - scanStart,
           platform: Platform.OS,
-          expectedMac: bleAccess.lockMac,
+          expectedMac,
           count: nearbyDevices.length,
+          devices: nearbyDevices,
         },
       );
 
+      /**
+       * ========================================================
+       * MATCH LOCK BY MAC
+       * ========================================================
+       */
       const nearby = nearbyDevices.some(
-        d =>
-          d.mac?.trim().toUpperCase() ===
-          bleAccess.lockMac.trim().toUpperCase(),
+        scannedDevice => {
+          const scannedMac = String(
+            scannedDevice?.mac || '',
+          )
+            .trim()
+            .toUpperCase();
+
+          return scannedMac === expectedMac;
+        },
       );
 
+      /**
+       * ========================================================
+       * LOCK NOT FOUND
+       * ========================================================
+       */
       if (!nearby) {
+        const lockId = device.lockId ?? null;
+
+        Logger.warn(
+          '[TTLock] Lock not found nearby',
+          {
+            platform: Platform.OS,
+            deviceId: device.id,
+            lockId,
+            expectedMac,
+            scannedDevices: nearbyDevices,
+          },
+        );
+
         Alert.alert(
           'Lock Not Found',
-          'The lock is not nearby. Please move closer to the door and try again.',
+          `Lock ID: ${
+            lockId ?? 'N/A'
+          }\n\nThe lock is not nearby. Please move closer to the door and try again.`,
         );
 
         return;
       }
 
       /**
-       * Lock is confirmed nearby.
+       * ========================================================
+       * LOCK CONFIRMED NEARBY
+       * ========================================================
        *
-       * Android will now use the cached BLE access and will NOT
-       * scan again when Unlock is pressed.
+       * Do NOT cache BLE access here.
+       *
+       * When the user actually presses Lock/Unlock,
+       * Android will obtain fresh BLE access again.
        */
+      Logger.info(
+        '[TTLock] Lock confirmed nearby',
+        {
+          platform: Platform.OS,
+          deviceId: device.id,
+          lockId: device.lockId,
+          expectedMac,
+        },
+      );
+
       setSelectedDevice(device);
       setIsSelectedDeviceModalVisible(true);
     } catch (error) {
@@ -1176,7 +1136,10 @@ const residentId = userData?.residentId ?? null;
             'Please wait',
           ),
         smartAccessCopy?.commandInProgressMessage ||
-          'Please try again in a moment.',
+          t(
+            'mobile.smartAccess.devices.commandInProgressMessage',
+            'Please try again in a moment.',
+          ),
         [
           {
             text: t(
@@ -1211,9 +1174,12 @@ const residentId = userData?.residentId ?? null;
       setActiveControlId(device.id);
 
       /**
-       * Android:
-       * mark control as active immediately so the battery effect
-       * cannot start another BLE operation.
+       * ========================================================
+       * ANDROID CONTROL STATE
+       * ========================================================
+       *
+       * Prevent the battery polling/effect from starting another
+       * BLE operation while Lock/Unlock is running.
        */
       if (Platform.OS === 'android') {
         androidControlInProgressRef.current = true;
@@ -1221,10 +1187,19 @@ const residentId = userData?.residentId ?? null;
 
       /**
        * ========================================================
-       * BLUETOOTH READY
+       * BLUETOOTH / BLE PERMISSIONS
        * ========================================================
+       *
+       * IMPORTANT:
+       *
+       * ensureBluetoothReady() should only validate the required
+       * permissions/readiness.
+       *
+       * Do NOT independently call isBluetoothEnabled() here.
+       *
+       * The actual TTLock BLE operation is handled by the native
+       * scan/control methods.
        */
-
       const bluetoothStart = Date.now();
 
       const ready = await ensureBluetoothReady();
@@ -1233,27 +1208,32 @@ const residentId = userData?.residentId ?? null;
         '[TTLock][PERF] Bluetooth ready check',
         {
           platform: Platform.OS,
-          durationMs: Date.now() - bluetoothStart,
+          durationMs:
+            Date.now() - bluetoothStart,
           ready,
         },
       );
 
       if (!ready) {
         Logger.warn(
-          '[TTLock] Bluetooth not ready',
+          '[TTLock] Bluetooth permissions/readiness not available',
+          {
+            platform: Platform.OS,
+            deviceId: device.id,
+            action,
+          },
         );
 
-        if (Platform.OS === 'android') {
-          androidBluetoothReadyRef.current = false;
-        }
-
-        setTimeout(() => {
-          Alert.alert(
-            'Bluetooth Off',
-            'Please turn on Bluetooth.',
-          );
-        }, 0);
-
+        /**
+         * IMPORTANT:
+         *
+         * Do NOT show:
+         * "Bluetooth Off"
+         *
+         * because TTLockClient.isBLEEnabled() can temporarily
+         * report false on Android even when the phone Bluetooth
+         * is actually enabled.
+         */
         return;
       }
 
@@ -1262,7 +1242,6 @@ const residentId = userData?.residentId ?? null;
        * CONTROL FUNCTION
        * ========================================================
        */
-
       const performControlWithAccess = async (
         lockData: string,
         lockMac: string,
@@ -1284,69 +1263,62 @@ const residentId = userData?.residentId ?? null;
          * ANDROID
          * ======================================================
          *
+         * The lock was already verified as nearby when the
+         * modal was opened.
+         *
          * IMPORTANT:
+         * - Do NOT scan again here.
+         * - Do NOT call isBluetoothEnabled() here.
+         * - Do NOT show a false "Bluetooth disabled" error.
          *
-         * We already verified the lock was nearby when the
-         * modal opened.
-         *
-         * DO NOT scan again here.
-         *
-         * This removes one potentially expensive BLE scan from
-         * every unlock/lock operation.
+         * Call the native TTLock control API directly.
          */
-
         if (Platform.OS === 'android') {
           const controlStart = Date.now();
-
-          const bluetoothEnabled =
-            await ttlockNative.isBluetoothEnabled();
-
-          Logger.info(
-            '[TTLock][ANDROID] Bluetooth state immediately before control',
-            {
-              bluetoothEnabled,
-              action,
-              lockMac,
-            },
-          );
-
-          if (!bluetoothEnabled) {
-            Logger.error(
-              '[TTLock][ANDROID] Bluetooth is disabled before controlLock',
-              {
-                action,
-                lockMac,
-              },
-            );
-
-            throw new Error('BLUETOOTH_DISABLED');
-          }
 
           Logger.info(
             '[TTLock][ANDROID] Calling controlLock directly',
             {
               action,
               lockMac,
+              lockDataLength: lockData?.length,
             },
           );
 
-          const result = await ttlockNative.controlLock(
-            lockData,
-            lockMac,
-            action,
-          );
+          try {
+            const result =
+              await ttlockNative.controlLock(
+                lockData,
+                lockMac,
+                action,
+              );
 
-          Logger.info(
-            '[TTLock][ANDROID][PERF] controlLock completed',
-            {
-              durationMs: Date.now() - controlStart,
-              action,
-              lockMac,
-              result,
-            },
-          );
+            Logger.info(
+              '[TTLock][ANDROID][PERF] controlLock completed',
+              {
+                durationMs:
+                  Date.now() - controlStart,
+                action,
+                lockMac,
+                result,
+              },
+            );
 
-          return result;
+            return result;
+          } catch (error) {
+            Logger.error(
+              '[TTLock][ANDROID] controlLock failed',
+              {
+                durationMs:
+                  Date.now() - controlStart,
+                action,
+                lockMac,
+                error,
+              },
+            );
+
+            throw error;
+          }
         }
 
         /**
@@ -1354,9 +1326,11 @@ const residentId = userData?.residentId ?? null;
          * iOS — EXISTING FLOW
          * ======================================================
          *
-         * DO NOT CHANGE THIS.
+         * Keep iOS behavior unchanged:
+         * 1. Scan the specific lock.
+         * 2. Verify the MAC.
+         * 3. Control the lock.
          */
-
         const scanStart = Date.now();
 
         const nearbyDevices =
@@ -1372,17 +1346,29 @@ const residentId = userData?.residentId ?? null;
           },
         );
 
+        const expectedMac = String(
+          lockMac || '',
+        )
+          .trim()
+          .toUpperCase();
+
         const nearby = nearbyDevices.some(
-          d =>
-            d.mac?.trim().toUpperCase() ===
-            lockMac.trim().toUpperCase(),
+          scannedDevice => {
+            const scannedMac = String(
+              scannedDevice?.mac || '',
+            )
+              .trim()
+              .toUpperCase();
+
+            return scannedMac === expectedMac;
+          },
         );
 
         Logger.info(
           '[TTLock][IOS] Nearby check',
           {
             nearby,
-            expectedMac: lockMac,
+            expectedMac,
             devices: nearbyDevices,
           },
         );
@@ -1398,55 +1384,57 @@ const residentId = userData?.residentId ?? null;
 
         const controlStart = Date.now();
 
-        const result =
-          await ttlockNative.controlLock(
-            lockData,
-            lockMac,
-            action,
+        try {
+          const result =
+            await ttlockNative.controlLock(
+              lockData,
+              lockMac,
+              action,
+            );
+
+          Logger.info(
+            '[TTLock][IOS][PERF] controlLock completed',
+            {
+              durationMs:
+                Date.now() - controlStart,
+              action,
+              lockMac,
+            },
           );
 
-        Logger.info(
-          '[TTLock][IOS][PERF] controlLock completed',
-          {
-            durationMs:
-              Date.now() - controlStart,
-            action,
-            lockMac,
-          },
-        );
+          return result;
+        } catch (error) {
+          Logger.error(
+            '[TTLock][IOS] controlLock failed',
+            {
+              durationMs:
+                Date.now() - controlStart,
+              action,
+              lockMac,
+              error,
+            },
+          );
 
-        return result;
+          throw error;
+        }
       };
 
       /**
        * ========================================================
-       * GET BLE ACCESS
+       * GET FRESH BLE ACCESS
        * ========================================================
+       *
+       * NO Android BLE cache.
+       *
+       * Both platforms receive fresh access.
        */
-
       const accessStart = Date.now();
 
-      let bleAccess: CachedBleAccess;
-
-      if (Platform.OS === 'android') {
-        /**
-         * Android:
-         * use cached access.
-         */
-        bleAccess = await getCachedBleAccess(
+      let bleAccess =
+        await getDeviceBleAccess(
           device.id,
           String(residentId),
         );
-      } else {
-        /**
-         * iOS:
-         * existing behaviour unchanged.
-         */
-        bleAccess = await getDeviceBleAccess(
-          device.id,
-          String(residentId),
-        );
-      }
 
       Logger.info(
         '[TTLock][PERF] Control BLE access ready',
@@ -1456,6 +1444,7 @@ const residentId = userData?.residentId ?? null;
             Date.now() - accessStart,
           deviceId: device.id,
           lockMac: bleAccess.lockMac,
+          hasLockData: !!bleAccess.lockData,
         },
       );
 
@@ -1464,7 +1453,6 @@ const residentId = userData?.residentId ?? null;
        * CONTROL
        * ========================================================
        */
-
       let result;
 
       try {
@@ -1479,7 +1467,6 @@ const residentId = userData?.residentId ?? null;
          * NEARBY ERROR RETRY
          * ======================================================
          */
-
         if (
           !ttlockNative.isTTLockNearbyError(error)
         ) {
@@ -1487,7 +1474,7 @@ const residentId = userData?.residentId ?? null;
         }
 
         Logger.warn(
-          '[TTLock] Nearby error during control. Refreshing BLE access.',
+          '[TTLock] Nearby error during control. Fetching fresh BLE access.',
           {
             platform: Platform.OS,
             deviceId: device.id,
@@ -1501,27 +1488,15 @@ const residentId = userData?.residentId ?? null;
         await wait(350);
 
         /**
-         * Android:
-         * force refresh BLE access because the cached data
-         * may have expired.
+         * Always fetch fresh BLE access.
          *
-         * iOS:
-         * existing behaviour remains.
+         * There is no Android cache.
          */
-        if (Platform.OS === 'android') {
-          bleAccess =
-            await getCachedBleAccess(
-              device.id,
-              String(residentId),
-              true,
-            );
-        } else {
-          bleAccess =
-            await getDeviceBleAccess(
-              device.id,
-              String(residentId),
-            );
-        }
+        bleAccess =
+          await getDeviceBleAccess(
+            device.id,
+            String(residentId),
+          );
 
         result =
           await performControlWithAccess(
@@ -1535,7 +1510,6 @@ const residentId = userData?.residentId ?? null;
        * SAVE OPERATION LOG
        * ========================================================
        */
-
       try {
         await saveTTLockOperationLog({
           deviceId: device.id,
@@ -1555,7 +1529,6 @@ const residentId = userData?.residentId ?? null;
        * UPDATE UI
        * ========================================================
        */
-
       const actionLabel =
         action === 'unlock'
           ? t(
@@ -1635,13 +1608,6 @@ const residentId = userData?.residentId ?? null;
         },
       );
 
-      /**
-       * Important:
-       * Don't swallow the actual error silently.
-       *
-       * Your previous code generated the error message but did
-       * not display it.
-       */
       Alert.alert(
         t(
           'mobile.smartAccess.devices.controlFailedTitle',
@@ -1651,12 +1617,12 @@ const residentId = userData?.residentId ?? null;
       );
     } finally {
       /**
-       * Android:
-       * release control state.
+       * ========================================================
+       * RELEASE ANDROID CONTROL STATE
+       * ========================================================
        */
       if (Platform.OS === 'android') {
-        androidControlInProgressRef.current =
-          false;
+        androidControlInProgressRef.current = false;
       }
 
       setActiveControlId(null);
