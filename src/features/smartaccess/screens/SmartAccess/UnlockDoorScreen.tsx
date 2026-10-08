@@ -337,8 +337,9 @@ const residentId = userData?.residentId ?? null;
      * Reuse BLE access whenever possible.
      */
     if (!forceRefresh) {
+      const cacheKey = `${residentIdValue}:${deviceId}`;
       const cached =
-        androidBleAccessCache.current[deviceId];
+        androidBleAccessCache.current[cacheKey];
 
       if (cached) {
         Logger.info('[TTLock][ANDROID] Using cached BLE access', {
@@ -365,7 +366,7 @@ const residentId = userData?.residentId ?? null;
       residentIdValue,
     );
 
-    androidBleAccessCache.current[deviceId] = {
+    androidBleAccessCache.current[`${residentIdValue}:${deviceId}`] = {
       lockData: access.lockData,
       lockMac: access.lockMac,
       deviceName: access.deviceName,
@@ -906,8 +907,6 @@ const residentId = userData?.residentId ?? null;
         Logger.info('BLE Access', {
           lockMac: bleAccess.lockMac,
           lockDataLength: bleAccess.lockData?.length,
-          lockDataPrefix:
-            bleAccess.lockData?.substring(0, 20),
           deviceName: bleAccess.deviceName,
         });
 
@@ -1157,7 +1156,7 @@ const residentId = userData?.residentId ?? null;
        * iOS is intentionally unchanged.
        */
       if (Platform.OS === 'android') {
-        androidBleAccessCache.current[device.id] = {
+        androidBleAccessCache.current[`${residentId}:${device.id}`] = {
           lockData: bleAccess.lockData,
           lockMac: bleAccess.lockMac,
           deviceName: bleAccess.deviceName,
@@ -1351,8 +1350,6 @@ const residentId = userData?.residentId ?? null;
             action,
             lockMac,
             lockDataLength: lockData?.length,
-            lockDataPrefix:
-              lockData?.substring(0, 20),
           },
         );
 
@@ -1546,13 +1543,14 @@ const residentId = userData?.residentId ?? null;
          */
 
         if (
-          !ttlockNative.isTTLockNearbyError(error)
+          !ttlockNative.isTTLockNearbyError(error) &&
+          !ttlockNative.isTTLockInvalidKeyError(error)
         ) {
           throw error;
         }
 
         Logger.warn(
-          '[TTLock] Nearby error during control. Refreshing BLE access.',
+          '[TTLock] Nearby or invalid-key error during control. Refreshing BLE access.',
           {
             platform: Platform.OS,
             deviceId: device.id,

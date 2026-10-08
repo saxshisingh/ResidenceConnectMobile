@@ -253,6 +253,16 @@ export const isTTLockCommandInProgressError = (error: unknown) =>
 export const isTTLockNearbyError = (error: unknown) =>
   isNearbyCommandError(getErrorMessage(error, ''));
 
+export const isTTLockInvalidKeyError = (error: unknown) => {
+  const normalized = getErrorMessage(error, '').toLowerCase();
+  return (
+    normalized.includes('key invalid') ||
+    normalized.includes('invalid key') ||
+    normalized.includes('key is invalid') ||
+    normalized.includes('invalid lock data')
+  );
+};
+
 export const isTTLockBluetoothDisabledError = (error: unknown) =>
   isBluetoothDisabledError(getErrorMessage(error, ''));
 
