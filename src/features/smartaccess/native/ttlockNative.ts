@@ -340,31 +340,31 @@ const withExclusiveBleCommand = async <T>(
     Logger.ttlock('BLE Command Success');
 
     return result;
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error
-        ? error.message
-        : String(error);
+  } catch (error) {
+    Logger.exception(error);
 
-    const normalizedMessage = errorMessage.toLowerCase();
 
-    const isConnectionError =
-      normalizedMessage.includes('lock connect time out') ||
-      normalizedMessage.includes('connection is disconnected') ||
-      normalizedMessage.includes('disconnected') ||
-      normalizedMessage.includes('timeout');
 
-    if (isConnectionError) {
-      Logger.ttlock(
-        `BLE Command unavailable: ${errorMessage}`,
-      );
-    } else {
-      Logger.exception(error);
-    }
 
-    // Keep the original TTLock error so the caller
-    // can decide whether to retry or show an error.
-    throw error;
+    throw new Error(
+      getTTLockUserFacingErrorMessage(
+        error,
+        'Unable to complete smart lock command.',
+      ),
+    );
+
+
+
+
+
+
+
+
+
+
+
+
+
   } finally {
     Logger.ttlock('BLE Command Finished');
 
@@ -941,75 +941,125 @@ export const controlLock = async (
   macAddress: string,
   action: ControlAction,
 ) => {
-  if (Platform.OS === 'android') {
-    return withExclusiveBleCommand(() =>
-      ensureAndroidModule().controlLock(lockData, macAddress, action),
-    );
-  }
+  return withExclusiveBleCommand(async () => {
+    if (Platform.OS === 'android') {
+      const androidModule = ensureAndroidModule();
 
-  const iosModule = ensureIOSModule();
-  const controlLockNative = iosModule.controlLock;
+      Logger.ttlock('[Android] controlLock START', {
+        action,
+        macAddress,
+        lockDataLength: lockData?.length ?? 0,
+      });
 
-  if (!controlLockNative) {
-    throw new Error(
-      'controlLock is not available on the iOS TTLock module.',
-    );
-  }
-
-  return withExclusiveBleCommand(
-    () =>
-      new Promise<{
-        battery?: number;
-        uniqueId?: number;
-        action?: string;
-      }>((resolve, reject) => {
-        controlLockNative.call(
-          iosModule,
-          getIOSControlAction(action),
+      try {
+        const result = await androidModule.controlLock(
           lockData,
-
-          (_lockTime, electricQuantity, uniqueId) => {
-            Logger.ttlock('[iOS] controlLock SUCCESS', {
-              action,
-              battery: electricQuantity,
-              uniqueId,
-            });
-
-            resolve({
-              action,
-              battery: electricQuantity,
-              uniqueId,
-            });
-          },
-
-          (error: unknown) => {
-            Logger.error('[TTLock iOS Control Raw Error]', {
-              raw: error,
-              type: typeof error,
-              isArray: Array.isArray(error),
-              code: Array.isArray(error) ? error[0] : null,
-              message: Array.isArray(error) ? error[1] : null,
-              json: (() => {
-                try {
-                  return JSON.stringify(error);
-                } catch {
-                  return null;
-                }
-              })(),
-            });
-
-            reject(
-              new Error(
-                getErrorMessage(
-                  error,
-                  'BLE lock control failed on iOS.',
-                ),
-              ),
-            );
-          },
+          macAddress,
+          action,
         );
-      }),
-  );
+
+        Logger.ttlock('[Android] controlLock SUCCESS', {
+          action,
+          macAddress,
+          result,
+        });
+
+        return result;
+      } catch (error: unknown) {
+        Logger.error('[Android] controlLock FAILED', {
+          action,
+          macAddress,
+          raw: error,
+          type: typeof error,
+          message:
+            error instanceof Error
+              ? error.message
+              : String(error),
+          json: (() => {
+            try {
+              return JSON.stringify(error);
+            } catch {
+              return null;
+            }
+          })(),
+        });
+
+        throw new Error(
+          getErrorMessage(
+            error,
+            'BLE lock control failed on Android.',
+          ),
+        );
+      }
+    }
+
+    const iosModule = ensureIOSModule();
+    const controlLockNative = iosModule.controlLock;
+
+    if (!controlLockNative) {
+      throw new Error(
+        'controlLock is not available on the iOS TTLock module.',
+      );
+    }
+
+    return new Promise<{
+      battery?: number;
+      uniqueId?: number;
+      action?: string;
+    }>((resolve, reject) => {
+      Logger.ttlock('[iOS] controlLock START', {
+        action,
+        macAddress,
+        lockDataLength: lockData?.length ?? 0,
+      });
+
+      controlLockNative.call(
+        iosModule,
+        getIOSControlAction(action),
+        lockData,
+
+        (_lockTime, electricQuantity, uniqueId) => {
+          Logger.ttlock('[iOS] controlLock SUCCESS', {
+            action,
+            battery: electricQuantity,
+            uniqueId,
+          });
+
+          resolve({
+            action,
+            battery: electricQuantity,
+            uniqueId,
+          });
+        },
+
+        (error: unknown) => {
+          Logger.error('[TTLock iOS Control Raw Error]', {
+            raw: error,
+            type: typeof error,
+            isArray: Array.isArray(error),
+            code: Array.isArray(error) ? error[0] : null,
+            message: Array.isArray(error) ? error[1] : null,
+            json: (() => {
+              try {
+                return JSON.stringify(error);
+              } catch {
+                return null;
+              }
+            })(),
+          });
+
+          reject(
+            new Error(
+              getErrorMessage(
+                error,
+                'BLE lock control failed on iOS.',
+              ),
+            ),
+          );
+        },
+      );
+    });
+  });
 };
 
 export const getLockTime = async (lockData: string, macAddress: string) => {

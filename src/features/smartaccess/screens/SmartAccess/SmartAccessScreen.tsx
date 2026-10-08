@@ -86,40 +86,43 @@ export default function SmartAccessScreen() {
   ]);
 
   useEffect(() => {
-    // Don't navigate until we actually have a role.
     if (!roleRaw) {
-      Logger.info(
-        '[SmartAccess] Role not available yet. Waiting...',
-      );
+      Logger.info('[SmartAccess] Role not available yet. Waiting...');
       return;
     }
 
-    const destination = shouldOpenAdminFirst
-      ? 'TTLockAdmin'
-      : 'UnlockDoor';
+    const destination =
+      shouldOpenAdminFirst ? 'TTLockAdmin' : 'UnlockDoor';
 
-    Logger.info('[SmartAccess] Navigation decision', {
+    Logger.info('[SmartAccess] ===== NAVIGATION START =====', {
       roleRaw,
       normalizedRole,
       shouldOpenAdminFirst,
       destination,
     });
 
-    try {
-      navigation.replace(destination);
-
-      Logger.info(
-        '[SmartAccess] navigation.replace() called',
-        {
+    const timer = setTimeout(() => {
+      try {
+        Logger.info('[SmartAccess] Calling navigation.replace', {
           destination,
-        },
-      );
-    } catch (error) {
-      Logger.error(
-        '[SmartAccess] navigation.replace() failed',
-        error,
-      );
-    }
+        });
+
+        navigation.replace(destination);
+
+        Logger.info('[SmartAccess] navigation.replace COMPLETED', {
+          destination,
+        });
+      } catch (error) {
+        Logger.error(
+          '[SmartAccess] navigation.replace FAILED',
+          error,
+        );
+      }
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+    };
   }, [
     navigation,
     roleRaw,

@@ -1,9 +1,8 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
+
 import {
   ActivityIndicator,
   Alert,
-  InteractionManager,
   Modal,
   PermissionsAndroid,
   Platform,
@@ -11,2301 +10,1321 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  useWindowDimensions,
   View,
-  Linking,
 } from 'react-native';
+import Svg, {Path, Circle, Rect, Line} from 'react-native-svg';
 
-import {useNavigation} from '@react-navigation/native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import Svg, {Defs, LinearGradient, Path, Rect, Stop} from 'react-native-svg';
-import Logger from '../../../../services/logger/logger';
+import ScreenWrapper from '../../../../components/ScreenWrapper';
 
-import DoorFrontIcon from '../../../../assets/Icons/door_front.svg';
-import DoorSlidingIcon from '../../../../assets/Icons/door_sliding.svg';
-import NoCrashIcon from '../../../../assets/Icons/no_crash.svg';
-import MapsHomeWorkIcon from '../../../../assets/Icons/maps_home_work.svg';
-import AccessFallbackIcon from '../../../../assets/Icons/image 88.svg';
-import BackButton from '../../../../components/BackButton';
 import {useI18n} from '../../../../i18n';
-import {useAppSelector} from '../../../../redux/hooks';
+
 import {useAppTheme} from '../../../../theme/ThemeProvider';
 import type {ThemeColors} from '../../../../theme/colors';
-import SmartLockHeroCard from '../../components/SmartLockHeroCard';
+
 import {
-  getDeviceBleAccess,
-  getResidentAccessDevices,
-  saveTTLockOperationLog,
-  type ResidentAccessDevice,
-} from '../../services/accessDeviceService';
+  getInitializedSmartLocks,
+  initializeSmartLock,
+  removeTTLock,
+  type TTLockNetworkLock,
+} from '../../services/ttlockService';
 import * as ttlockNative from '../../native/ttlockNative';
 
-type AccessIconComponent = React.ComponentType<any>;
-type ControlAction = 'unlock' | 'lock';
+// ─── Icons ────────────────────────────────────────────────────────────────────
 
-const ACCESS_ICON_MAP: Record<string, AccessIconComponent> = {
-  main: DoorFrontIcon,
-  entrance: DoorFrontIcon,
-  door: DoorFrontIcon,
-  gate: DoorSlidingIcon,
-  parking: NoCrashIcon,
-  lobby: MapsHomeWorkIcon,
-  lift: MapsHomeWorkIcon,
-  elevator: MapsHomeWorkIcon,
-};
+const IconBluetooth = ({size = 20, color = '#fff'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
-const getAccessIcon = (
-  deviceName: string,
-): AccessIconComponent => {
-  const normalized = String(deviceName || '').toLowerCase();
+const IconScan = ({size = 20, color = '#fff'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Line x1="3" y1="12" x2="21" y2="12" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+  </Svg>
+);
 
-  const matchedKey = Object.keys(ACCESS_ICON_MAP).find(key =>
-    normalized.includes(key),
-  );
+const IconList = ({size = 20, color = '#fff'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Line x1="8" y1="6" x2="21" y2="6" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Line x1="8" y1="12" x2="21" y2="12" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Line x1="8" y1="18" x2="21" y2="18" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Circle cx="3.5" cy="6" r="1.2" fill={color}/>
+    <Circle cx="3.5" cy="12" r="1.2" fill={color}/>
+    <Circle cx="3.5" cy="18" r="1.2" fill={color}/>
+  </Svg>
+);
 
-  return matchedKey
-    ? ACCESS_ICON_MAP[matchedKey]
-    : AccessFallbackIcon;
-};
+const IconLock = ({size = 22, color = '#5DAFA4'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Rect x="3" y="11" width="18" height="11" rx="2" stroke={color} strokeWidth="1.8"/>
+    <Path d="M7 11V7a5 5 0 0110 0v4" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Circle cx="12" cy="16" r="1.5" fill={color}/>
+  </Svg>
+);
 
-const requestBluetoothPermissions = async () => {
-  if (Platform.OS !== 'android') {
-    return true;
-  }
+const IconCheck = ({size = 16, color = '#fff'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M5 12l5 5L20 7" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </Svg>
+);
 
-  const permissions =
-    Platform.Version >= 31
-      ? [
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        ]
-      : [
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
-        ];
+const IconClose = ({size = 16, color = '#888'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M18 6L6 18M6 6l12 12" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+  </Svg>
+);
 
-  const result = await PermissionsAndroid.requestMultiple(
-    permissions,
-  );
+const IconWifi = ({size = 16, color = '#5DAFA4'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+    <Circle cx="12" cy="20" r="1" fill={color}/>
+  </Svg>
+);
 
-  return permissions.every(
-    permission =>
-      result[permission] === PermissionsAndroid.RESULTS.GRANTED,
-  );
-};
-
-const isEffectiveTimeError = (message?: string) =>
-  String(message || '')
-    .toLowerCase()
-    .includes('effective');
-
-const wait = (ms: number) =>
-  new Promise<void>(resolve => {
-    setTimeout(resolve, ms);
-  });
-
-const getBluetoothEnableMessage = (
-  t: (key: string, fallback?: string) => string,
-) =>
-  Platform.OS === 'ios'
-    ? t(
-        'mobile.smartAccess.devices.bluetoothRequiredMessage',
-        'Turn on Bluetooth in iPhone Settings, then try again.',
-      )
-    : t(
-        'mobile.smartAccess.devices.bluetoothRequiredMessage',
-        'Enable Bluetooth, then try again.',
-      );
-
-const RefreshActionIcon = ({
-  color,
-  size = 16,
-}: {
-  color: string;
-  size?: number;
-}) => (
-  <Svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none">
+const IconRefresh = ({size = 16, color = '#3A8F86'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
       d="M20 11a8 8 0 10-2.34 5.66M20 11V4m0 7h-7"
       stroke={color}
-      strokeWidth={1.8}
+      strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
   </Svg>
 );
 
-export default function UnlockDoorScreen() {
-  const navigation = useNavigation<any>();
+const IconTrash = ({size = 16, color = '#DC2626'}) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M4 7h16M9 7V5.8c0-.66.54-1.2 1.2-1.2h3.6c.66 0 1.2.54 1.2 1.2V7M8 10v7m4-7v7m4-7v7M7 7l.7 11.2c.07 1.01.91 1.8 1.92 1.8h4.82c1.01 0 1.85-.79 1.92-1.8L17 7"
+      stroke={color}
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
-  const {language, t} = useI18n();
 
-  const {colors, resolvedTheme} = useAppTheme();
 
-  const smartAccessCopy = useMemo(() => {
+
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type LockDevice = {
+  id: string;
+  name: string;
+  mac: string;
+  deviceId?: string;
+  lockData?: string;
+  lockId?: string;
+  alias?: string;
+  isSettingMode?: boolean;
+};
+
+const looksLikeGuid = (value: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+
+const isNumericIdentifier = (value: string) => /^\d+$/.test(value);
+
+
+
+
+const getBluetoothEnableMessage = (
+  t: (key: string, fallback?: string) => string,
+) =>
+  Platform.OS === 'ios'
+    ? t(
+        'mobile.ttlock.admin.enableBluetoothToScan',
+        'Turn on Bluetooth in iPhone Settings to start device detection.',
+      )
+    : t(
+        'mobile.ttlock.admin.enableBluetoothToScan',
+        'Enable Bluetooth to start device detection.',
+      );
+
+const pickRemoveLockIdentifier = (lock: TTLockNetworkLock) => {
+  const candidates = [
+    lock.lockId,
+    lock.raw?.lockId,
+    lock.raw?.LockId,
+    lock.raw?.ttLockId,
+    lock.raw?.TTLockId,
+    lock.raw?.ttlockId,
+    lock.raw?.TTLOCKID,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = String(candidate || '').trim();
+    if (normalized && isNumericIdentifier(normalized)) {
+      return normalized;
+    }
+  }
+
+  for (const candidate of candidates) {
+    const normalized = String(candidate || '').trim();
+    if (normalized && !looksLikeGuid(normalized)) {
+      return normalized;
+    }
+  }
+
+  const guidCandidates = [
+    lock.raw?.id,
+    lock.raw?.Id,
+    lock.deviceId,
+    lock.raw?.deviceId,
+    lock.raw?.DeviceId,
+    lock.raw?.accessDeviceId,
+    lock.raw?.AccessDeviceId,
+    lock.raw?.residentDeviceId,
+    lock.raw?.ResidentDeviceId,
+    lock.raw?.smartAccessDeviceId,
+    lock.raw?.SmartAccessDeviceId,
+    lock.raw?.guid,
+    lock.raw?.Guid,
+    lock.id,
+  ];
+
+  for (const candidate of guidCandidates) {
+    const normalized = String(candidate || '').trim();
+    if (normalized && looksLikeGuid(normalized)) {
+      return normalized;
+    }
+  }
+
+  return '';
+};
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+export default function TTLockAdminScreen({navigation}: any) {
+  const {colors} = useAppTheme();
+  const {t, language} = useI18n();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const adminCopy = useMemo(() => {
     if (language === 'ar') {
       return {
-        commandInProgressTitle: 'يرجى الانتظار',
-        commandInProgressMessage:
-          'يرجى المحاولة مرة أخرى بعد لحظة.',
+        bluetoothStatus: 'بلوتوث',
+        initializedMessage: (name: string, lockId?: string, alias?: string) =>
+          `تمت تهيئة ${name} عبر SDK.\n\nمعرّف القفل: ${lockId || '-'}\nالاسم المستعار: ${alias || '-'}`,
       };
     }
 
     if (language === 'fr') {
       return {
-        commandInProgressTitle: 'Veuillez patienter',
-        commandInProgressMessage:
-          'Veuillez reessayer dans un instant.',
+        bluetoothStatus: 'Bluetooth',
+        initializedMessage: (name: string, lockId?: string, alias?: string) =>
+          `${name} a ete initialise via le SDK.\n\nID serrure : ${lockId || '-'}\nAlias : ${alias || '-'}`,
       };
     }
 
-    return null;
+    return {
+      bluetoothStatus: 'Bluetooth',
+      initializedMessage: (name: string, lockId?: string, alias?: string) =>
+        `${name} is initialized via SDK.\n\nLock ID: ${lockId || '-'}\nAlias: ${alias || '-'}`,
+    };
   }, [language]);
 
-  const styles = useMemo(
-    () => createStyles(colors),
-    [colors],
-  );
+  const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+  const [devices, setDevices] = useState<LockDevice[]>([]);
+  const [networkLocks, setNetworkLocks] = useState<TTLockNetworkLock[]>([]);
+  const [loadingNetworkLocks, setLoadingNetworkLocks] = useState(false);
+  const [networkLocksError, setNetworkLocksError] = useState<string | null>(null);
+  const [bluetoothModalVisible, setBluetoothModalVisible] = useState(false);
+  const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(null);
+  const [removingLockId, setRemovingLockId] = useState<string | null>(null);
+  const adminBusy = scanning || loadingNetworkLocks || Boolean(connectingId) || Boolean(removingLockId);
 
-  const {width} = useWindowDimensions();
-  const insets = useSafeAreaInsets();
+  const requestBluetoothPermissions = async () => {
+    if (Platform.OS !== 'android') return true;
+    const permissions =
+      Platform.Version >= 31
+        ? [
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          ]
+        : [
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+            PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+          ];
+    const result = await PermissionsAndroid.requestMultiple(permissions);
+    return permissions.every(p => result[p] === PermissionsAndroid.RESULTS.GRANTED);
+  };
 
-  const contentWidth = Math.min(width - 32, 520);
+  const syncBluetoothState = async () => {
+    const enabled = await ttlockNative.isBluetoothEnabled();
+    setBluetoothEnabled(Boolean(enabled));
+    return Boolean(enabled);
+  };
 
-  const user = useAppSelector(state => state.auth.user);
-  const userData = user?.data ?? user ?? null;
+  const loadNetworkLocks = async (showErrorAlert = false) => {
+    try {
+      setLoadingNetworkLocks(true);
+      setNetworkLocksError(null);
+      const locks = await getInitializedSmartLocks();
+      setNetworkLocks(locks);
+    } catch (error: any) {
+      const message =
+        error?.message ||
+        t(
+          'mobile.ttlock.admin.loadInitializedLocksError',
+          'Unable to load initialized locks.',
+        );
+      setNetworkLocksError(message);
+      if (showErrorAlert) {
+        Alert.alert(
+          t('mobile.ttlock.admin.locksUnavailableTitle', 'Locks unavailable'),
+          message,
+        );
+      }
+    } finally {
+      setLoadingNetworkLocks(false);
+    }
+  };
 
-const residentId = userData?.residentId ?? null;
+  useEffect(() => {
+    syncBluetoothState().catch(() => null);
+    loadNetworkLocks().catch(() => null);
+  }, []);
 
-  /**
-   * ============================================================
-   * PERFORMANCE / ANDROID CACHE
-   * ============================================================
-   *
-   * These caches are intentionally used for Android only.
-   *
-   * iOS behaviour remains unchanged.
-   */
+  const ensureBluetoothReady = async () => {
+    const permissionsGranted = await requestBluetoothPermissions();
+    if (!permissionsGranted) {
+      Alert.alert(
+        t('mobile.ttlock.admin.permissionRequiredTitle', 'Permission required'),
+        t(
+          'mobile.ttlock.admin.permissionRequiredMessage',
+          'Bluetooth and location permissions are required to scan TTLock devices.',
+        ),
+      );
+      return false;
+    }
+    const enabled = await syncBluetoothState();
+    if (enabled) return true;
 
-  const androidBluetoothReadyRef = useRef(false);
-
-  const androidPermissionsGrantedRef = useRef(false);
-
-  /**
-   * Prevents Android battery BLE operation from starting while
-   * a control command is already running.
-   */
-  const androidControlInProgressRef = useRef(false);
-
-  /**
-   * Prevent multiple Android Bluetooth readiness checks from
-   * running simultaneously.
-   */
-  const androidBluetoothCheckPromiseRef =
-    useRef<Promise<boolean> | null>(null);
-
-  const batteryRequestInProgress = useRef(false);
-
-  const [devices, setDevices] = useState<
-    ResidentAccessDevice[]
-  >([]);
-
-  const [loadingDevices, setLoadingDevices] =
-    useState(false);
-
-  const [devicesError, setDevicesError] =
-    useState<string | null>(null);
-
-  const [activeControlId, setActiveControlId] =
-    useState<string | null>(null);
-
-  const [selectedDevice, setSelectedDevice] =
-    useState<ResidentAccessDevice | null>(null);
-
-  const [
-    isSelectedDeviceModalVisible,
-    setIsSelectedDeviceModalVisible,
-  ] = useState(false);
-
-  const [deviceLockStates, setDeviceLockStates] =
-    useState<Record<string, boolean>>({});
-
-  const [deviceBatteryLevels, setDeviceBatteryLevels] =
-    useState<Record<string, number>>({});
-
-  const [checkingNearbyDeviceId, setCheckingNearbyDeviceId] =
-    useState<string | null>(null);
-
-  /**
-   * ============================================================
-   * CONTROL ERROR
-   * ============================================================
-   */
-
-  const getControlErrorMessage = (
-    error: unknown,
-    fallback: string,
-  ) => {
-    if (
-      ttlockNative.isTTLockCommandInProgressError(error)
-    ) {
-      return (
-        smartAccessCopy?.commandInProgressMessage ||
-        fallback
+    if (Platform.OS === 'android') {
+      await ttlockNative.requestBluetoothEnable();
+      setTimeout(() => syncBluetoothState().catch(() => null), 1200);
+    } else {
+      Alert.alert(
+        t('mobile.ttlock.admin.bluetoothErrorTitle', 'Bluetooth error'),
+        getBluetoothEnableMessage(t),
       );
     }
 
-    if (ttlockNative.isTTLockNearbyError(error)) {
-      return t(
-        'mobile.ttlock.lockUnavailableMessage',
-        'This lock is not connected nearby right now. Move closer to the lock and try again.',
+    return false;
+  };
+
+  const runScan = async () => {
+    try {
+      setScanning(true);
+      const ready = await ensureBluetoothReady();
+      if (!ready) return;
+      const scannedDevices = await ttlockNative.scanLocks();
+      const formattedDevices: LockDevice[] = scannedDevices.map(device => ({
+        id: device.mac,
+        name: device.name || t('mobile.ttlock.admin.defaultDeviceName', 'TTLock Device'),
+        mac: device.mac,
+        alias: device.name || t('mobile.ttlock.admin.defaultDeviceName', 'TTLock Device'),
+        isSettingMode: Boolean(device.isSettingMode),
+      }));
+      setDevices(formattedDevices);
+      setBluetoothModalVisible(true);
+      // if (formattedDevices.length === 0) {
+      //   Alert.alert(
+      //     t('mobile.ttlock.admin.noLocksFoundTitle', 'No locks found'),
+      //     t(
+      //       'mobile.ttlock.admin.noLocksFoundMessage',
+      //       'No TTLock devices were found nearby. Keep the lock awake and try again.',
+      //     ),
+      //   );
+      // }
+    } catch (error: any) {
+      Alert.alert(
+        t('mobile.ttlock.admin.scanFailedTitle', 'Scan failed'),
+        error?.message ||
+          t(
+            'mobile.ttlock.admin.scanFailedMessage',
+            'Unable to scan TTLock devices.',
+          ),
+      );
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const handleEnableBluetooth = async () => {
+    try {
+      const ready = await ensureBluetoothReady();
+      if (ready) {
+        Alert.alert(
+          t('mobile.ttlock.admin.bluetoothReadyTitle', 'Bluetooth ready'),
+          t(
+            'mobile.ttlock.admin.bluetoothReadyMessage',
+            'Bluetooth is enabled. You can scan nearby TTLock devices now.',
+          ),
+        );
+      }
+    } catch (error: any) {
+      Alert.alert(
+        t('mobile.ttlock.admin.bluetoothErrorTitle', 'Bluetooth error'),
+        error?.message ||
+          t(
+            'mobile.ttlock.admin.bluetoothErrorMessage',
+            'Unable to enable Bluetooth.',
+          ),
       );
     }
+  };
 
-    if (
-      ttlockNative.isTTLockBluetoothDisabledError(error)
-    ) {
+  const handleConnectDevice = async (device: LockDevice) => {
+    if (!device.isSettingMode) {
+      Alert.alert(
+        t('mobile.ttlock.admin.notInSettingModeTitle', 'Lock not in setting mode'),
+        t(
+          'mobile.ttlock.admin.notInSettingModeMessage',
+          'This flow is only for a new lock in TTLock setting mode. Reset or put the lock into add/setup mode first, then scan again.',
+        ),
+      );
+      return;
+    }
+    try {
+      setConnectingId(device.id);
+      const initResult = await ttlockNative.initLock(device.mac);
+      const lockAlias =
+        device.alias ||
+        device.name ||
+        initResult.name ||
+        t('mobile.ttlock.admin.defaultLockName', 'Smart Lock');
+      const backendResult = await initializeSmartLock({lockData: initResult.lockData, lockAlias});
+      await loadNetworkLocks();
+      const nextDevice = {
+        ...device,
+        name: initResult.name || device.name,
+        alias: lockAlias,
+        deviceId: backendResult.deviceId,
+        lockData: initResult.lockData,
+        lockId: String(backendResult.lockId),
+      };
+      setConnectedDeviceId(device.id);
+      setDevices(prev =>
+        prev.map(item =>
+              item.id === device.id
+            ? {
+                ...item,
+                name: initResult.name || item.name,
+                alias: lockAlias,
+                deviceId: backendResult.deviceId,
+                lockData: initResult.lockData,
+                lockId: String(backendResult.lockId),
+              }
+            : item,
+        ),
+      );
+
+      setBluetoothModalVisible(false);
+      if (scanning) {
+        try {
+          await ttlockNative.stopScan();
+        } catch {}
+      }
+
+      handleOpenTTLockPreview(nextDevice);
+    } catch (error: any) {
+      Alert.alert(
+        t('mobile.ttlock.admin.initializationFailedTitle', 'Initialization failed'),
+        error?.message ||
+          t(
+            'mobile.ttlock.admin.initializationFailedMessage',
+            'Unable to initialize this lock with BLE and backend registration.',
+          ),
+      );
+    } finally {
+      setConnectingId(null);
+    }
+  };
+
+  const getLockUnavailableMessage = (error: unknown) => {
+    if (ttlockNative.isTTLockCommandInProgressError(error)) {
+
       return t(
-        'mobile.smartAccess.devices.bluetoothRequiredMessage',
-        'Enable Bluetooth, then try again.',
+        'mobile.ttlock.admin.lockNearbyRequiredMessage',
+        'Bring the lock nearby and connect to the device before opening its options.',
       );
     }
 
     return ttlockNative.getTTLockUserFacingErrorMessage(
       error,
-      fallback,
+      t(
+        'mobile.ttlock.admin.lockNearbyRequiredMessage',
+        'Bring the lock nearby and connect to the device before opening its options.',
+      ),
     );
   };
 
+  const handleOpenTTLockPreview = (
+    lock?: Partial<TTLockNetworkLock | LockDevice>,
+  ) => {
+    const target = (lock || {}) as Partial<TTLockNetworkLock> & Partial<LockDevice>;
+    const raw = target.raw || {};
+    const deviceId =
+      target.deviceId ||
+      raw.deviceId ||
+      raw.DeviceId ||
+      raw.accessDeviceId ||
+      raw.AccessDeviceId ||
+      raw.residentDeviceId ||
+      raw.ResidentDeviceId ||
+      raw.smartAccessDeviceId ||
+      raw.SmartAccessDeviceId ||
+      raw.guid ||
+      raw.Guid;
+    const lockMac = target.mac || raw.lockMac || raw.LockMac;
+    const lockData = target.lockData || raw.lockData || raw.LockData;
 
-  /**
-   * ============================================================
-   * BLUETOOTH READY
-   * ============================================================
-   */
+    navigation.navigate('TTLockScreen', {
+      deviceId,
+      lockId: target.lockId,
+      lockAlias: target.lockAlias || target.alias || target.name,
+      mac: lockMac,
+      lockData,
+    });
+  };
 
-  const ensureBluetoothReady = async () => {
-    /**
-     * ============================================================
-     * ANDROID
-     * ============================================================
-     */
+  const handleRemoveLock = async (lock: TTLockNetworkLock) => {
+    const normalizedLockId = pickRemoveLockIdentifier(lock);
+    const normalizedLockMac = String(
+      lock.mac || lock.raw?.lockMac || lock.raw?.LockMac || lock.raw?.mac || lock.raw?.Mac || '',
+    ).trim();
+    const normalizedLockData = String(
+      lock.lockData || lock.raw?.lockData || lock.raw?.LockData || '',
+    ).trim();
+    console.log('[TTLockAdminScreen] delete selected lock:', {
+      normalizedLockId,
+      normalizedLockMac,
+      hasLockData: Boolean(normalizedLockData),
+      numericLockId: lock.lockId,
+      backendId: lock.id,
+      deviceId: lock.deviceId,
+      lock,
+      raw: lock.raw,
+    });
 
-    if (Platform.OS === 'android') {
-      /**
-       * Fast path:
-       * Bluetooth and permissions were already verified.
-       */
-      if (androidPermissionsGrantedRef.current) {
-        const currentBluetoothState =
-          await ttlockNative.isBluetoothEnabled();
-
-        Logger.info(
-          '[TTLock][ANDROID] Current Bluetooth state',
-          {
-            enabled: currentBluetoothState,
-          },
-        );
-
-        if (currentBluetoothState) {
-          androidBluetoothReadyRef.current = true;
-          return true;
-        }
-
-        androidBluetoothReadyRef.current = false;
-      }
-
-      /**
-       * Prevent multiple simultaneous readiness checks.
-       */
-      if (androidBluetoothCheckPromiseRef.current) {
-        Logger.info(
-          '[TTLock][ANDROID] Waiting for existing Bluetooth check',
-        );
-
-        return await androidBluetoothCheckPromiseRef.current;
-      }
-
-      const checkPromise = (async () => {
-        const start = Date.now();
-
-        try {
-          /**
-           * Request permissions only when we don't already
-           * know that they were granted.
-           */
-          if (!androidPermissionsGrantedRef.current) {
-            Logger.info(
-              '[TTLock][ANDROID] Requesting Bluetooth permissions',
-            );
-
-            const permissionsGranted =
-              await requestBluetoothPermissions();
-
-            if (!permissionsGranted) {
-              Alert.alert(
-                t(
-                  'mobile.smartAccess.devices.permissionTitle',
-                  'Permission required',
-                ),
-                t(
-                  'mobile.smartAccess.devices.permissionMessage',
-                  'Bluetooth and location permissions are required for BLE access.',
-                ),
-              );
-
-              androidPermissionsGrantedRef.current =
-                false;
-
-              return false;
-            }
-
-            androidPermissionsGrantedRef.current =
-              true;
-          }
-
-          /**
-           * Check Bluetooth only if it hasn't already been
-           * verified.
-           */
-          if (!androidBluetoothReadyRef.current) {
-            Logger.info(
-              '[TTLock][ANDROID] Checking Bluetooth state',
-            );
-
-            let enabled =
-              await ttlockNative.isBluetoothEnabled();
-
-            if (!enabled) {
-              Logger.info(
-                '[TTLock][ANDROID] Bluetooth disabled. Requesting enable.',
-              );
-
-              await ttlockNative.requestBluetoothEnable();
-
-              enabled =
-                await ttlockNative.isBluetoothEnabled();
-            }
-
-            if (!enabled) {
-              Alert.alert(
-                t(
-                  'mobile.smartAccess.devices.bluetoothRequiredTitle',
-                  'Bluetooth Required',
-                ),
-                t(
-                  'mobile.smartAccess.devices.bluetoothRequiredMessage',
-                  'Enable Bluetooth, then try again.',
-                ),
-              );
-
-              androidBluetoothReadyRef.current =
-                false;
-
-              return false;
-            }
-
-            androidBluetoothReadyRef.current = true;
-          }
-
-          Logger.info(
-            '[TTLock][ANDROID][PERF] Bluetooth ready',
-            {
-              durationMs: Date.now() - start,
-            },
-          );
-
-          return true;
-        } finally {
-          androidBluetoothCheckPromiseRef.current =
-            null;
-        }
-      })();
-
-      androidBluetoothCheckPromiseRef.current =
-        checkPromise;
-
-      return await checkPromise;
-    }
-
-    /**
-     * ============================================================
-     * iOS — EXISTING FLOW
-     * ============================================================
-     */
-
-    const permissionsGranted =
-      await requestBluetoothPermissions();
-
-    if (!permissionsGranted) {
+    if (!normalizedLockId) {
       Alert.alert(
+        t('mobile.ttlock.admin.removeLockUnavailableTitle', 'Unable to remove lock'),
         t(
-          'mobile.smartAccess.devices.permissionTitle',
-          'Permission required',
-        ),
-        t(
-          'mobile.smartAccess.devices.permissionMessage',
-          'Bluetooth and location permissions are required for BLE access.',
+          'mobile.ttlock.admin.removeLockMissingId',
+          'This lock is missing a lock ID, so it cannot be removed yet.',
         ),
       );
-
-      return false;
+      return;
     }
 
-    const enabled =
-      await ttlockNative.isBluetoothEnabled();
+    try {
+      setRemovingLockId(normalizedLockId);
+      let resetWarning = '';
 
-    if (enabled) {
-      return true;
+      await removeTTLock({
+        identifier: normalizedLockId,
+        lockId: String(lock.lockId || lock.raw?.lockId || lock.raw?.LockId || ''),
+        deviceId: String(
+          lock.deviceId ||
+            lock.raw?.deviceId ||
+            lock.raw?.DeviceId ||
+            lock.raw?.accessDeviceId ||
+            lock.raw?.AccessDeviceId ||
+            lock.raw?.residentDeviceId ||
+            lock.raw?.ResidentDeviceId ||
+            lock.raw?.smartAccessDeviceId ||
+            lock.raw?.SmartAccessDeviceId ||
+            lock.raw?.guid ||
+            lock.raw?.Guid ||
+            '',
+        ),
+      });
+
+      if (normalizedLockMac && normalizedLockData) {
+        try {
+          await ttlockNative.resetLock(normalizedLockData, normalizedLockMac);
+        } catch (error: any) {
+          resetWarning =
+            getLockUnavailableMessage(error) ||
+            error?.message ||
+            t(
+              'mobile.ttlock.admin.removeLockResetSkippedMessage',
+              'The lock could not be reset over Bluetooth, but it will still be removed from the admin list.',
+            );
+          console.log('[TTLockAdminScreen] lock reset skipped after removal:', {
+            normalizedLockId,
+            error,
+          });
+        }
+      } else {
+        resetWarning = t(
+          'mobile.ttlock.admin.removeLockMissingBleData',
+          'This lock is missing Bluetooth data, so it cannot be reset before removal.',
+
+
+
+
+
+
+        );
+
+
+      }
+
+      setNetworkLocks(prev => prev.filter(item => pickRemoveLockIdentifier(item) !== normalizedLockId));
+      Alert.alert(
+        t('mobile.ttlock.admin.removeLockSuccessTitle', 'Lock removed'),
+        resetWarning
+          ? `${t(
+              'mobile.ttlock.admin.removeLockSuccessMessage',
+              'The lock was removed successfully.',
+            )}\n\n${resetWarning}`
+          : t(
+              'mobile.ttlock.admin.removeLockSuccessMessage',
+              'The lock was removed successfully.',
+            ),
+      );
+      await loadNetworkLocks();
+    } catch (error: any) {
+      Alert.alert(
+        t('mobile.ttlock.admin.removeLockFailedTitle', 'Failed to remove lock'),
+        getLockUnavailableMessage(error) ||
+          error?.message ||
+          t(
+            'mobile.ttlock.admin.removeLockFailedMessage',
+            'Unable to remove this lock right now.',
+          ),
+
+      );
+    } finally {
+      setRemovingLockId(null);
     }
+  };
 
+  const confirmRemoveLock = (lock: TTLockNetworkLock) => {
     Alert.alert(
+      t('mobile.ttlock.admin.removeLockConfirmTitle', 'Remove lock'),
       t(
-        'mobile.smartAccess.devices.bluetoothRequiredTitle',
-        'Bluetooth Required',
+        'mobile.ttlock.admin.removeLockConfirmMessage',
+        'Are you sure you want to remove this lock from the admin list?',
       ),
-      getBluetoothEnableMessage(t),
+
       [
         {
           text: t('common.cancel', 'Cancel'),
           style: 'cancel',
         },
         {
-          text: t('common.settings', 'Settings'),
-          onPress: () => Linking.openSettings(),
+          text: t('common.delete', 'Delete'),
+          style: 'destructive',
+          onPress: () => {
+            handleRemoveLock(lock).catch(() => null);
+          },
         },
       ],
     );
-
-    return false;
   };
 
-  /**
-   * ============================================================
-   * LOAD DEVICES
-   * ============================================================
-   */
-
-  const loadDevices = async (
-    showErrorAlert = false,
-  ) => {
-    if (!residentId) {
-      const message = t(
-        'mobile.smartAccess.devices.missingResident',
-        'Resident ID is missing for this account.',
-      );
-
-      setDevices([]);
-      setDevicesError(message);
-
-      if (showErrorAlert) {
-        Alert.alert(
-          t(
-            'mobile.smartAccess.devices.loadErrorTitle',
-            'Unable to load devices',
-          ),
-          message,
-        );
-      }
-
-      return;
-    }
-
-    try {
-      setLoadingDevices(true);
-      setDevicesError(null);
-
-      const permissionDevices =
-        await getResidentAccessDevices(
-          String(residentId),
-        );
-
-      setDevices(permissionDevices);
-
-      if (
-        selectedDevice &&
-        isSelectedDeviceModalVisible
-      ) {
-        const nextSelected =
-          permissionDevices.find(
-            item => item.id === selectedDevice.id,
-          ) || null;
-
-        setSelectedDevice(nextSelected);
-      }
-    } catch (error: any) {
-      const message =
-        error?.message ||
-        t(
-          'mobile.smartAccess.devices.loadError',
-          'Unable to load your access devices.',
-        );
-
-      setDevicesError(message);
-
-      if (showErrorAlert) {
-        Alert.alert(
-          t(
-            'mobile.smartAccess.devices.loadErrorTitle',
-            'Unable to load devices',
-          ),
-          message,
-        );
-      }
-    } finally {
-      setLoadingDevices(false);
-    }
-  };
-
-  useEffect(() => {
-    loadDevices().catch(() => null);
-  }, [residentId]);
-
-  /**
-   * ============================================================
-   * SCREEN LOGGING
-   * ============================================================
-   */
-
-  useEffect(() => {
-    Logger.info('UnlockDoorScreen Mounted');
-
-    return () => {
-      Logger.info('UnlockDoorScreen Unmounted');
-    };
-  }, []);
-
-  useEffect(() => {
-    Logger.info('Modal Visibility Changed', {
-      visible: isSelectedDeviceModalVisible,
-      selectedDevice: selectedDevice?.id,
-    });
-  }, [isSelectedDeviceModalVisible]);
-
-  useEffect(() => {
-    Logger.info('Selected Device Changed', {
-      deviceId: selectedDevice?.id,
-      deviceName: selectedDevice?.name,
-    });
-  }, [selectedDevice]);
-
-  /**
-   * ============================================================
-   * BATTERY
-   * ============================================================
-   *
-   * iOS behaviour is unchanged.
-   *
-   * Android uses fresh BLE access so lockMac/lockData cannot become
-   * stale between discovery and control.
-   *
-   * IMPORTANT:
-   * Android battery BLE operation will not start while a control
-   * operation is already active.
-   */
-
-  useEffect(() => {
-    if (
-      !selectedDevice ||
-      !residentId ||
-      !isSelectedDeviceModalVisible
-    ) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadBatteryLevel = async () => {
-      if (batteryRequestInProgress.current) {
-        Logger.warn(
-          '[Battery] Battery request already running. Skipping.',
-        );
-        return;
-      }
-
-      /**
-       * Android:
-       *
-       * If unlock is already running, don't start another BLE
-       * operation.
-       */
-      if (
-        Platform.OS === 'android' &&
-        androidControlInProgressRef.current
-      ) {
-        Logger.info(
-          '[Battery][ANDROID] Control already running. Skipping battery request.',
-        );
-
-        return;
-      }
-
-      batteryRequestInProgress.current = true;
-
-      Logger.info('[Battery] loadBatteryLevel START', {
-        deviceId: selectedDevice?.id,
-        deviceName: selectedDevice?.name,
-        platform: Platform.OS,
-        cancelled,
-      });
-
-      try {
-        /**
-         * iOS — unchanged.
-         */
-        if (Platform.OS === 'ios') {
-          await wait(200);
-
-          if (cancelled) {
-            return;
-          }
-        }
-
-        const fallbackBattery =
-          typeof selectedDevice?.raw
-            ?.electricQuantity === 'number'
-            ? selectedDevice.raw.electricQuantity
-            : typeof selectedDevice?.raw
-                ?.ElectricQuantity === 'number'
-            ? selectedDevice.raw.ElectricQuantity
-            : typeof selectedDevice?.raw?.battery ===
-              'number'
-            ? selectedDevice.raw.battery
-            : null;
-
-        Logger.info('[Battery] Fallback battery', {
-          fallbackBattery,
-        });
-
-        /**
-         * ========================================================
-         * ANDROID
-         * ========================================================
-         *
-         * Don't aggressively start battery BLE while the modal
-         * is opening. Give the modal and nearby scan time to settle.
-         */
-        if (Platform.OS === 'android') {
-          await wait(500);
-
-          if (
-            cancelled ||
-            androidControlInProgressRef.current
-          ) {
-            Logger.info(
-              '[Battery][ANDROID] Skipping battery BLE operation',
-              {
-                cancelled,
-                controlInProgress:
-                  androidControlInProgressRef.current,
-              },
-            );
-
-            if (
-              !cancelled &&
-              typeof fallbackBattery === 'number'
-            ) {
-              setDeviceBatteryLevels(prev => ({
-                ...prev,
-                [selectedDevice!.id]: fallbackBattery,
-              }));
-            }
-
-            return;
-          }
-        }
-
-        Logger.info(
-          '[Battery] Checking Bluetooth readiness',
-        );
-
-        const ready = await ensureBluetoothReady();
-
-        if (!ready || cancelled) {
-          return;
-        }
-
-        Logger.info('[Battery] Fetching BLE access');
-
-        let bleAccess: Awaited<ReturnType<typeof getDeviceBleAccess>>;
-
-        // Always fetch fresh BLE access.
-        // This avoids stale lockMac/lockData on both platforms.
-        bleAccess = await getDeviceBleAccess(
-          selectedDevice.id,
-          String(residentId),
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        Logger.info('[Battery] BLE access received', {
-          deviceName: bleAccess.deviceName,
-          lockMac: bleAccess.lockMac,
-          hasLockData: !!bleAccess.lockData,
-        });
-
-        Logger.info(
-          '[Battery] Calling ttlockNative.getBatteryLevel',
-        );
-
-        Logger.info('BLE Access', {
-          lockMac: bleAccess.lockMac,
-          lockDataLength: bleAccess.lockData?.length,
-          lockDataPrefix:
-            bleAccess.lockData?.substring(0, 20),
-          deviceName: bleAccess.deviceName,
-        });
-
-        const batteryStart = Date.now();
-
-        const result =
-          await ttlockNative.getBatteryLevel(
-            bleAccess.lockData,
-            bleAccess.lockMac,
-          );
-
-        Logger.info(
-          '[Battery][PERF] getBatteryLevel completed',
-          {
-            durationMs: Date.now() - batteryStart,
-            platform: Platform.OS,
-          },
-        );
-
-        if (cancelled) {
-          return;
-        }
-
-        Logger.info(
-          '[Battery] getBatteryLevel SUCCESS',
-          result,
-        );
-
-        const battery = result?.battery;
-
-        if (typeof battery === 'number') {
-          setDeviceBatteryLevels(prev => ({
-            ...prev,
-            [selectedDevice!.id]: battery,
-          }));
-        } else if (
-          typeof fallbackBattery === 'number'
-        ) {
-          setDeviceBatteryLevels(prev => ({
-            ...prev,
-            [selectedDevice!.id]: fallbackBattery,
-          }));
-        }
-      } catch (error: any) {
-        Logger.exception(error);
-
-        Logger.error(
-          '[Battery] loadBatteryLevel FAILED',
-          {
-            message: error?.message,
-            error,
-          },
-        );
-
-        const fallbackBattery =
-          typeof selectedDevice?.raw
-            ?.electricQuantity === 'number'
-            ? selectedDevice.raw.electricQuantity
-            : typeof selectedDevice?.raw
-                ?.ElectricQuantity === 'number'
-            ? selectedDevice.raw.ElectricQuantity
-            : typeof selectedDevice?.raw?.battery ===
-              'number'
-            ? selectedDevice.raw.battery
-            : null;
-
-        if (
-          !cancelled &&
-          typeof fallbackBattery === 'number'
-        ) {
-          setDeviceBatteryLevels(prev => ({
-            ...prev,
-            [selectedDevice!.id]: fallbackBattery,
-          }));
-        }
-      } finally {
-        batteryRequestInProgress.current = false;
-
-        Logger.info(
-          '[Battery] loadBatteryLevel FINISH',
-          {
-            deviceId: selectedDevice?.id,
-            cancelled,
-          },
-        );
-      }
-    };
-
-    /**
-     * iOS — unchanged.
-     */
-    if (Platform.OS === 'ios') {
-      InteractionManager.runAfterInteractions(() => {
-        if (!cancelled) {
-          loadBatteryLevel();
-        }
-      });
-    } else {
-      /**
-       * Android.
-       */
-      loadBatteryLevel();
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    isSelectedDeviceModalVisible,
-    selectedDevice,
-    residentId,
-  ]);
-
-  /**
-   * ============================================================
-   * OPEN DEVICE MODAL
-   * ============================================================
-   *
-   * This remains the place where we verify that the lock is
-   * actually nearby.
-   *
-   * Android:
-   * - permissions are cached
-   * - BLE access is always fresh
-   * - scan happens ONCE here
-   *
-   * iOS:
-   * - existing behaviour remains.
-   */
-
-  const openSelectedDeviceModal = async (
-    device: ResidentAccessDevice,
-  ) => {
-    try {
-      setCheckingNearbyDeviceId(device.id);
-
-      const permissionsGranted =
-        await requestBluetoothPermissions();
-
-      if (!permissionsGranted) {
-        return;
-      }
-
-      const bluetoothEnabled =
-        await ttlockNative.isBluetoothEnabled();
-
-      if (!bluetoothEnabled) {
-        Alert.alert(
-          'Bluetooth Required',
-          'Please turn on Bluetooth to access this smart lock.',
-        );
-
-        if (Platform.OS === 'android') {
-          androidBluetoothReadyRef.current = false;
-        }
-
-        return;
-      }
-
-      /**
-       * ========================================================
-       * GET BLE ACCESS
-       * ========================================================
-       */
-
-      const accessStart = Date.now();
-
-      // Always fetch fresh BLE access before discovery.
-      const bleAccess = await getDeviceBleAccess(
-        device.id,
-        String(residentId),
-      );
-
-      Logger.info(
-        '[TTLock][PERF] Modal BLE access ready',
-        {
-          durationMs: Date.now() - accessStart,
-          platform: Platform.OS,
-          deviceId: device.id,
-          lockMac: bleAccess.lockMac,
-        },
-      );
-
-      /**
-       * ========================================================
-       * NEARBY SCAN
-       * ========================================================
-       *
-       * This is the ONLY scan required before opening the
-       * modal.
-       */
-
-      const scanStart = Date.now();
-
-      Logger.info(
-        '[TTLock] Checking nearby lock',
-        {
-          platform: Platform.OS,
-          lockMac: bleAccess.lockMac,
-        },
-      );
-
-      const nearbyDevices =
-        Platform.OS === 'android'
-          ? await ttlockNative.scanLocks()
-          : await ttlockNative.scanLocks(
-              bleAccess.lockMac,
-            );
-
-      Logger.info(
-        '[TTLock][PERF] Nearby scan completed',
-        {
-          durationMs: Date.now() - scanStart,
-          platform: Platform.OS,
-          expectedMac: bleAccess.lockMac,
-          count: nearbyDevices.length,
-        },
-      );
-
-      const nearby = nearbyDevices.some(
-        d =>
-          d.mac?.trim().toUpperCase() ===
-          bleAccess.lockMac.trim().toUpperCase(),
-      );
-
-      if (!nearby) {
-        Alert.alert(
-          'Lock Not Found',
-          'The lock is not nearby. Please move closer to the door and try again.',
-        );
-
-        return;
-      }
-
-      /**
-       * Lock is confirmed nearby.
-       *
-       * Android will use the fresh BLE access already retrieved and will NOT
-       * scan again when Unlock is pressed.
-       */
-      setSelectedDevice(device);
-      setIsSelectedDeviceModalVisible(true);
-    } catch (error) {
-      Logger.exception(error);
-
-      Logger.error(
-        '[TTLock] Nearby device check failed',
-        {
-          platform: Platform.OS,
-          deviceId: device.id,
-          error,
-        },
-      );
-
-      Alert.alert(
-        'Error',
-        'Unable to check nearby lock.',
-      );
-    } finally {
-      setCheckingNearbyDeviceId(null);
-    }
-  };
-
-  /**
-   * ============================================================
-   * CLOSE MODAL
-   * ============================================================
-   */
-
-  const closeSelectedDeviceModal = () => {
-    Logger.info('Close Modal Pressed');
-
-    Logger.info('Current State', {
-      selectedDeviceId: selectedDevice?.id,
-      activeControlId,
-      modalVisible: isSelectedDeviceModalVisible,
-    });
-
-    InteractionManager.runAfterInteractions(() => {
-      Logger.info(
-        'Closing modal after interactions',
-      );
-
-      setIsSelectedDeviceModalVisible(false);
-
-      Logger.info(
-        'setIsSelectedDeviceModalVisible(false) completed',
-      );
-    });
-
-    setTimeout(() => {
-      Logger.info('500ms after modal close');
-    }, 500);
-
-    setTimeout(() => {
-      Logger.info('1000ms after modal close');
-    }, 1000);
-
-    setTimeout(() => {
-      Logger.info('2000ms after modal close');
-    }, 2000);
-  };
-
-  /**
-   * ============================================================
-   * CONTROL DEVICE
-   * ============================================================
-   */
-
-  const handleControlDevice = async (
-    device: ResidentAccessDevice,
-    action: ControlAction,
-  ) => {
-    if (activeControlId) {
-      Alert.alert(
-        smartAccessCopy?.commandInProgressTitle ||
-          t(
-            'mobile.smartAccess.devices.commandInProgressTitle',
-            'Please wait',
-          ),
-        smartAccessCopy?.commandInProgressMessage ||
-          'Please try again in a moment.',
-        [
-          {
-            text: t(
-              'common.mobile.common.ok',
-              'OK',
-            ),
-          },
-        ],
-      );
-
-      return;
-    }
-
-    if (!residentId) {
-      Alert.alert(
-        t(
-          'mobile.smartAccess.devices.missingResidentTitle',
-          'Resident missing',
-        ),
-        t(
-          'mobile.smartAccess.devices.missingResidentBeforeControl',
-          'Resident ID is required before controlling a lock.',
-        ),
-      );
-
-      return;
-    }
-
-    const totalStart = Date.now();
-
-    try {
-      setActiveControlId(device.id);
-
-      /**
-       * Android:
-       * mark control as active immediately so the battery effect
-       * cannot start another BLE operation.
-       */
-      if (Platform.OS === 'android') {
-        androidControlInProgressRef.current = true;
-      }
-
-      /**
-       * ========================================================
-       * BLUETOOTH READY
-       * ========================================================
-       */
-
-      const bluetoothStart = Date.now();
-
-      const ready = await ensureBluetoothReady();
-
-      Logger.info(
-        '[TTLock][PERF] Bluetooth ready check',
-        {
-          platform: Platform.OS,
-          durationMs: Date.now() - bluetoothStart,
-          ready,
-        },
-      );
-
-      if (!ready) {
-        Logger.warn(
-          '[TTLock] Bluetooth not ready',
-        );
-
-        if (Platform.OS === 'android') {
-          androidBluetoothReadyRef.current = false;
-        }
-
-        setTimeout(() => {
-          Alert.alert(
-            'Bluetooth Off',
-            'Please turn on Bluetooth.',
-          );
-        }, 0);
-
-        return;
-      }
-
-      /**
-       * ========================================================
-       * CONTROL FUNCTION
-       * ========================================================
-       */
-
-      const performControlWithAccess = async (
-        lockData: string,
-        lockMac: string,
-      ) => {
-        Logger.info(
-          '[TTLock] Preparing controlLock',
-          {
-            platform: Platform.OS,
-            action,
-            lockMac,
-            lockDataLength: lockData?.length,
-            lockDataPrefix:
-              lockData?.substring(0, 20),
-          },
-        );
-
-        /**
-         * ======================================================
-         * ANDROID
-         * ======================================================
-         *
-         * IMPORTANT:
-         *
-         * We already verified the lock was nearby when the
-         * modal opened.
-         *
-         * DO NOT scan again here.
-         *
-         * This removes one potentially expensive BLE scan from
-         * every unlock/lock operation.
-         */
-
-        if (Platform.OS === 'android') {
-          const controlStart = Date.now();
-
-          const bluetoothEnabled =
-            await ttlockNative.isBluetoothEnabled();
-
-          Logger.info(
-            '[TTLock][ANDROID] Bluetooth state immediately before control',
-            {
-              bluetoothEnabled,
-              action,
-              lockMac,
-            },
-          );
-
-          if (!bluetoothEnabled) {
-            Logger.error(
-              '[TTLock][ANDROID] Bluetooth is disabled before controlLock',
-              {
-                action,
-                lockMac,
-              },
-            );
-
-            throw new Error('BLUETOOTH_DISABLED');
-          }
-
-          Logger.info(
-            '[TTLock][ANDROID] Calling controlLock directly',
-            {
-              action,
-              lockMac,
-            },
-          );
-
-          const result = await ttlockNative.controlLock(
-            lockData,
-            lockMac,
-            action,
-          );
-
-          Logger.info(
-            '[TTLock][ANDROID][PERF] controlLock completed',
-            {
-              durationMs: Date.now() - controlStart,
-              action,
-              lockMac,
-              result,
-            },
-          );
-
-          return result;
-        }
-
-        /**
-         * ======================================================
-         * iOS — EXISTING FLOW
-         * ======================================================
-         *
-         * DO NOT CHANGE THIS.
-         */
-
-        const scanStart = Date.now();
-
-        const nearbyDevices =
-          await ttlockNative.scanLocks(lockMac);
-
-        Logger.info(
-          '[TTLock][IOS][PERF] Scan completed',
-          {
-            durationMs:
-              Date.now() - scanStart,
-            expectedMac: lockMac,
-            count: nearbyDevices.length,
-          },
-        );
-
-        const nearby = nearbyDevices.some(
-          d =>
-            d.mac?.trim().toUpperCase() ===
-            lockMac.trim().toUpperCase(),
-        );
-
-        Logger.info(
-          '[TTLock][IOS] Nearby check',
-          {
-            nearby,
-            expectedMac: lockMac,
-            devices: nearbyDevices,
-          },
-        );
-
-        if (!nearby) {
-          Alert.alert(
-            'Lock Not Found',
-            'The lock is not nearby. Please move closer to the door and try again.',
-          );
-
-          return;
-        }
-
-        const controlStart = Date.now();
-
-        const result =
-          await ttlockNative.controlLock(
-            lockData,
-            lockMac,
-            action,
-          );
-
-        Logger.info(
-          '[TTLock][IOS][PERF] controlLock completed',
-          {
-            durationMs:
-              Date.now() - controlStart,
-            action,
-            lockMac,
-          },
-        );
-
-        return result;
-      };
-
-      /**
-       * ========================================================
-       * GET FRESH BLE ACCESS
-       * ========================================================
-       *
-       * Never reuse cached lockData/lockMac.
-       */
-
-      const accessStart = Date.now();
-
-      let bleAccess = await getDeviceBleAccess(
-        device.id,
-        String(residentId),
-      );
-
-      Logger.info(
-        '[TTLock][PERF] Control BLE access ready',
-        {
-          platform: Platform.OS,
-          durationMs:
-            Date.now() - accessStart,
-          deviceId: device.id,
-          lockMac: bleAccess.lockMac,
-        },
-      );
-
-      /**
-       * ========================================================
-       * CONTROL
-       * ========================================================
-       */
-
-      let result;
-
-      try {
-        result =
-          await performControlWithAccess(
-            bleAccess.lockData,
-            bleAccess.lockMac,
-          );
-      } catch (error: any) {
-        /**
-         * ======================================================
-         * NEARBY ERROR RETRY
-         * ======================================================
-         */
-
-        if (
-          !ttlockNative.isTTLockNearbyError(error)
-        ) {
-          throw error;
-        }
-
-        Logger.warn(
-          '[TTLock] Nearby error during control. Refreshing BLE access.',
-          {
-            platform: Platform.OS,
-            deviceId: device.id,
-            action,
-          },
-        );
-
-        // Fetch fresh BLE access again for the retry.
-        bleAccess = await getDeviceBleAccess(
-          device.id,
-          String(residentId),
-        );
-
-        result =
-          await performControlWithAccess(
-            bleAccess.lockData,
-            bleAccess.lockMac,
-          );
-      }
-
-      /**
-       * ========================================================
-       * SAVE OPERATION LOG
-       * ========================================================
-       */
-
-      try {
-        await saveTTLockOperationLog({
-          deviceId: device.id,
-          residentId: String(residentId),
-          action: action.toUpperCase(),
-          mode: 'BLE',
-        });
-      } catch (logError: any) {
-        console.log(
-          'Operation log failed:',
-          logError,
-        );
-      }
-
-      /**
-       * ========================================================
-       * UPDATE UI
-       * ========================================================
-       */
-
-      const actionLabel =
-        action === 'unlock'
-          ? t(
-              'mobile.smartAccess.devices.unlocked',
-              'Unlocked',
-            )
-          : t(
-              'mobile.smartAccess.devices.locked',
-              'Locked',
-            );
-
-      const batterySuffix =
-        typeof result?.battery === 'number'
-          ? `\n${t(
-              'common.mobile.ttlock.battery',
-              'Battery',
-            )}: ${result.battery}%`
-          : '';
-
-      Logger.info(
-        '[TTLock] Control Success',
-        {
-          platform: Platform.OS,
-          action,
-          actionLabel,
-          deviceId: device.id,
-          deviceName:
-            bleAccess.deviceName ||
-            device.name,
-          battery: result?.battery,
-          batterySuffix,
-          lockMac: bleAccess.lockMac,
-          totalDurationMs:
-            Date.now() - totalStart,
-          timestamp:
-            new Date().toISOString(),
-        },
-      );
-
-      setDeviceLockStates(prev => ({
-        ...prev,
-        [device.id]:
-          action === 'unlock',
-      }));
-
-      const batteryLevel = result?.battery;
-
-      if (typeof batteryLevel === 'number') {
-        setDeviceBatteryLevels(prev => ({
-          ...prev,
-          [device.id]: batteryLevel,
-        }));
-      }
-    } catch (error: any) {
-      const errorMessage =
-        getControlErrorMessage(
-          error,
-          t(
-            'mobile.smartAccess.devices.controlFailed',
-            'Unable to control this lock over BLE.',
-          ),
-        );
-
-      Logger.error(
-        '[TTLock] Control Failed',
-        {
-          platform: Platform.OS,
-          action,
-          deviceId: device.id,
-          deviceName: device.name,
-          message: errorMessage,
-          rawError: error,
-          totalDurationMs:
-            Date.now() - totalStart,
-          timestamp:
-            new Date().toISOString(),
-        },
-      );
-
-      /**
-       * Important:
-       * Don't swallow the actual error silently.
-       *
-       * Your previous code generated the error message but did
-       * not display it.
-       */
-      Alert.alert(
-        t(
-          'mobile.smartAccess.devices.controlFailedTitle',
-          'Unable to control lock',
-        ),
-        errorMessage,
-      );
-    } finally {
-      /**
-       * Android:
-       * release control state.
-       */
-      if (Platform.OS === 'android') {
-        androidControlInProgressRef.current =
-          false;
-      }
-
-      setActiveControlId(null);
-    }
-  };
-
-  /**
-   * ============================================================
-   * SELECTED DEVICE MODAL
-   * ============================================================
-   */
-
-  const renderSelectedDeviceModal = () => {
-    if (!selectedDevice) {
-      return null;
-    }
-
-    const isBusy =
-      activeControlId === selectedDevice.id;
-
-    const isUnlocked = Boolean(
-      deviceLockStates[selectedDevice.id],
-    );
+  const renderNetworkLockRow = (lock: TTLockNetworkLock) => {
+    const isRemoving = removingLockId === String(lock.lockId || '');
 
     return (
-      <Modal
-        transparent
-        presentationStyle="overFullScreen"
-        animationType="none"
-        visible={isSelectedDeviceModalVisible}
-        onShow={() => {
-          Logger.info('Modal onShow');
-        }}
-        onRequestClose={() => {
-          Logger.info(
-            'Modal onRequestClose',
-          );
+      <TouchableOpacity
+        key={lock.id}
+        style={styles.deviceRow}
+        activeOpacity={0.85}
+        disabled={adminBusy}
+        onPress={() => handleOpenTTLockPreview(lock)}>
+        <View style={styles.deviceMain}>
+          <View style={[styles.deviceIconWrap, styles.deviceIconWrapDone]}>
+            <IconLock size={20} color="#fff" />
+          </View>
 
-          closeSelectedDeviceModal();
-        }}
-        onDismiss={() => {
-          Logger.info('Modal onDismiss');
+          <View style={styles.deviceInfo}>
+            <Text style={styles.deviceName} numberOfLines={2}>{lock.lockAlias}</Text>
+            <Text style={styles.deviceMac}>
+              {lock.mac ? lock.mac : t('mobile.ttlock.admin.macUnavailable', 'MAC unavailable')}
+            </Text>
+            <View style={styles.deviceTagRow}>
+              {lock.lockId ? (
+                <View style={styles.idTag}>
+                  <Text style={styles.idTagText}>ID: {lock.lockId}</Text>
+                </View>
+              ) : null}
+              <View style={styles.registeredBadge}>
+                <IconCheck size={11} color="#5DAFA4" />
+                <Text style={styles.registeredText}>
+                  {t('mobile.ttlock.admin.initializedOnNetwork', 'Initialized on network')}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
 
-          setSelectedDevice(null);
-        }}>
-        <View
-          style={styles.modalOverlay}
-          onTouchStart={() => {
-            Logger.info(
-              'MODAL OVERLAY TOUCH',
-            );
-          }}>
+        <View style={styles.deviceActionWrap}>
           <TouchableOpacity
-            style={styles.modalBackdrop}
-            activeOpacity={1}
-            onPress={() => {
-              Logger.info(
-                'Modal Backdrop Pressed',
-              );
-
-              InteractionManager.runAfterInteractions(
-                () => {
-                  closeSelectedDeviceModal();
-                },
-              );
-            }}
-          />
-
-          <View
-            style={styles.modalSheet}
-            onTouchStart={() => {
-              Logger.info(
-                'MODAL SHEET TOUCH',
-              );
+            style={[styles.deleteBtn, isRemoving && styles.refreshBtnDisabled]}
+            activeOpacity={0.85}
+            disabled={adminBusy || isRemoving}
+            onPress={event => {
+              event.stopPropagation();
+              confirmRemoveLock(lock);
             }}>
-            <View
-              style={styles.modalHandle}
-            />
+            {isRemoving ? (
+              <ActivityIndicator size="small" color={colors.danger} />
+            ) : (
+              <IconTrash size={16} color={colors.danger} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
-            <SmartLockHeroCard
-              colors={colors}
-              isDark={
-                resolvedTheme === 'dark'
-              }
-              title={selectedDevice.name}
-              subtitle={
-                selectedDevice.lockId
-                  ? `Lock #${selectedDevice.lockId}`
-                  : selectedDevice.subtitle
-              }
-              infoText={
-                selectedDevice.deviceType
-              }
-              battery={
-                deviceBatteryLevels[
-                  selectedDevice.id
-                ]
-              }
-              isUnlocked={isUnlocked}
-              isBusy={isBusy}
-              lockedHint={t(
-                'mobile.smartAccess.unlockDoor',
-                'Tap lock to unlock',
-              )}
-              unlockedHint={t(
-                'mobile.smartAccess.devices.lock',
-                'Tap lock to lock',
-              )}
-              onToggleLock={() =>
-                handleControlDevice(
-                  selectedDevice,
-                  isUnlocked
-                    ? 'lock'
-                    : 'unlock',
-                )
-              }
-            />
+  const handleCloseModal = async () => {
+    setBluetoothModalVisible(false);
+    if (scanning) {
+      try {
+        await ttlockNative.stopScan();
+      } catch {
+        return;
 
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => {
-                Logger.info(
-                  'Cancel Button Pressed',
-                );
+      }
 
-                InteractionManager.runAfterInteractions(
-                  () => {
-                    closeSelectedDeviceModal();
-                  },
-                );
-              }}>
-              <Text
-                style={
-                  styles.cancelButtonText
-                }>
+
+    }
+  };
+
+  // ── Shared device row ──────────────────────────────────────
+  const renderDeviceRow = (device: LockDevice, inModal = false) => {
+    const isConnected = connectedDeviceId === device.id;
+    const isConnecting = connectingId === device.id;
+    const isReady = device.isSettingMode;
+
+    return (
+      <View key={device.id} style={inModal ? styles.modalDeviceRow : styles.deviceRow}>
+        <View style={[styles.deviceIconWrap, isConnected && styles.deviceIconWrapDone]}>
+          <IconLock size={20} color={isConnected ? '#fff' : '#5DAFA4'} />
+        </View>
+
+        <View style={styles.deviceInfo}>
+          <Text style={styles.deviceName} numberOfLines={1}>{device.name}</Text>
+          <Text style={styles.deviceMac}>{device.mac}</Text>
+          <View style={styles.deviceTagRow}>
+            <View style={[
+              styles.modeTag,
+              {backgroundColor: isReady ? 'rgba(93,175,164,0.12)' : 'rgba(180,180,180,0.12)'},
+            ]}>
+              <View style={[styles.modeDot, {backgroundColor: isReady ? '#5DAFA4' : '#bbb'}]} />
+              <Text style={[styles.modeTagText, {color: isReady ? '#3A8F86' : colors.textMuted}]}>
+                {isReady
+                  ? t('mobile.ttlock.admin.settingMode', 'Setting mode')
+                  : t('mobile.ttlock.admin.normalMode', 'Normal mode')}
+              </Text>
+            </View>
+            {device.lockId ? (
+              <View style={styles.idTag}>
+                <Text style={styles.idTagText}>ID: {device.lockId}</Text>
+              </View>
+            ) : null}
+          </View>
+          {device.lockData ? (
+            <View style={styles.registeredBadge}>
+              <IconCheck size={11} color="#5DAFA4" />
+              <Text style={styles.registeredText}>
                 {t(
-                  'common.cancel',
-                  'Cancel',
+                  'mobile.ttlock.admin.sdkInitializedRegistered',
+                  'SDK initialized & registered',
                 )}
               </Text>
+            </View>
+          ) : null}
+        </View>
+
+        <TouchableOpacity
+          style={[
+            styles.initBtn,
+            isConnected && styles.initBtnDone,
+            !isReady && styles.initBtnDisabled,
+            (isConnecting || adminBusy) && styles.initBtnLoading,
+          ]}
+          onPress={() => (device.lockData ? handleOpenTTLockPreview(device) : handleConnectDevice(device))}
+          disabled={isConnecting || adminBusy}>
+          {isConnecting ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : isConnected ? (
+            <IconCheck size={14} color="#fff" />
+          ) : (
+            <Text style={styles.initBtnText}>
+              {isReady
+                ? t('mobile.ttlock.admin.init', 'Init')
+                : t('common.notAvailable', 'N/A')}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <ScreenWrapper
+      title={t('mobile.ttlock.admin.title', 'TTLock Setup')}
+      onBackPress={() => navigation.goBack()}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
+        {/* ── Status + controls ── */}
+        <View style={styles.card}>
+          {/* BT status pill */}
+          <View style={styles.btStatusRow}>
+            <View style={styles.btStatusLeft}>
+              <View style={[styles.btDot, {backgroundColor: bluetoothEnabled ? '#5DAFA4' : colors.danger}]} />
+              <Text style={styles.btStatusLabel}>
+                {adminCopy.bluetoothStatus} —{' '}
+                <Text style={{
+                  color: bluetoothEnabled ? '#3A8F86' : colors.danger,
+                  fontWeight: '700',
+                }}>
+                  {bluetoothEnabled
+                    ? t('mobile.ttlock.on', 'On')
+                    : t('mobile.ttlock.off', 'Off')}
+                </Text>
+              </Text>
+            </View>
+          </View>
+          {/* Three action buttons */}
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity
+              style={[styles.actionBtn, adminBusy && styles.actionBtnMuted]}
+              onPress={handleEnableBluetooth}
+              disabled={adminBusy}
+              activeOpacity={0.85}>
+              <View style={styles.actionBtnIcon}>
+                <IconBluetooth size={18} color="#5DAFA4" />
+              </View>
+              <Text style={styles.actionBtnLabel}>
+                {t('mobile.ttlock.admin.enableBluetooth', 'Enable')}
+                {'\n'}
+                {t('mobile.ttlock.bluetoothStatus', 'Bluetooth')}
+
+              </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionBtn, adminBusy && styles.actionBtnMuted]}
+              onPress={runScan}
+              disabled={adminBusy}
+              activeOpacity={0.85}>
+              <View style={styles.actionBtnIcon}>
+                {scanning
+                  ? <ActivityIndicator size="small" color="#5DAFA4" />
+                  : <IconScan size={18} color="#5DAFA4" />}
+              </View>
+              <Text style={styles.actionBtnLabel}>
+                {scanning
+                  ? t('mobile.ttlock.scanning', 'Scanning...')
+                  : `${t('mobile.ttlock.admin.scan', 'Scan')}\n${t(
+                      'mobile.ttlock.admin.locks',
+                      'Locks',
+                    )}`}
+
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionBtn, adminBusy && styles.actionBtnMuted]}
+              onPress={() => setBluetoothModalVisible(true)}
+              disabled={adminBusy}
+              activeOpacity={0.85}>
+              <View style={styles.actionBtnIcon}>
+                <IconList size={18} color="#5DAFA4" />
+              </View>
+              <Text style={styles.actionBtnLabel}>
+                {t('common.view', 'View')}
+                {'\n'}
+                {t('mobile.ttlock.detectedDevices', 'Devices')}
+              </Text>
+
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Detected devices ── */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {t('mobile.ttlock.detectedDevices', 'Detected Devices')}
+          </Text>
+
+          {scanning && (
+            <View style={styles.scanningBanner}>
+              <ActivityIndicator size="small" color="#5DAFA4" />
+              <Text style={styles.scanningText}>
+                {t('mobile.ttlock.scanningDevices', 'Scanning nearby TTLock devices...')}
+              </Text>
+
+
+            </View>
+          )}
+
+          {!scanning && devices.length === 0 && (
+            <View style={styles.emptyWrap}>
+              <IconWifi size={32} color={colors.border} />
+              <Text style={styles.emptyText}>
+                {t(
+                  'mobile.ttlock.admin.noDevicesYet',
+                  'No devices yet. Enable Bluetooth and run a scan with the lock hardware nearby.',
+                )}
+
+              </Text>
+            </View>
+          )}
+
+          {devices.map(device => renderDeviceRow(device, false))}
+        </View>
+
+        <View style={styles.card}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.cardTitle}>
+              {t('mobile.ttlock.admin.initializedLocks', 'Initialized Locks')}
+
+            </Text>
+
+            <TouchableOpacity
+              style={[styles.refreshBtn, adminBusy && styles.refreshBtnDisabled]}
+              onPress={() => loadNetworkLocks(true)}
+              disabled={adminBusy}
+              activeOpacity={0.85}>
+              {loadingNetworkLocks ? (
+                <ActivityIndicator size="small" color="#3A8F86" />
+              ) : (
+                <IconRefresh size={16} color="#3A8F86" />
+              )}
+
+
+
+
+
+
+            </TouchableOpacity>
+          </View>
+
+          {loadingNetworkLocks && networkLocks.length === 0 ? (
+            <View style={styles.scanningBanner}>
+              <ActivityIndicator size="small" color="#5DAFA4" />
+              <Text style={styles.scanningText}>
+                {t('mobile.ttlock.admin.loadingInitializedLocks', 'Loading locks from network...')}
+
+
+
+
+
+
+
+
+
+
+              </Text>
+            </View>
+          ) : null}
+
+          {!loadingNetworkLocks && networkLocksError && networkLocks.length === 0 ? (
+            <View style={styles.emptyWrap}>
+              <IconWifi size={32} color={colors.border} />
+              <Text style={styles.emptyText}>
+                {networkLocksError}
+              </Text>
+            </View>
+          ) : null}
+
+
+          {!loadingNetworkLocks && !networkLocksError && networkLocks.length === 0 ? (
+            <View style={styles.emptyWrap}>
+              <IconWifi size={32} color={colors.border} />
+              <Text style={styles.emptyText}>
+
+                {t(
+                  'mobile.ttlock.admin.noInitializedLocks',
+                  'No initialized locks found on this network yet.',
+                )}
+              </Text>
+            </View>
+          ) : null}
+
+          {networkLocks.map(renderNetworkLockRow)}
+        </View>
+      </ScrollView>
+
+      {/* ── Modal ── */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={bluetoothModalVisible}
+        onRequestClose={handleCloseModal}>
+        <View style={styles.overlay}>
+          <View style={styles.sheet}>
+            <View style={styles.handle} />
+
+            <View style={styles.sheetHeader}>
+              <View>
+                <Text style={styles.sheetTitle}>
+                  {t('mobile.ttlock.bluetoothDevices', 'Bluetooth Devices')}
+                </Text>
+                <Text style={styles.sheetSub}>
+                  {t(
+                    'mobile.ttlock.admin.devicesFound',
+                    '{{count}} device(s) found',
+                  ).replace('{{count}}', String(devices.length))}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.closeBtn, adminBusy && styles.refreshBtnDisabled]}
+                onPress={handleCloseModal}
+                disabled={adminBusy}>
+                <IconClose size={15} color={colors.textMuted} />
+              </TouchableOpacity>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </View>
+
+
+
+
+            {scanning && (
+              <View style={[styles.scanningBanner, {marginHorizontal: 16, marginTop: 10}]}>
+                <ActivityIndicator size="small" color="#5DAFA4" />
+                <Text style={styles.scanningText}>
+                  {t('mobile.ttlock.scanningDevices', 'Scanning nearby TTLock devices...')}
+                </Text>
+              </View>
+            )}
+
+            {!scanning && devices.length === 0 && (
+              <View style={styles.emptyWrap}>
+                <IconWifi size={32} color={colors.border} />
+                <Text style={styles.emptyText}>
+                  {t(
+                    'mobile.ttlock.admin.noNearbyDevicesYet',
+                    'No nearby TTLock devices found yet.',
+                  )}
+                </Text>
+              </View>
+            )}
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.sheetScroll}>
+              {devices.map(device => renderDeviceRow(device, true))}
+            </ScrollView>
           </View>
         </View>
       </Modal>
-    );
-  };
-
-  /**
-   * ============================================================
-   * UI
-   * ============================================================
-   */
-
-  const showCenteredState =
-    loadingDevices ||
-    !!devicesError ||
-    devices.length === 0;
-
-  return (
-    <View
-      style={styles.container}
-      onTouchStart={() => {
-        Logger.info('ROOT TOUCH');
-      }}
-      onTouchEnd={() => {
-        Logger.info('ROOT TOUCH END');
-      }}>
-      <Svg
-        height="100%"
-        width="100%"
-        style={StyleSheet.absoluteFillObject}>
-        <Defs>
-          <LinearGradient
-            id="unlockDoorBg"
-            x1="0%"
-            y1="0%"
-            x2="0%"
-            y2="100%">
-            <Stop
-              offset="0%"
-              stopColor={colors.gradientTop}
-            />
-            <Stop
-              offset="100%"
-              stopColor={
-                colors.gradientBottom
-              }
-            />
-          </LinearGradient>
-        </Defs>
-
-        <Rect
-          width="100%"
-          height="100%"
-          fill="url(#unlockDoorBg)"
-        />
-      </Svg>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          showCenteredState &&
-            styles.scrollContentCentered,
-          {
-            paddingBottom:
-              Math.max(
-                insets.bottom,
-                16,
-              ) + 24,
-          },
-        ]}
-        onTouchStart={() => {
-          Logger.info('SCROLLVIEW TOUCH');
-        }}
-        onScrollBeginDrag={() => {
-          Logger.info('SCROLL START');
-        }}
-        onMomentumScrollBegin={() => {
-          Logger.info(
-            'MOMENTUM START',
-          );
-        }}
-        onMomentumScrollEnd={() => {
-          Logger.info(
-            'MOMENTUM END',
-          );
-        }}
-        scrollEventThrottle={16}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <BackButton
-              onPress={() =>
-                navigation.goBack()
-              }
-              color={
-                colors.textPrimary
-              }
-            />
-
-            <Text
-              style={
-                styles.headerTitle
-              }>
-              {t(
-                'mobile.smartAccess.title',
-                'Smart Access',
-              )}
-            </Text>
-          </View>
-
-          <View
-            style={
-              styles.headerActions
-            }>
-            <TouchableOpacity
-              style={[
-                styles.headerActionButton,
-                styles.headerTextButton,
-              ]}
-              onPress={() =>
-                navigation.navigate(
-                  'SmartAccessHistory',
-                )
-              }>
-              <Text
-                style={
-                  styles.headerActionText
-                }>
-                {t(
-                  'mobile.smartAccess.history.title',
-                  'History',
-                )}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.refreshBtn,
-                loadingDevices &&
-                  styles.refreshBtnDisabled,
-              ]}
-              disabled={
-                loadingDevices
-              }
-              onPress={() =>
-                loadDevices(true)
-              }>
-              {loadingDevices ? (
-                <ActivityIndicator
-                  size="small"
-                  color="#3A8F86"
-                />
-              ) : (
-                <RefreshActionIcon
-                  color="#3A8F86"
-                  size={16}
-                />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {loadingDevices &&
-        devices.length === 0 ? (
-          <View
-            style={styles.stateCard}>
-            <View
-              style={
-                styles.loaderRing
-              }>
-              <ActivityIndicator
-                size="large"
-                color={
-                  colors.primary
-                }
-              />
-            </View>
-
-            <Text
-              style={
-                styles.stateTitle
-              }>
-              {t(
-                'mobile.smartAccess.devices.loadingTitle',
-                'Loading devices',
-              )}
-            </Text>
-
-            <Text
-              style={
-                styles.stateSubtitle
-              }>
-              {t(
-                'mobile.smartAccess.devices.loadingDescription',
-                "We're fetching your smart access devices now.",
-              )}
-            </Text>
-          </View>
-        ) : null}
-
-        {!loadingDevices &&
-        devicesError ? (
-          <View
-            style={styles.stateCard}>
-            <View
-              style={
-                styles.stateIconWrap
-              }>
-              <Text
-                style={
-                  styles.stateIconText
-                }>
-                !
-              </Text>
-            </View>
-
-            <Text
-              style={
-                styles.stateTitle
-              }>
-              {t(
-                'mobile.smartAccess.devices.loadErrorTitle',
-                'Unable to load devices',
-              )}
-            </Text>
-
-            <Text
-              style={
-                styles.stateSubtitle
-              }>
-              {devicesError}
-            </Text>
-
-            <TouchableOpacity
-              style={
-                styles.retryButton
-              }
-              onPress={() =>
-                loadDevices(true)
-              }>
-              <Text
-                style={
-                  styles.retryButtonText
-                }>
-                {t(
-                  'common.mobile.common.retry',
-                  'Retry',
-                )}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-
-        {!loadingDevices &&
-        !devicesError &&
-        devices.length === 0 ? (
-          <View
-            style={styles.stateCard}>
-            <View
-              style={
-                styles.stateIconWrap
-              }>
-              <Text
-                style={
-                  styles.stateIconText
-                }>
-                +
-              </Text>
-            </View>
-
-            <Text
-              style={
-                styles.stateTitle
-              }>
-              {t(
-                'mobile.smartAccess.devices.emptyTitle',
-                'No access devices available',
-              )}
-            </Text>
-
-            <Text
-              style={
-                styles.stateSubtitle
-              }>
-              {t(
-                'mobile.smartAccess.devices.emptyDescription',
-                'Contact your building manager to get access permissions.',
-              )}
-            </Text>
-          </View>
-        ) : null}
-
-        {devices.length > 0 ? (
-          <>
-            <View
-              style={
-                styles.sectionHeaderRow
-              }>
-              <Text
-                style={
-                  styles.sectionLabel
-                }>
-                {t(
-                  devices.length === 1
-                    ? 'mobile.smartAccess.devices.availableSingle'
-                    : 'mobile.smartAccess.devices.availablePlural',
-                  devices.length === 1
-                    ? '1 Device Available'
-                    : '{{count}} Devices Available',
-                ).replace(
-                  '{{count}}',
-                  String(
-                    devices.length,
-                  ),
-                )}
-              </Text>
-            </View>
-
-            <View
-              style={[
-                styles.devicesGrid,
-                {
-                  width:
-                    contentWidth,
-                  alignSelf:
-                    'center',
-                },
-              ]}>
-              {devices.map(device => {
-                const IconComponent =
-                  getAccessIcon(
-                    device.name,
-                  );
-
-                const isBusy =
-                  activeControlId ===
-                    device.id ||
-                  checkingNearbyDeviceId ===
-                    device.id;
-
-                return (
-                  <TouchableOpacity
-                    key={device.id}
-                    style={[
-                      styles.deviceCard,
-                      isBusy &&
-                        styles.deviceCardBusy,
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={() =>
-                      openSelectedDeviceModal(
-                        device,
-                      )
-                    }
-                    disabled={isBusy}>
-                    <View
-                      style={
-                        styles.deviceIconCircle
-                      }>
-                      <IconComponent
-                        width={34}
-                        height={34}
-                      />
-                    </View>
-
-                    {isBusy ? (
-                      <View
-                        style={
-                          styles.busyIndicator
-                        }>
-                        <ActivityIndicator
-                          size="small"
-                          color={
-                            colors.onPrimary
-                          }
-                        />
-                      </View>
-                    ) : null}
-
-                    <Text
-                      style={
-                        styles.deviceName
-                      }
-                      numberOfLines={2}>
-                      {device.name}
-                    </Text>
-
-                    {device.subtitle ? (
-                      <Text
-                        style={
-                          styles.deviceSubtitle
-                        }
-                        numberOfLines={1}>
-                        {
-                          device.subtitle
-                        }
-                      </Text>
-                    ) : null}
-
-                    <View
-                      style={
-                        styles.statusPill
-                      }>
-                      <View
-                        style={[
-                          styles.statusDot,
-                          isBusy &&
-                            styles.statusDotBusy,
-                        ]}
-                      />
-
-                      <Text
-                        style={
-                          styles.statusText
-                        }>
-                        {isBusy
-                          ? t(
-                              'mobile.smartAccess.devices.working',
-                              'Working...',
-                            )
-                          : t(
-                              'mobile.smartAccess.devices.ready',
-                              'Ready',
-                            )}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </>
-        ) : null}
-      </ScrollView>
-
-      {renderSelectedDeviceModal()}
-    </View>
+    </ScreenWrapper>
   );
 }
 
-const createStyles = (
-  colors: ThemeColors,
-) =>
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
+    content: {
+      padding: 16,
+      gap: 12,
+      paddingBottom: 32,
     },
 
-    scrollContent: {
-      paddingHorizontal: 20,
-      paddingTop: 58,
-      paddingBottom: 40,
-      gap: 20,
-      flexGrow: 1,
-    },
-
-    scrollContentCentered: {
-      justifyContent: 'flex-start',
-    },
-
-    header: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-      gap: 8,
-      flexWrap: 'wrap',
-    },
-
-    headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 2,
-      flexShrink: 1,
-      flexGrow: 1,
-      minWidth: 170,
-    },
-
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      justifyContent: 'flex-end',
-      gap: 8,
-    },
-
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: '800',
-      color: colors.textPrimary,
-      marginLeft: -2,
-      flexShrink: 1,
-    },
-
-    headerActionButton: {
-      height: 40,
+    // Card
+    card: {
+      backgroundColor: colors.surface,
       borderRadius: 20,
-      backgroundColor: colors.surface,
+      padding: 16,
       borderWidth: 1,
       borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 14,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      elevation: 2,
     },
-
-    headerTextButton: {
-      minWidth: 76,
-    },
-
-    headerActionText: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: colors.textSecondary,
-    },
-
-    refreshText: {
-      fontSize: 11,
-      fontWeight: '700',
-      color: colors.primary,
-      textAlign: 'center',
-    },
-
-    stateCard: {
-      flex: 1,
-      minHeight: 280,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 24,
-      paddingHorizontal: 22,
-      paddingVertical: 28,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-    loaderRing: {
-      width: 84,
-      height: 84,
-      borderRadius: 42,
-      backgroundColor:
-        colors.surfaceMuted,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 16,
-    },
-
-    stateIconWrap: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      backgroundColor:
-        colors.surfaceMuted,
-      borderWidth: 1,
-      borderColor: colors.border,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 16,
-    },
-
-    stateIconText: {
-      fontSize: 28,
-      fontWeight: '700',
-      color: colors.primary,
-      textAlign: 'center',
-    },
-
-    stateTitle: {
-      fontSize: 18,
+    cardTitle: {
+      fontSize: 15,
       fontWeight: '700',
       color: colors.textPrimary,
-      marginBottom: 6,
-      textAlign: 'center',
+      letterSpacing: 0.1,
     },
-
-    stateSubtitle: {
-      fontSize: 14,
-      lineHeight: 20,
-      color: colors.textMuted,
-      textAlign: 'center',
-    },
-
-    retryButton: {
-      marginTop: 16,
-      minWidth: 120,
-      borderRadius: 999,
-      backgroundColor: colors.primary,
-      paddingHorizontal: 18,
-      paddingVertical: 11,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-
-    retryButtonText: {
-      color: colors.onPrimary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-
-    sectionLabel: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: colors.textMuted,
-      letterSpacing: 1,
-      textTransform: 'uppercase',
-    },
-
     sectionHeaderRow: {
+
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: 12,
+      marginBottom: 14,
     },
 
-    refreshButton: {
-      minWidth: 82,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: colors.surface,
+    // BT status
+    btStatusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 14,
+      backgroundColor: colors.surfaceMuted,
       borderWidth: 1,
       borderColor: colors.border,
+      marginBottom: 14,
+    },
+    btStatusLeft: {
+
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
-      paddingHorizontal: 12,
+
+
+      gap: 8,
+    },
+    btDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+
+
+
+    },
+    btStatusLabel: {
+      fontSize: 13,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      color: colors.textSecondary,
+      fontWeight: '500',
     },
 
-    refreshButtonText: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: colors.textSecondary,
+    // Action buttons — outlined teal, NOT filled orange
+    actionsGrid: {
+      flexDirection: 'row',
+      gap: 10,
+
     },
+    actionBtn: {
+
+      flex: 1,
+      borderRadius: 16,
+      backgroundColor: 'rgba(93,175,164,0.08)',
+      borderWidth: 1.5,
+      borderColor: 'rgba(93,175,164,0.32)',
+      padding: 14,
+
+
+      alignItems: 'center',
+      gap: 8,
+    },
+    actionBtnMuted: {
+      opacity: 0.55,
+
+
+
+
+
+
+
+
+
+
+    },
+    actionBtnIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 11,
+      backgroundColor: 'rgba(93,175,164,0.14)',
+
+
+
+
+      alignItems: 'center',
+      justifyContent: 'center',
+
+    },
+    actionBtnLabel: {
+      fontSize: 11,
+
+
+
+
+
+
+
+
+      fontWeight: '700',
+      color: '#3A8F86',
+
+
+
+
+
+
+
+
+      textAlign: 'center',
+      lineHeight: 15,
+    },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     refreshBtn: {
       width: 34,
       height: 34,
       borderRadius: 10,
-      backgroundColor:
-        'rgba(93,175,164,0.08)',
+      backgroundColor: 'rgba(93,175,164,0.08)',
+
       borderWidth: 1,
-      borderColor:
-        'rgba(93,175,164,0.32)',
+      borderColor: 'rgba(93,175,164,0.32)',
+
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -2314,138 +1333,262 @@ const createStyles = (
       opacity: 0.7,
     },
 
-    devicesGrid: {
+    // Scanning / empty
+    scanningBanner: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 14,
-      justifyContent: 'space-between',
-    },
-
-    deviceCard: {
-      width: '48%',
-      backgroundColor: colors.surface,
-      borderRadius: 22,
+      alignItems: 'center',
+      gap: 10,
+      padding: 12,
+      borderRadius: 12,
+      backgroundColor: 'rgba(93,175,164,0.08)',
       borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: 16,
-      paddingVertical: 18,
+      borderColor: 'rgba(93,175,164,0.2)',
+      marginBottom: 10,
+    },
+    scanningText: {
+      fontSize: 13,
+      color: '#3A8F86',
+      fontWeight: '500',
+    },
+    emptyWrap: {
+
+
+
+
+
+
+
+
       alignItems: 'center',
-      position: 'relative',
-      minHeight: 190,
+      paddingVertical: 24,
+      gap: 10,
+    },
+    emptyText: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: 'center',
+      lineHeight: 19,
+      maxWidth: 260,
     },
 
-    deviceCardBusy: {
-      opacity: 0.8,
-    },
+    // Device rows
+    deviceRow: {
+      flexDirection: 'row',
 
-    deviceIconCircle: {
-      width: 68,
-      height: 68,
-      borderRadius: 34,
-      backgroundColor:
-        colors.backgroundAlt,
+
+
       alignItems: 'center',
+      gap: 12,
+      paddingVertical: 12,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      marginTop: 4,
+    },
+    deviceMain: {
+      flex: 1,
+      minWidth: 0,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    deviceActionWrap: {
+      width: 40,
+      alignSelf: 'stretch',
+      alignItems: 'flex-end',
       justifyContent: 'center',
-      marginBottom: 14,
-    },
 
-    busyIndicator: {
-      position: 'absolute',
-      top: 12,
-      right: 12,
-      width: 28,
-      height: 28,
+    },
+    modalDeviceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    deviceIconWrap: {
+      width: 44,
+      height: 44,
       borderRadius: 14,
-      backgroundColor: colors.primary,
+      backgroundColor: 'rgba(93,175,164,0.10)',
+      borderWidth: 1,
+      borderColor: 'rgba(93,175,164,0.22)',
       alignItems: 'center',
       justifyContent: 'center',
     },
-
+    deviceIconWrapDone: {
+      backgroundColor: '#5DAFA4',
+      borderColor: '#5DAFA4',
+    },
+    deviceInfo: {
+      flex: 1,
+      minWidth: 0,
+      gap: 3,
+    },
     deviceName: {
       fontSize: 14,
-      lineHeight: 18,
+
       fontWeight: '700',
       color: colors.textPrimary,
-      textAlign: 'center',
-      minHeight: 36,
-      marginBottom: 4,
-    },
+      flexShrink: 1,
+      lineHeight: 20,
 
-    deviceSubtitle: {
+    },
+    deviceMac: {
+
       fontSize: 11,
       color: colors.textMuted,
-      textAlign: 'center',
-      marginBottom: 12,
+      fontFamily: 'monospace',
     },
+    deviceTagRow: {
+      flexDirection: 'row',
+      gap: 6,
+      flexWrap: 'wrap',
+      marginTop: 2,
+    },
+    modeTag: {
 
-    statusPill: {
-      marginTop: 'auto',
+
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor:
-        colors.surfaceMuted,
-      borderWidth: 1,
-      borderColor: colors.border,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 999,
-      gap: 6,
-    },
+      gap: 4,
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      borderRadius: 6,
 
-    statusDot: {
-      width: 6,
-      height: 6,
+
+
+
+    },
+    modeDot: {
+      width: 5,
+      height: 5,
+
       borderRadius: 3,
-      backgroundColor: '#22C55E',
-    },
 
-    statusDotBusy: {
-      backgroundColor: colors.primary,
     },
-
-    statusText: {
+    modeTagText: {
       fontSize: 11,
       fontWeight: '600',
-      color: colors.textMuted,
+    },
+    idTag: {
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      borderRadius: 6,
+      backgroundColor: 'rgba(93,175,164,0.10)',
+    },
+    idTagText: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: '#3A8F86',
+    },
+    registeredBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginTop: 2,
+      flexShrink: 1,
+    },
+    registeredText: {
+
+      fontSize: 11,
+      fontWeight: '600',
+      color: '#5DAFA4',
+      flexShrink: 1,
     },
 
-    modalOverlay: {
+    // Init button
+    initBtn: {
+      width: 52,
+      height: 52,
+      borderRadius: 14,
+      backgroundColor: '#5DAFA4',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    initBtnDone: {
+      backgroundColor: '#3D8A7E',
+    },
+    initBtnDisabled: {
+      backgroundColor: colors.textMuted,
+    },
+    initBtnLoading: {
+      opacity: 0.75,
+    },
+    initBtnText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: '#fff',
+    },
+    deleteBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: `${colors.danger}14`,
+      borderWidth: 1,
+      borderColor: `${colors.danger}2E`,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+
+    // Modal sheet
+    overlay: {
       flex: 1,
+      backgroundColor: colors.overlay,
       justifyContent: 'flex-end',
     },
+    sheet: {
 
-    modalBackdrop: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: colors.overlay,
-    },
-
-    modalSheet: {
       backgroundColor: colors.surface,
       borderTopLeftRadius: 28,
       borderTopRightRadius: 28,
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 40,
-      maxHeight: '92%',
-    },
+      maxHeight: '80%',
+      flexDirection: 'column',
 
-    modalHandle: {
+
+    },
+    handle: {
+
       width: 36,
       height: 4,
       borderRadius: 2,
-      alignSelf: 'center',
-      marginBottom: 16,
       backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginTop: 10,
+      marginBottom: 4,
     },
-
-    cancelButton: {
-      paddingVertical: 14,
+    sheetHeader: {
+      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 18,
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
     },
-
-    cancelButtonText: {
-      fontSize: 14,
-      fontWeight: '600',
+    sheetTitle: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: colors.textPrimary,
+    },
+    sheetSub: {
+      fontSize: 12,
       color: colors.textMuted,
+      marginTop: 2,
+    },
+    closeBtn: {
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      backgroundColor: colors.backgroundAlt,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    sheetScroll: {
+      paddingHorizontal: 18,
+      paddingBottom: 32,
+      paddingTop: 4,
+
     },
   });
