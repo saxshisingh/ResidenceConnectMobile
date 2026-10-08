@@ -197,15 +197,45 @@ const MessageStatusIcon = ({
 };
 
 const normalizePickerAttachmentType = (asset: Asset): PendingAttachment['previewType'] => {
-  const type = String(asset.type || '').toLowerCase();
+  const type = String(asset.type || getAttachmentMimeType(asset)).toLowerCase();
   if (type.startsWith('image/')) return 'image';
   if (type.startsWith('video/')) return 'video';
   if (type.startsWith('audio/')) return 'audio';
   return 'document';
 };
 
-const getAttachmentName = (asset: Asset, index: number) =>
-  asset.fileName || `attachment-${Date.now()}-${index}`;
+const getAttachmentMimeType = (asset: Asset) => {
+  if (asset.type) return asset.type;
+
+  const extension = String(asset.fileName || asset.uri || '')
+    .split(/[?#]/)[0]
+    .split('.')
+    .pop()
+    ?.toLowerCase();
+  const mimeByExtension: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    heic: 'image/heic',
+    heif: 'image/heif',
+    mp4: 'video/mp4',
+    mov: 'video/quicktime',
+  };
+
+  return mimeByExtension[extension || ''] || 'image/jpeg';
+};
+
+const getAttachmentName = (asset: Asset, index: number) => {
+  const mimeType = getAttachmentMimeType(asset);
+  const extension = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg';
+  if (asset.fileName) {
+    return /\.[a-z0-9]{2,5}$/i.test(asset.fileName)
+      ? asset.fileName
+      : `${asset.fileName}.${extension}`;
+  }
+  return `photo-${Date.now()}-${index}.${extension}`;
+};
 
 const ChatDetailScreen = ({ route, navigation }: any) => {
   const { conversationId: routeConversationId, receiverId, name } = route.params ?? {};
@@ -377,14 +407,17 @@ const ChatDetailScreen = ({ route, navigation }: any) => {
   const appendAssets = (assets: Asset[] = []) => {
     const mapped = assets
       .filter(asset => Boolean(asset.uri))
-      .map((asset, index) => ({
-        id: `${Date.now()}-${index}-${asset.fileName || 'file'}`,
-        uri: String(asset.uri),
-        type: asset.type || 'application/octet-stream',
-        name: getAttachmentName(asset, index),
-        previewType: normalizePickerAttachmentType(asset),
-        previewUrl: String(asset.uri),
-      }));
+      .map((asset, index) => {
+        const previewType = normalizePickerAttachmentType(asset);
+        return {
+          id: `${Date.now()}-${index}-${asset.fileName || 'file'}`,
+          uri: String(asset.uri),
+          type: getAttachmentMimeType(asset),
+          name: getAttachmentName(asset, index),
+          previewType,
+          previewUrl: String(asset.uri),
+        };
+      });
 
     if (mapped.length === 0) {
       return;
@@ -403,8 +436,11 @@ const ChatDetailScreen = ({ route, navigation }: any) => {
   const openImageLibrary = async () => {
     try {
       const response = await launchImageLibrary({
-        mediaType: 'mixed',
+        mediaType: 'photo',
         selectionLimit: 1,
+        quality: 0.85,
+        maxWidth: 2048,
+        maxHeight: 2048,
         includeBase64: false,
       });
 
@@ -501,7 +537,9 @@ const ChatDetailScreen = ({ route, navigation }: any) => {
 
       const response = await launchCamera({
         mediaType: 'photo',
-        quality: 0.8,
+        quality: 0.55,
+        maxWidth: 1280,
+        maxHeight: 1280,
         saveToPhotos: true,
         includeBase64: false,
       });
@@ -629,6 +667,12 @@ const ChatDetailScreen = ({ route, navigation }: any) => {
       }
     } catch (error: any) {
       dispatch(updateLocalMessageStatus({ messageId: tempMessageId, localSendState: 'failed' }));
+      setSelectedAttachments(current =>
+        current.length > 0 ? current : selectedAttachments,
+      );
+      if (messageToSend) {
+        setMessageText(current => current || messageToSend);
+      }
 
       const normalizedMessage = String(error?.message || '').trim();
       if (normalizedMessage && normalizedMessage !== 'Failed to send') {

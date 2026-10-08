@@ -74,6 +74,9 @@ const getAccessIcon = (
     : AccessFallbackIcon;
 };
 
+const normalizeLockMac = (mac?: string | null) =>
+  String(mac || '').replace(/[^a-f0-9]/gi, '').toUpperCase();
+
 const requestBluetoothPermissions = async () => {
   if (Platform.OS !== 'android') {
     return true;
@@ -83,6 +86,7 @@ const requestBluetoothPermissions = async () => {
     const permissions = [
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     ];
 
     const result =
@@ -100,9 +104,7 @@ const requestBluetoothPermissions = async () => {
     );
   }
 
-  const permissions = [
-    PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-  ];
+  const permissions = [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION];
 
   const result =
     await PermissionsAndroid.requestMultiple(permissions);
@@ -398,6 +400,46 @@ const residentId = userData?.residentId ?? null;
    * ============================================================
    */
   if (Platform.OS === 'android') {
+    if (!androidPermissionsGrantedRef.current) {
+      const permissionsGranted = await requestBluetoothPermissions();
+      if (!permissionsGranted) {
+        androidBluetoothReadyRef.current = false;
+        Alert.alert(
+          t('mobile.smartAccess.devices.permissionTitle', 'Permission required'),
+          'Bluetooth and precise Location permissions are required to find nearby TTLock devices.',
+        );
+        return false;
+      }
+      androidPermissionsGrantedRef.current = true;
+    }
+
+    let locationEnabled = false;
+    try {
+      locationEnabled = await ttlockNative.isLocationEnabled();
+    } catch (error) {
+      Logger.warn('[TTLock][ANDROID] Unable to verify Location services', error);
+    }
+
+    if (!locationEnabled) {
+      androidBluetoothReadyRef.current = false;
+      Alert.alert(
+        'Turn on Location',
+        'Allow Location permission and turn on Android Location services to scan for nearby TTLock devices.',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'Open Settings',
+            onPress: () => {
+              void ttlockNative.openLocationSettings().catch(error =>
+                Logger.warn('[TTLock][ANDROID] Could not open Location settings', error),
+              );
+            },
+          },
+        ],
+      );
+      return false;
+    }
+
     /**
      * Fast path:
      * Bluetooth and required BLE permissions were already verified.
@@ -1043,27 +1085,21 @@ const residentId = userData?.residentId ?? null;
     try {
       setCheckingNearbyDeviceId(device.id);
 
-      const permissionsGranted =
-        await requestBluetoothPermissions();
+      if (Platform.OS === 'android') {
+        const ready = await ensureBluetoothReady();
+        if (!ready) return;
+      } else {
+        const permissionsGranted = await requestBluetoothPermissions();
+        if (!permissionsGranted) return;
 
-      if (!permissionsGranted) {
-        return;
-      }
-
-      const bluetoothEnabled =
-        await ttlockNative.isBluetoothEnabled();
-
-      if (!bluetoothEnabled) {
-        Alert.alert(
-          'Bluetooth Required',
-          'Please turn on Bluetooth to access this smart lock.',
-        );
-
-        if (Platform.OS === 'android') {
-          androidBluetoothReadyRef.current = false;
+        const bluetoothEnabled = await ttlockNative.isBluetoothEnabled();
+        if (!bluetoothEnabled) {
+          Alert.alert(
+            'Bluetooth Required',
+            'Please turn on Bluetooth to access this smart lock.',
+          );
+          return;
         }
-
-        return;
       }
 
       /**
@@ -1115,7 +1151,7 @@ const residentId = userData?.residentId ?? null;
         },
       );
 
-      const nearbyDevices =
+      let nearbyDevices =
         await ttlockNative.scanLocks(
           bleAccess.lockMac,
         );
@@ -1130,11 +1166,31 @@ const residentId = userData?.residentId ?? null;
         },
       );
 
-      const nearby = nearbyDevices.some(
-        d =>
-          d.mac?.trim().toUpperCase() ===
-          bleAccess.lockMac.trim().toUpperCase(),
-      );
+      const isTargetLockNearby = (devices: typeof nearbyDevices) =>
+        devices.some(
+          device =>
+            normalizeLockMac(device.mac) ===
+            normalizeLockMac(bleAccess.lockMac),
+        );
+
+      let nearby = isTargetLockNearby(nearbyDevices);
+
+      // BLE advertisements can be missed during a single scan window.
+      // Retry once on Android before telling the resident the lock is absent.
+      if (!nearby && Platform.OS === 'android') {
+        Logger.warn('[TTLock][ANDROID] Target lock not seen on first scan; retrying', {
+          expectedMac: bleAccess.lockMac,
+          firstScanCount: nearbyDevices.length,
+        });
+        await wait(500);
+        nearbyDevices = await ttlockNative.scanLocks(bleAccess.lockMac);
+        nearby = isTargetLockNearby(nearbyDevices);
+        Logger.info('[TTLock][ANDROID] Nearby scan retry completed', {
+          expectedMac: bleAccess.lockMac,
+          count: nearbyDevices.length,
+          foundTarget: nearby,
+        });
+      }
 
       if (!nearby) {
         Alert.alert(

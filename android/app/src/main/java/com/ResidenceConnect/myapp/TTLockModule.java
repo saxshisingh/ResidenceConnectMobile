@@ -1,8 +1,11 @@
 package com.ResidenceConnect.myapp;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -41,7 +44,7 @@ import java.util.Map;
 public class TTLockModule extends ReactContextBaseJavaModule {
 
     private static final String TAG = "TTLockModule";
-    private static final long SCAN_DURATION_MS = 8000L;
+    private static final long SCAN_DURATION_MS = 15000L;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Map<String, ExtendedBluetoothDevice> scannedDevices = new LinkedHashMap<>();
@@ -184,6 +187,37 @@ public class TTLockModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @ReactMethod
+    public void isLocationEnabled(Promise promise) {
+        try {
+            LocationManager locationManager = (LocationManager)
+                    getReactApplicationContext().getSystemService(ReactApplicationContext.LOCATION_SERVICE);
+            boolean enabled;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                enabled = locationManager != null && locationManager.isLocationEnabled();
+            } else {
+                enabled = locationManager != null && (
+                        locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER));
+            }
+            promise.resolve(enabled);
+        } catch (Exception error) {
+            promise.reject("LOCATION_CHECK_FAILED", "Unable to check Location services.", error);
+        }
+    }
+
+    @ReactMethod
+    public void openLocationSettings(Promise promise) {
+        try {
+            Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getReactApplicationContext().startActivity(intent);
+            promise.resolve(true);
+        } catch (Exception error) {
+            promise.reject("LOCATION_SETTINGS_FAILED", "Unable to open Location settings.", error);
+        }
+    }
+
     // ====================================================================
     // Scanning
     // ====================================================================
@@ -197,6 +231,8 @@ public class TTLockModule extends ReactContextBaseJavaModule {
 
         logAdapterState("before scanLocks");
 
+        Log.i(TAG, "Starting TTLock BLE scan for " + SCAN_DURATION_MS + "ms");
+
         TTLockClient.getDefault().stopScanLock();
         scannedDevices.clear();
         scanInProgress = true;
@@ -204,7 +240,8 @@ public class TTLockModule extends ReactContextBaseJavaModule {
         scanTimeoutRunnable = () -> finishScan(promise);
         handler.postDelayed(scanTimeoutRunnable, SCAN_DURATION_MS);
 
-        TTLockClient.getDefault().startScanLock(new ScanLockCallback() {
+        try {
+            TTLockClient.getDefault().startScanLock(new ScanLockCallback() {
             @Override
             public void onScanLockSuccess(ExtendedBluetoothDevice device) {
                 if (device == null || device.getAddress() == null) return;
@@ -216,13 +253,22 @@ public class TTLockModule extends ReactContextBaseJavaModule {
 
             @Override
             public void onFail(LockError error) {
+                Log.e(TAG, "TTLock BLE scan failed: "
+                        + (error != null ? error.getDescription() : "unknown error"));
                 cancelScanTimeout();
                 scanInProgress = false;
                 TTLockClient.getDefault().stopScanLock();
                 promise.reject("SCAN_FAILED",
                         error != null ? error.getDescription() : "Scan failed.");
             }
-        });
+            });
+        } catch (Throwable error) {
+            cancelScanTimeout();
+            scanInProgress = false;
+            TTLockClient.getDefault().stopScanLock();
+            Log.e(TAG, "Unable to start TTLock BLE scan", error);
+            promise.reject("SCAN_START_FAILED", "Unable to start TTLock BLE scan.", error);
+        }
     }
 
     @ReactMethod
@@ -831,6 +877,8 @@ public class TTLockModule extends ReactContextBaseJavaModule {
 
         scanInProgress = false;
         TTLockClient.getDefault().stopScanLock();
+
+        Log.i(TAG, "TTLock BLE scan finished; devices found=" + scannedDevices.size());
 
         WritableArray devicesArray = Arguments.createArray();
 

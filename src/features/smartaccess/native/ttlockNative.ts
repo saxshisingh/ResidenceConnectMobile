@@ -7,6 +7,8 @@ type IOSSoundVolume = 'on' | 'off';
 type AndroidTTLockNativeModule = {
   isBluetoothEnabled: () => Promise<boolean>;
   requestBluetoothEnable: () => Promise<boolean>;
+  isLocationEnabled: () => Promise<boolean>;
+  openLocationSettings: () => Promise<boolean>;
   scanLocks: () => Promise<Array<{name?: string; mac: string; isSettingMode?: boolean}>>;
   stopScan: () => Promise<boolean>;
   initLock: (macAddress: string) => Promise<{name?: string; mac: string; lockData: string}>;
@@ -505,6 +507,16 @@ export const requestBluetoothEnable = async (): Promise<boolean> => {
   }
 
   return false;
+};
+
+export const isLocationEnabled = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') return true;
+  return ensureAndroidModule().isLocationEnabled();
+};
+
+export const openLocationSettings = async (): Promise<boolean> => {
+  if (Platform.OS !== 'android') return false;
+  return ensureAndroidModule().openLocationSettings();
 };
 
 export const scanLocks = async (targetMac?: string): Promise<ScannedLock[]> => {
