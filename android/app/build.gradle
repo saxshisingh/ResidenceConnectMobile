@@ -150,8 +150,8 @@ android {
                 signingConfig signingConfigs.release
             }
 
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
 
             proguardFiles(
                 getDefaultProguardFile(

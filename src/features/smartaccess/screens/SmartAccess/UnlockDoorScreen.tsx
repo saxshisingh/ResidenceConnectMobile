@@ -1132,86 +1132,21 @@ const residentId = userData?.residentId ?? null;
         },
       );
 
-      /**
-       * ========================================================
-       * NEARBY SCAN
-       * ========================================================
-       *
-       * This is the ONLY scan required before opening the
-       * modal.
-       */
-
-      const scanStart = Date.now();
-
-      Logger.info(
-        '[TTLock] Checking nearby lock',
-        {
-          platform: Platform.OS,
-          lockMac: bleAccess.lockMac,
-        },
-      );
-
-      let nearbyDevices =
-        await ttlockNative.scanLocks(
+      if (Platform.OS === 'android') {
+        // Check proximity through a read-only TTLock command. The Android
+        // advertisement scanner can fail registration independently of BLE
+        // connectivity, so it must not decide whether the lock is reachable.
+        const proximityCheckStart = Date.now();
+        await ttlockNative.getLockTime(
+          bleAccess.lockData,
           bleAccess.lockMac,
         );
-
-      Logger.info(
-        '[TTLock][PERF] Nearby scan completed',
-        {
-          durationMs: Date.now() - scanStart,
-          platform: Platform.OS,
-          expectedMac: bleAccess.lockMac,
-          count: nearbyDevices.length,
-        },
-      );
-
-      const isTargetLockNearby = (devices: typeof nearbyDevices) =>
-        devices.some(
-          device =>
-            normalizeLockMac(device.mac) ===
-            normalizeLockMac(bleAccess.lockMac),
-        );
-
-      let nearby = isTargetLockNearby(nearbyDevices);
-
-      // BLE advertisements can be missed during a single scan window.
-      // Retry once on Android before telling the resident the lock is absent.
-      if (!nearby && Platform.OS === 'android') {
-        Logger.warn('[TTLock][ANDROID] Target lock not seen on first scan; retrying', {
-          expectedMac: bleAccess.lockMac,
-          firstScanCount: nearbyDevices.length,
+        Logger.info('[TTLock][ANDROID][PERF] Lock proximity check succeeded', {
+          durationMs: Date.now() - proximityCheckStart,
+          deviceId: device.id,
+          lockMac: bleAccess.lockMac,
         });
-        await wait(500);
-        nearbyDevices = await ttlockNative.scanLocks(bleAccess.lockMac);
-        nearby = isTargetLockNearby(nearbyDevices);
-        Logger.info('[TTLock][ANDROID] Nearby scan retry completed', {
-          expectedMac: bleAccess.lockMac,
-          count: nearbyDevices.length,
-          foundTarget: nearby,
-        });
-      }
 
-      if (!nearby) {
-        Alert.alert(
-          'Lock Not Found',
-          'The lock is not nearby. Please move closer to the door and try again.',
-        );
-
-        return;
-      }
-
-      /**
-       * Lock is confirmed nearby.
-       *
-       * Android:
-       * Cache ONLY after successful discovery. This gives the
-       * control operation fresh BLE access without making another
-       * backend request when Unlock/Lock is pressed.
-       *
-       * iOS is intentionally unchanged.
-       */
-      if (Platform.OS === 'android') {
         androidBleAccessCache.current[`${residentId}:${device.id}`] = {
           lockData: bleAccess.lockData,
           lockMac: bleAccess.lockMac,
@@ -1219,12 +1154,40 @@ const residentId = userData?.residentId ?? null;
         };
 
         Logger.info(
-          '[TTLock][ANDROID] Cached BLE access after successful discovery',
+          '[TTLock][ANDROID] Cached BLE access for direct control',
           {
             deviceId: device.id,
             lockMac: bleAccess.lockMac,
           },
         );
+      } else {
+        const scanStart = Date.now();
+        Logger.info('[TTLock] Checking nearby lock', {
+          platform: Platform.OS,
+          lockMac: bleAccess.lockMac,
+        });
+
+        const nearbyDevices = await ttlockNative.scanLocks(bleAccess.lockMac);
+        const nearby = nearbyDevices.some(
+          scanned =>
+            normalizeLockMac(scanned.mac) === normalizeLockMac(bleAccess.lockMac),
+        );
+
+        Logger.info('[TTLock][PERF] Nearby scan completed', {
+          durationMs: Date.now() - scanStart,
+          platform: Platform.OS,
+          expectedMac: bleAccess.lockMac,
+          count: nearbyDevices.length,
+          foundTarget: nearby,
+        });
+
+        if (!nearby) {
+          Alert.alert(
+            'Lock Not Found',
+            'The lock is not nearby. Please move closer to the door and try again.',
+          );
+          return;
+        }
       }
 
       setSelectedDevice(device);
@@ -1242,8 +1205,11 @@ const residentId = userData?.residentId ?? null;
       );
 
       Alert.alert(
-        'Error',
-        'Unable to check nearby lock.',
+        'Lock unavailable',
+        getControlErrorMessage(
+          error,
+          'Unable to connect to this lock. Move closer and try again.',
+        ),
       );
     } finally {
       setCheckingNearbyDeviceId(null);
