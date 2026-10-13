@@ -1943,6 +1943,7 @@ export default function TTLockScreen({navigation, route}) {
                 access.lockData,
                 access.lockMac,
               );
+              
               const createdPasscode = result?.passcode || trimmedPasscode;
               console.log('[TTLockScreen] BLE passcode created:', {
                 requestedPasscode: trimmedPasscode,
