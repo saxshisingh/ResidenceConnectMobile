@@ -1410,20 +1410,19 @@ export default function TTLockScreen({navigation, route}) {
       );
     }
 
+    
     const normalizedCardNumber = Number(cardNumberValue);
-    if (!Number.isSafeInteger(normalizedCardNumber) || normalizedCardNumber <= 0) {
+
+    if (
+      !Number.isSafeInteger(normalizedCardNumber) ||
+      normalizedCardNumber <= 0
+    ) {
       return t(
         'mobile.ttlock.invalidCardMessage',
         'Enter a valid numeric card number.',
       );
     }
 
-    if (normalizedCardNumber > INT32_MAX) {
-      return t(
-        'mobile.ttlock.cardAssignCardNumberTooLargeMessage',
-        'This card number is larger than the backend currently accepts. Please update the TTLock card assignment API to accept 64-bit card numbers.',
-      );
-    }
 
     if (!Number.isFinite(startDate) || !Number.isFinite(endDate) || endDate < startDate) {
       return t(
