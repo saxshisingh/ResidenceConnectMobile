@@ -1,5 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Logger from '../../../../services/logger/logger';
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +18,6 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Svg, {Circle, Path, Rect} from 'react-native-svg';
-import Logger from '../../../../services/logger/logger';
 import ScreenWrapper from '../../../../components/ScreenWrapper';
 import {useAppSelector} from '../../../../redux/hooks';
 import {useI18n} from '../../../../i18n';
@@ -354,12 +354,14 @@ export default function TTLockScreen({navigation, route}) {
   }, [language]);
 
   const user = useAppSelector(state => state.auth.user);
-  const residentIdFromStore =
-    user?.data?.residentId ||
-    user?.residentId ||
-    user?.data?.ResidentId ||
-    user?.ResidentId ||
-    '';
+
+  const userData = user?.data ?? user ?? null;
+
+  const residentIdFromStore = String(
+    userData?.residentId ??
+    userData?.ResidentId ??
+    '',
+  ).trim();
   const routeDeviceId = pickDeviceIdCandidate(
     route?.params?.deviceId,
     route?.params?.DeviceId,
@@ -1185,7 +1187,7 @@ export default function TTLockScreen({navigation, route}) {
 
     try {
       const residents = await getAllResidents();
-      const options = normalizeResidentOptions(residents, targetResidentId, user);
+      const options = normalizeResidentOptions(residents, targetResidentId, userData);
       setResidentOptions(options);
       setSelectedResidentId(previousValue => {
         if (previousValue && options.some(item => item.residentId === previousValue)) {
@@ -1750,66 +1752,112 @@ export default function TTLockScreen({navigation, route}) {
         setModalType('add-fingerprint');
       },
     },
-    {
-      id: 'ble-card',
-      label: t('mobile.ttlock.actions.enrollCard', 'Enroll Card'),
-      icon: () => <IconCard color={ADMIN_ACCENT} />,
-      onPress: async () => {
-        if (!canStartAction()) {
-          return;
-        }
-        const access = await ensureNearbyLockAccess();
-        if (!access) {
-          return;
-        }
-        const actionToken = beginAction('ble-card');
-        if (!actionToken) {
-          return;
-        }
-        try {
-          openInfoModal({
-            title: t('mobile.ttlock.cardEnrollmentTitle', 'Card Enrollment'),
-            message: t('mobile.ttlock.cardEnrollmentProgress', 'Hold the card near the lock reader to complete enrollment.'),
-            loading: true,
-          });
-          scheduleFingerprintLoaderStop(actionToken);
-          const startDate = Date.now();
-          const endDate = startDate + FIVE_YEARS_MS;
-          const result = await ttlockNative.addICCard(startDate, endDate, access.lockData, access.lockMac);
-          clearFingerprintLoaderTimeout();
-          const enrolledCardNumber = String(result?.cardNumber || '').trim();
+{
+  id: 'ble-card',
+  label: t('mobile.ttlock.actions.enrollCard', 'Enroll Card'),
+  icon: () => <IconCard color={ADMIN_ACCENT} />,
+  onPress: async () => {
+    if (!canStartAction()) {
+      return;
+    }
 
-          if (!enrolledCardNumber) {
-            throw new Error(
-              t(
-                'mobile.ttlock.cardEnrollmentMissingNumber',
-                'Card enrollment succeeded but no card number was returned.',
-              ),
-            );
-          }
+    const access = await ensureNearbyLockAccess();
+    if (!access) {
+      return;
+    }
 
-          closeInfoModal();
-          const currentResidentId = await resolveResidentIdForAction();
-          setPendingCardNumber(enrolledCardNumber);
-          await loadResidentOptions(currentResidentId);
-          setModalType('assign-card');
-        } catch (error) {
-          clearFingerprintLoaderTimeout();
-          if (actionTokenRef.current === actionToken) {
-            closeInfoModal();
-            Alert.alert(
-              t('mobile.ttlock.cardEnrollmentFailedTitle', 'Card enrollment failed'),
-              getActionErrorMessage(
-                error,
-                t('mobile.ttlock.cardEnrollmentFailedMessage', 'Unable to enroll card.'),
-              ),
-            );
-          }
-        } finally {
-          finishAction(actionToken);
-        }
-      },
-    },
+    const actionToken = beginAction('ble-card');
+    if (!actionToken) {
+      return;
+    }
+
+    try {
+      openInfoModal({
+        title: t('mobile.ttlock.cardEnrollmentTitle', 'Card Enrollment'),
+        message: t(
+          'mobile.ttlock.cardEnrollmentProgress',
+          'Hold the card near the lock reader to complete enrollment.',
+        ),
+        loading: true,
+      });
+
+      scheduleFingerprintLoaderStop(actionToken);
+
+      const startDate = Date.now();
+      const endDate = startDate + FIVE_YEARS_MS;
+
+      Logger.info('[TTLock][CardEnrollment] Starting BLE card enrollment', {
+        lockMac: access.lockMac,
+        startDate,
+        endDate,
+      });
+
+      const result = await ttlockNative.addICCard(
+        startDate,
+        endDate,
+        access.lockData,
+        access.lockMac,
+      );
+
+      clearFingerprintLoaderTimeout();
+
+      Logger.info('[TTLock][CardEnrollment] BLE enrollment completed', {
+        cardNumber: result?.cardNumber,
+        cardNumberType: typeof result?.cardNumber,
+        hasCardNumber: result?.cardNumber != null,
+      });
+
+      const enrolledCardNumber = String(result?.cardNumber ?? '').trim();
+
+      Logger.info('[TTLock][CardEnrollment] Normalized card number', {
+        enrolledCardNumber,
+      });
+
+      if (!enrolledCardNumber) {
+        throw new Error(
+          t(
+            'mobile.ttlock.cardEnrollmentMissingNumber',
+            'Card enrollment succeeded but no card number was returned.',
+          ),
+        );
+      }
+
+      closeInfoModal();
+
+      const currentResidentId = await resolveResidentIdForAction();
+
+      setPendingCardNumber(enrolledCardNumber);
+
+      Logger.info('[TTLock][CardEnrollment] Opening card assignment modal', {
+        enrolledCardNumber,
+        residentId: currentResidentId,
+      });
+
+      await loadResidentOptions(currentResidentId);
+      setModalType('assign-card');
+    } catch (error) {
+      clearFingerprintLoaderTimeout();
+
+      Logger.error('[TTLock][CardEnrollment] Enrollment failed', {
+        message: error instanceof Error ? error.message : String(error),
+      });
+
+      if (actionTokenRef.current === actionToken) {
+        closeInfoModal();
+
+        Alert.alert(
+          t('mobile.ttlock.cardEnrollmentFailedTitle', 'Card enrollment failed'),
+          getActionErrorMessage(
+            error,
+            t('mobile.ttlock.cardEnrollmentFailedMessage', 'Unable to enroll card.'),
+          ),
+        );
+      }
+    } finally {
+      finishAction(actionToken);
+    }
+  },
+},
     // {
     //   id: 'delete-card',
     //   label: t('mobile.ttlock.actions.deleteCard', 'Delete Card'),
@@ -1943,6 +1991,7 @@ export default function TTLockScreen({navigation, route}) {
                 access.lockData,
                 access.lockMac,
               );
+
               const createdPasscode = result?.passcode || trimmedPasscode;
               console.log('[TTLockScreen] BLE passcode created:', {
                 requestedPasscode: trimmedPasscode,
@@ -2018,26 +2067,32 @@ export default function TTLockScreen({navigation, route}) {
       }
 
       if (resolvedActionType === 'assign-card') {
-        const currentResidentId = String(selectedResidentId || '').trim();
-        const fallbackResidentId = await resolveResidentIdForAction();
-        console.log('[TTLockScreen] assign-card: resolved resident ids', {
-          selectedResidentId: currentResidentId,
-          fallbackResidentId,
-          storeResidentId: residentId,
-          residentIdFromStore,
+        const residentIdToAssign = String(selectedResidentId || '').trim();
+
+        if (!residentIdToAssign) {
+          throw new Error('Please select a resident before assigning the card.');
+        }
+
+        Logger.info('[TTLock][CardAssignment] Resolving assignment details', {
+          residentId: residentIdToAssign,
+          hasStoreResidentId: Boolean(residentId || residentIdFromStore),
         });
+
         const currentDeviceId = await getFinalDeviceIdForAssignment(
-          currentResidentId || fallbackResidentId,
+          residentIdToAssign,
         );
+
         const currentLockId = await getFinalLockIdForAssignment(
-          currentResidentId || fallbackResidentId,
+          residentIdToAssign,
         );
+
         const normalizedCardNumber = String(pendingCardNumber || '').trim();
         const startDate = cardStartDate.getTime();
         const endDate = cardEndDate.getTime();
-        const residentIdToAssign = currentResidentId || fallbackResidentId || '';
+
         const lockIdToAssign = String(currentLockId || '').trim();
         const deviceIdToAssign = String(currentDeviceId || '').trim();
+
         const validationMessage = validateCardAssignmentPayload({
           residentId: residentIdToAssign,
           deviceId: deviceIdToAssign,
@@ -2047,51 +2102,69 @@ export default function TTLockScreen({navigation, route}) {
           endDate,
         });
 
-        console.log('[TTLockScreen] assigning card without local validation', {
+        Logger.info('[TTLock][CardAssignment] Payload validation', {
+          hasResidentId: Boolean(residentIdToAssign),
+          hasDeviceId: Boolean(deviceIdToAssign),
+          hasLockId: Boolean(lockIdToAssign),
+          hasCardNumber: Boolean(normalizedCardNumber),
+          startDate,
+          endDate,
+          validationFailed: Boolean(validationMessage),
+          validationMessage: validationMessage || undefined,
+        });
+
+        if (validationMessage) {
+          throw new Error(validationMessage);
+        }
+
+        const cardNumberAsNumber = Number(normalizedCardNumber);
+
+        if (
+          !Number.isSafeInteger(cardNumberAsNumber) ||
+          cardNumberAsNumber <= 0
+        ) {
+          throw new Error('Invalid card number returned by card enrollment.');
+        }
+
+        Logger.info('[TTLock][CardAssignment] Calling assignment API', {
           residentId: residentIdToAssign,
           deviceId: deviceIdToAssign,
           lockId: lockIdToAssign,
           cardNumber: normalizedCardNumber,
           startDate,
           endDate,
-          validationMessage,
-          resolvedDeviceId,
-          routeDeviceId,
-          bleDeviceId: bleAccess?.deviceId,
-          routeParams: route?.params,
         });
 
-        if (validationMessage) {
-          console.log('[TTLockScreen] assign-card: skipping API call because validation failed', {
-            residentIdToAssign,
-            deviceIdToAssign,
-            lockIdToAssign,
-            normalizedCardNumber,
+        try {
+          const response = await addTTLockCard({
+            residentId: residentIdToAssign,
+            deviceId: deviceIdToAssign,
+            cardNumber: cardNumberAsNumber,
             startDate,
             endDate,
-            validationMessage,
           });
-          throw new Error(validationMessage);
-        }
 
-        console.log('[TTLockScreen] assign-card: calling addTTLockCard API', {
-          residentIdToAssign,
-          deviceIdToAssign,
-          lockIdToAssign,
-          normalizedCardNumber,
-          startDate,
-          endDate,
-        });
-        await addTTLockCard({
-          residentId: residentIdToAssign,
-          deviceId: deviceIdToAssign,
-          cardNumber: Number(normalizedCardNumber),
-          startDate,
-          endDate,
-        });
+          Logger.info('[TTLock][CardAssignment] Assignment API resolved', {
+            residentId: residentIdToAssign,
+            deviceId: deviceIdToAssign,
+            cardNumber: normalizedCardNumber,
+            response,
+          });
+        } catch (error) {
+          Logger.error('[TTLock][CardAssignment] Assignment API failed', {
+            residentId: residentIdToAssign,
+            deviceId: deviceIdToAssign,
+            cardNumber: normalizedCardNumber,
+            message:
+              error instanceof Error ? error.message : String(error),
+          });
+
+          throw error;
+        }
 
         if (actionTokenRef.current === actionToken) {
           closeModal('assign-card-success');
+
           openInfoModal({
             title: t('mobile.ttlock.cardAssignedTitle', 'Card Assigned'),
             message: t(
