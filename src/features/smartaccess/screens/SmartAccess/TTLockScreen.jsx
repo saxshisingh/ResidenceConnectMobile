@@ -1786,6 +1786,15 @@ export default function TTLockScreen({navigation, route}) {
       const startDate = Date.now();
       const endDate = startDate + FIVE_YEARS_MS;
 
+      // IC card validity is evaluated using the lock's clock. Keep it in
+      // sync before issuing a card so a lock with a stale clock does not
+      // immediately treat the newly issued card as expired.
+      Logger.info('[TTLock][CardEnrollment] Syncing lock time before enrollment', {
+        lockMac: access.lockMac,
+        timestamp: startDate,
+      });
+      await ttlockNative.setLockTime(startDate, access.lockData, access.lockMac);
+
       Logger.info('[TTLock][CardEnrollment] Starting BLE card enrollment', {
         lockMac: access.lockMac,
         startDate,
